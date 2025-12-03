@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { getDatabase, ref, onValue } from "firebase/database";
 import app from "./firebaseConfig";
-import { IPositions } from "../interfaces/services/interface";
+import { IPositions } from "@/interfaces/interfaces";
 
 export const fetchPositions = (
     setImages: Dispatch<SetStateAction<IPositions[]>>,

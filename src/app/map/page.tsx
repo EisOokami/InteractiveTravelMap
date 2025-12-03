@@ -1,0 +1,206 @@
+"use client";
+
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import L from "leaflet";
+import { fetchPositions } from "@/services/firebaseDatabase";
+import {
+    IDates,
+    IDatesStorage,
+    IPositions,
+    ISortedDates,
+} from "@/interfaces/interfaces";
+import LoadingNavbar from "@/components/loadings/loadingNavbar/LoadingNavbar";
+import LoadingSearch from "@/components/loadings/loadingSearch/LoadingSearch";
+import LoadingPlaceCard from "@/components/loadings/loadingPlaceCard/LoadingPlaceCard";
+import LoadingTrip from "@/components/loadings/loadingTrip/LoadingTrip";
+import LoadingMap from "@/components/loadings/loadingMap/LoadingMap";
+import LoadingDarkModeBtn from "@/components/loadings/loadingDarkModeBtn/LoadingDarkModeBtn";
+
+const Map = lazy(() => import("@/components/layout/map/Map"));
+const Sidebar = lazy(() => import("@/components/ui/sidebar/Sidebar"));
+const Search = lazy(() => import("@/components/layout/search/Search"));
+const PlaceCard = lazy(() => import("@/components/ui/placeCard/PlaceCard"));
+const Trip = lazy(() => import("@/components/layout/trip/Trip"));
+const DarkModeBtn = lazy(
+    () => import("@/components/ui/darkModeBtn/DarkModeBtn"),
+);
+
+const animationSettings = {
+    initial: {
+        width: 0,
+    },
+    animate: {
+        width: 385,
+        transition: {
+            duration: 0.5,
+            delay: 0.5,
+        },
+    },
+    exit: {
+        width: 0,
+        transition: {
+            duration: 0.5,
+        },
+    },
+};
+
+export default function MapPage() {
+    const [openSearch, setOpenSearch] = useState<boolean>(false);
+    const [openTrip, setOpenTrip] = useState<boolean>(false);
+    const [openPlaceCard, setOpenPlaceCard] = useState<boolean>(false);
+    const [zoomLocationX, setZoomLocationX] = useState<number>(52.083);
+    const [zoomLocationY, setZoomLocationY] = useState<number>(19.375);
+    const [selectedPosition, setSelectedPosition] = useState<number | null>(
+        null,
+    );
+    const [datesStorage, setDatesStorage] = useState<IDatesStorage>({});
+    const [showRoute, setShowRoute] = useState<boolean>(false);
+    const [transportMode, setTransportMode] = useState<string>("car");
+    const [routingControl, setRoutingControl] =
+        useState<L.Routing.Control | null>(null);
+    const [sortedDates, setSortedDates] = useState<ISortedDates[]>([]);
+    const [dates, setDates] = useState<IDates[]>([]);
+    const [positions, setPositions] = useState<IPositions[]>([]);
+    const [isPositionLoading, setIsPositionLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        fetchPositions(setPositions, setIsPositionLoading);
+    }, []);
+
+    const updateDatesStorage = useCallback(
+        (markerId: number, dates: IDates[]) => {
+            setDatesStorage((prevState) => ({
+                ...prevState,
+                [markerId]: dates,
+            }));
+        },
+        [],
+    );
+
+    if (isPositionLoading) {
+        return (
+            <div className="flex flex-col justify-center items-center w-screen h-screen p-5 md:p-0">
+                <div className="grid justify-items-center gap-5">
+                    <h3 className="text-4xl">Loading...</h3>
+                    <h3 className="text-2xl text-center">
+                        Fetching positions from the database
+                    </h3>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <section className="flex flex-col h-svh">
+            <div className="grow flex">
+                <div className="hidden md:flex">
+                    <Suspense fallback={<LoadingNavbar />}>
+                        <Sidebar
+                            openSearch={openSearch}
+                            setOpenSearch={setOpenSearch}
+                            setOpenPlaceCard={setOpenPlaceCard}
+                            openTrip={openTrip}
+                            setOpenTrip={setOpenTrip}
+                            setZoomLocationX={setZoomLocationX}
+                            setZoomLocationY={setZoomLocationY}
+                        />
+                    </Suspense>
+                </div>
+                <AnimatePresence>
+                    {openSearch && (
+                        <motion.div
+                            key="search"
+                            className="relative h-full md:h-screen z-1001 md:z-0"
+                            variants={animationSettings}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                        >
+                            <Suspense fallback={<LoadingSearch />}>
+                                <Search
+                                    positions={positions}
+                                    setZoomLocationX={setZoomLocationX}
+                                    setZoomLocationY={setZoomLocationY}
+                                    setSelectedPosition={setSelectedPosition}
+                                    setOpenPlaceCard={setOpenPlaceCard}
+                                />
+                            </Suspense>
+                            {openPlaceCard && (
+                                <Suspense fallback={<LoadingPlaceCard />}>
+                                    <PlaceCard
+                                        positions={positions}
+                                        selectedPosition={selectedPosition}
+                                        setOpenPlaceCard={setOpenPlaceCard}
+                                        datesStorage={datesStorage}
+                                        updateDatesStorage={updateDatesStorage}
+                                        dates={dates}
+                                        setDates={setDates}
+                                        setZoomLocationX={setZoomLocationX}
+                                        setZoomLocationY={setZoomLocationY}
+                                    />
+                                </Suspense>
+                            )}
+                        </motion.div>
+                    )}
+                    {openTrip && (
+                        <motion.div
+                            key="trip"
+                            className="relative h-full md:h-screen z-1001 md:z-0"
+                            variants={animationSettings}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                        >
+                            <Suspense fallback={<LoadingTrip />}>
+                                <Trip
+                                    positions={positions}
+                                    datesStorage={datesStorage}
+                                    showRoute={showRoute}
+                                    setShowRoute={setShowRoute}
+                                    routingControl={routingControl}
+                                    setRoutingControl={setRoutingControl}
+                                    transportMode={transportMode}
+                                    setTransportMode={setTransportMode}
+                                    sortedDates={sortedDates}
+                                    setSortedDates={setSortedDates}
+                                />
+                            </Suspense>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <main className="md:relative grow h-full">
+                    <Suspense fallback={<LoadingMap />}>
+                        <Map
+                            setOpenSearch={setOpenSearch}
+                            positions={positions}
+                            zoomLocationX={zoomLocationX}
+                            zoomLocationY={zoomLocationY}
+                            setZoomLocationX={setZoomLocationX}
+                            setZoomLocationY={setZoomLocationY}
+                            setSelectedPosition={setSelectedPosition}
+                            setOpenPlaceCard={setOpenPlaceCard}
+                            setOpenTrip={setOpenTrip}
+                        />
+                    </Suspense>
+                    <Suspense fallback={<LoadingDarkModeBtn />}>
+                        <DarkModeBtn />
+                    </Suspense>
+                </main>
+            </div>
+            <div className="md:hidden">
+                <Suspense fallback={<LoadingNavbar />}>
+                    <Sidebar
+                        openSearch={openSearch}
+                        setOpenSearch={setOpenSearch}
+                        setOpenPlaceCard={setOpenPlaceCard}
+                        openTrip={openTrip}
+                        setOpenTrip={setOpenTrip}
+                        setZoomLocationX={setZoomLocationX}
+                        setZoomLocationY={setZoomLocationY}
+                    />
+                </Suspense>
+            </div>
+        </section>
+    );
+}
