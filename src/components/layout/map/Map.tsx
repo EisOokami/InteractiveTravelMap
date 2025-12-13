@@ -24,6 +24,7 @@ interface MapProps {
     setSelectedPosition: Dispatch<SetStateAction<number | null>>;
     setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
     setOpenTrip: Dispatch<SetStateAction<boolean>>;
+    openPlaceCard: boolean;
 }
 
 function ChangeView({ center }: { center: [number, number] }) {
@@ -47,6 +48,7 @@ export default function Map({
     setSelectedPosition,
     setOpenPlaceCard,
     setOpenTrip,
+    openPlaceCard,
 }: MapProps) {
     const handleZoomLocation = useCallback(
         (x: number, y: number, key: number) => {

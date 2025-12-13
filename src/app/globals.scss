@@ -42,3 +42,25 @@ body {
         border-radius: 100px;
     }
 }
+
+:root {
+    --menu-width: 600px;
+}
+
+@media (max-width: 1280px) {
+    :root {
+        --menu-width: 500px;
+    }
+}
+
+@media (max-width: 1024px) {
+    :root {
+        --menu-width: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --menu-width: 100%;
+    }
+}
