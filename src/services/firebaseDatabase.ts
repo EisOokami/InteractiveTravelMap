@@ -4,22 +4,22 @@ import app from "./firebaseConfig";
 import { IPositions } from "@/interfaces/interfaces";
 
 export const fetchPositions = (
-    setImages: Dispatch<SetStateAction<IPositions[]>>,
+    setPositions: Dispatch<SetStateAction<IPositions[]>>,
     setLoading: Dispatch<SetStateAction<boolean>>,
 ) => {
     const database = getDatabase(app);
-    const imagesRef = ref(database, "positions");
+    const dbRef = ref(database, "positions");
 
-    onValue(imagesRef, (snapshot) => {
+    onValue(dbRef, (snapshot) => {
         setLoading(true);
 
         const data = snapshot.val();
 
         if (data) {
-            const imagesArray: IPositions[] = Object.values(data);
+            const positionsData: IPositions[] = Object.values(data);
 
             setLoading(false);
-            setImages(imagesArray);
+            setPositions(positionsData);
         }
     });
 };
