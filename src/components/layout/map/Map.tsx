@@ -15,11 +15,15 @@ import {
     TileLayer,
     useMap,
     LayerGroup,
+    Popup,
 } from "react-leaflet";
-import { Icon } from "leaflet";
 import { IPositions } from "@/interfaces/interfaces";
 import "leaflet/dist/leaflet.css";
 import "./Map.scss";
+import Image from "next/image";
+import { IoLocationSharp } from "react-icons/io5";
+import { FaStar } from "react-icons/fa";
+import L, { divIcon } from "leaflet";
 
 interface MapProps {
     setOpenSearch: Dispatch<SetStateAction<boolean>>;
@@ -40,7 +44,6 @@ function ChangeView({ center }: { center: [number, number] }) {
 
     useEffect(() => {
         map.setView(center);
-        window.map = map;
     }, [center, map]);
 
     return null;
@@ -80,23 +83,19 @@ export default function Map({
     }, [mapRef]);
 
     const handleZoomLocation = useCallback(
-        (x: number, y: number, key: number) => {
-            setOpenSearch(true);
-            setOpenPlaceCard(true);
-            setOpenTrip(false);
+        (x: number, y: number) => {
             setZoomLocationX(x);
             setZoomLocationY(y);
-            setSelectedPosition(key);
         },
-        [
-            setOpenPlaceCard,
-            setOpenSearch,
-            setOpenTrip,
-            setSelectedPosition,
-            setZoomLocationX,
-            setZoomLocationY,
-        ],
+        [setZoomLocationX, setZoomLocationY],
     );
+
+    const handleButtonClick = (id: number) => {
+        setSelectedPosition(id);
+        setOpenSearch(true);
+        setOpenPlaceCard(true);
+        setOpenTrip(false);
+    };
 
     return (
         <MapContainer
@@ -117,8 +116,8 @@ export default function Map({
                 <LayersControl.BaseLayer name="Satellite">
                     <LayerGroup>
                         <TileLayer
-                            attribution="<a href='https://www.google.com/maps'>Google Maps Satellite</a>"
-                            url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+                            attribution="&copy; <a href='https://www.google.com/maps'>Google Maps Satellite</a>"
+                            url="https://www.google.com/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
                         />
                     </LayerGroup>
                 </LayersControl.BaseLayer>
@@ -126,30 +125,97 @@ export default function Map({
                     <TileLayer
                         className="dark-leaflet-layer"
                         attribution="&copy; <a href='https://www.thunderforest.com/'>Thunderforest</a>"
-                        url="https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=fa595c9430dc4c019d1d936817687bb3"
+                        url={`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${process.env.NEXT_PUBLIC_THUNDERFOREST_API_KEY}`}
                     />
                 </LayersControl.BaseLayer>
             </LayersControl>
-            {positions.map((elem) => (
+            {positions.map((position) => (
                 <Marker
-                    key={elem.id}
-                    position={[elem.x, elem.y]}
-                    icon={
-                        new Icon({
-                            iconUrl:
-                                "https://www.pngall.com/wp-content/uploads/2017/05/Map-Marker-PNG-Picture.png",
-                            shadowUrl: elem.img,
-                            iconSize: [50, 50],
-                            iconAnchor: [25, 50],
-                            shadowSize: [26, 26],
-                            shadowAnchor: [13, 44],
-                        })
-                    }
+                    key={position.id}
+                    position={[position.x, position.y]}
+                    icon={divIcon({
+                        html: renderToString(
+                            <div className="relative">
+                                <div className="absolute -bottom-1 left-1/2 w-8 h-2 bg-black/20 rounded-full blur-sm -translate-x-1/2" />
+                                <div
+                                    className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-300 cursor-pointer ${
+                                        position.x === zoomLocationX &&
+                                        position.y === zoomLocationY &&
+                                        openPlaceCard
+                                            ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
+                                            : ""
+                                    }`}
+                                >
+                                    <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
+                                        <Image
+                                            src={position.img}
+                                            alt={position.name}
+                                            className="w-10 h-10 object-contain"
+                                            width={50}
+                                            height={50}
+                                        />
+                                    </div>
+                                </div>
+                            </div>,
+                        ),
+                        className: "custom-marker-icon",
+                        iconSize: [48, 48],
+                        iconAnchor: [24, 48],
+                        popupAnchor: [0, -48],
+                    })}
                     eventHandlers={{
-                        click: () =>
-                            handleZoomLocation(elem.x, elem.y, elem.id),
+                        click: () => handleZoomLocation(position.x, position.y),
                     }}
-                />
+                >
+                    <Popup className="custom-popup" closeButton={true}>
+                        <div className="w-full bg-white dark:bg-dark-mode-black overflow-hidden transition-colors">
+                            <div className="relative w-full h-36 md:h-52">
+                                <Image
+                                    src={position.img}
+                                    alt={position.name}
+                                    className="w-full h-full object-cover"
+                                    width={200}
+                                    height={200}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                <div className="absolute bottom-4 left-4 right-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm font-semibold text-white bg-yellow-500 rounded-full">
+                                            <FaStar className="w-3 md:w-4 h-3 md:h-4" />
+                                            {position.rating}
+                                        </div>
+                                        <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">
+                                            {position.category}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="px-4 md:px-6 py-4 md:py-5">
+                                <h3 className="mb-2 text-xl md:text-2xl font-bold text-black dark:text-white transition-colors line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
+                                    {position.name}
+                                </h3>
+                                <div className="flex items-center gap-2 mb-2 md:mb-4 text-gray-600 dark:text-gray-300">
+                                    <IoLocationSharp className="min-w-4 md:min-w-5 min-h-4 md:min-h-5 text-bright-blue" />
+                                    <span className="text-sm line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
+                                        {position.address}
+                                    </span>
+                                </div>
+                                <p className="mb-3 md:mb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2 md:line-clamp-3">
+                                    {position.description_short}
+                                </p>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleButtonClick(position.id);
+                                    }}
+                                    className="w-full px-4 py-2 md:py-3 text-white font-semibold bg-bright-blue hover:bg-blue-600 rounded-lg transition-colors shadow-lg"
+                                >
+                                    More Details
+                                </button>
+                            </div>
+                        </div>
+                    </Popup>
+                </Marker>
             ))}
         </MapContainer>
     );
