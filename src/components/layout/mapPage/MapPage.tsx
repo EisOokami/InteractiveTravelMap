@@ -17,6 +17,7 @@ import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 import Map from "@/components/layout/map/Map";
 import LoadingPlaceCard from "@/components/ui/placeCard/PlaceCardSkeleton";
 import Search from "@/components/layout/search/Search";
+import PlaceCardSkeleton from "@/components/ui/placeCard/PlaceCardSkeleton";
 
 const PlaceCard = lazy(() => import("@/components/ui/placeCard/PlaceCard"));
 
@@ -103,7 +104,7 @@ export default function MapPage({
                                 setOpenPlaceCard={setOpenPlaceCard}
                             />
                             {openPlaceCard && (
-                                <Suspense fallback={<LoadingPlaceCard />}>
+                                <Suspense fallback={<PlaceCardSkeleton />}>
                                     <PlaceCard
                                         positions={positionsData}
                                         selectedPosition={selectedPosition}
