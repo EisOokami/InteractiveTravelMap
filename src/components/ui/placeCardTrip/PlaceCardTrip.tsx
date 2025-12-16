@@ -14,6 +14,7 @@ import {
 import { IoLocationSharp } from "react-icons/io5";
 import { BiMoney } from "react-icons/bi";
 import { MdAccessTime } from "react-icons/md";
+import styles from "./PlaceCardTrip.module.scss";
 
 interface PlaceCardTripProps {
     place: IPositions;
@@ -93,7 +94,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                         {place.description_short}
                     </p>
                     <div className="hidden xl:grid grid-cols-2 gap-3 mb-4">
-                        <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className={styles["place-card__info"]}>
                             <BiMoney className="w-5 h-5 text-green-600 " />
                             <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -104,7 +105,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className={styles["place-card__info"]}>
                             <MdAccessTime className="w-5 h-5 text-bright-blue" />
                             <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -120,22 +121,22 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {place.facilities.parking && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <div className={styles["place-card__facility"]}>
                                 <FaParking className="w-3 h-3" />
                             </div>
                         )}
                         {place.facilities.pet_friendly && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <div className={styles["place-card__facility"]}>
                                 <FaPaw className="w-3 h-3" />
                             </div>
                         )}
                         {place.facilities.wheelchair_access && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <div className={styles["place-card__facility"]}>
                                 <FaWheelchair className="w-3 h-3" />
                             </div>
                         )}
                         {place.facilities.wifi && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <div className={styles["place-card__facility"]}>
                                 <FaWifi className="w-3 h-3" />
                             </div>
                         )}
