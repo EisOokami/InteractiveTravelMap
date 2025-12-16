@@ -8,6 +8,8 @@ import {
     ISortedDates,
 } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
+import { Routing } from "leaflet";
+import dynamic from "next/dynamic";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import Trip from "@/components/layout/trip/Trip";
@@ -112,6 +114,8 @@ export default function MapPage({
                                         setDates={setDates}
                                         setZoomLocationX={setZoomLocationX}
                                         setZoomLocationY={setZoomLocationY}
+                                        routingControl={routingControl}
+                                        setRoutingControl={setRoutingControl}
                                     />
                                 </Suspense>
                             )}
