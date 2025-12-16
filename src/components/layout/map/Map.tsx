@@ -1,6 +1,13 @@
 "use client";
 
-import { Dispatch, SetStateAction, useCallback, useEffect } from "react";
+import {
+    Dispatch,
+    RefObject,
+    SetStateAction,
+    useCallback,
+    useEffect,
+} from "react";
+import { renderToString } from "react-dom/server";
 import {
     LayersControl,
     MapContainer,
@@ -25,6 +32,7 @@ interface MapProps {
     setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
     setOpenTrip: Dispatch<SetStateAction<boolean>>;
     openPlaceCard: boolean;
+    mapRef: RefObject<L.Map | null>;
 }
 
 function ChangeView({ center }: { center: [number, number] }) {
@@ -49,7 +57,28 @@ export default function Map({
     setOpenPlaceCard,
     setOpenTrip,
     openPlaceCard,
+    mapRef,
 }: MapProps) {
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const mapContainer = document.querySelector(".leaflet-container");
+
+            if (
+                mapRef?.current &&
+                mapContainer &&
+                !mapContainer.contains(e.target as Node)
+            ) {
+                mapRef?.current.closePopup();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [mapRef]);
+
     const handleZoomLocation = useCallback(
         (x: number, y: number, key: number) => {
             setOpenSearch(true);
@@ -71,6 +100,7 @@ export default function Map({
 
     return (
         <MapContainer
+            ref={mapRef}
             center={[zoomLocationX, zoomLocationY]}
             zoom={7}
             scrollWheelZoom={true}

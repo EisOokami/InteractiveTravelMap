@@ -1,7 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useState } from "react";
-import L from "leaflet";
+import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import {
     IDates,
     IDatesStorage,
@@ -55,9 +54,10 @@ export default function MapPage({
     const [showRoute, setShowRoute] = useState<boolean>(false);
     const [transportMode, setTransportMode] = useState<string>("car");
     const [routingControl, setRoutingControl] =
-        useState<L.Routing.Control | null>(null);
+        useState<Routing.Control | null>(null);
     const [sortedDates, setSortedDates] = useState<ISortedDates[]>([]);
     const [dates, setDates] = useState<IDates[]>([]);
+    const mapRef = useRef<L.Map | null>(null);
 
     const updateDatesStorage = useCallback(
         (markerId: number, dates: IDates[]) => {
@@ -137,6 +137,7 @@ export default function MapPage({
                                 setTransportMode={setTransportMode}
                                 sortedDates={sortedDates}
                                 setSortedDates={setSortedDates}
+                                mapRef={mapRef}
                             />
                         </motion.div>
                     )}
@@ -153,6 +154,7 @@ export default function MapPage({
                         setOpenPlaceCard={setOpenPlaceCard}
                         setOpenTrip={setOpenTrip}
                         openPlaceCard={openPlaceCard}
+                        mapRef={mapRef}
                     />
                     <DarkModeBtn />
                 </main>

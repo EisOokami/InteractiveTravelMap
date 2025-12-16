@@ -6,6 +6,7 @@ import {
     Dispatch,
     SetStateAction,
     useCallback,
+    RefObject,
 } from "react";
 import L from "leaflet";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
@@ -20,12 +21,11 @@ import {
     useSensors,
 } from "@dnd-kit/core";
 import {
+    rectSortingStrategy,
     SortableContext,
     sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { MdDirectionsBike } from "react-icons/md";
+import { MdDeleteOutline, MdDirectionsBike } from "react-icons/md";
 import { FaCar, FaWalking, FaInfoCircle } from "react-icons/fa";
 import {
     IDatesMap,
@@ -34,10 +34,8 @@ import {
     IRouteSegments,
     ISortedDates,
 } from "@/interfaces/interfaces";
-import styles from "./Trip.module.scss";
 
 import PlaceCardTrip from "../../ui/placeCardTrip/PlaceCardTrip";
-import RouteInfo from "../../ui/routeInfo/RouteInfo";
 
 interface TripProps {
     positions: IPositions[];
@@ -50,6 +48,7 @@ interface TripProps {
     setTransportMode: Dispatch<SetStateAction<string>>;
     sortedDates: ISortedDates[];
     setSortedDates: Dispatch<SetStateAction<ISortedDates[]>>;
+    mapRef: RefObject<L.Map | null>;
 }
 
 export default function Trip({
@@ -63,11 +62,10 @@ export default function Trip({
     setTransportMode,
     sortedDates,
     setSortedDates,
+    mapRef,
 }: TripProps) {
     const [isRoute, setIsRoute] = useState<string | null>(null);
     const [routeSegments, setRouteSegments] = useState<IRouteSegments[]>([]);
-    const [routeTime, setRouteTime] = useState<string[]>([]);
-    const [routeDistance, setRouteDistance] = useState<string[]>([]);
     const [isNavigationDisabled, setIsNavigationDisabled] =
         useState<boolean>(false);
     const sensors = useSensors(
@@ -115,111 +113,69 @@ export default function Trip({
         return `${hours}.${minutes.toString().padStart(2, "0")}`;
     };
 
-    const handleNavigation = useCallback(
-        async (places: IPositions[], date: string) => {
-            setIsNavigationDisabled(true);
-            setIsRoute(null);
-            setRouteSegments([]);
+    const handleNavigation = (places: IPositions[], date: string) => {
+        setIsNavigationDisabled(true);
+        setIsRoute(null);
+        setRouteSegments([]);
 
-            if (showRoute && routingControl) {
-                routingControl.remove();
-                setRoutingControl(null);
-                setShowRoute(false);
-                setIsNavigationDisabled(false);
-                return;
-            }
+        if (showRoute && routingControl) {
+            routingControl.remove();
+            setRoutingControl(null);
+            setShowRoute(false);
+            setIsNavigationDisabled(false);
 
-            if (places.length < 2) return;
+            return;
+        }
 
-            const waypoints = places.map((place) => L.latLng(place.x, place.y));
-            const profile =
-                transportMode === "car"
-                    ? "driving"
-                    : transportMode === "bike"
-                    ? "cycling"
-                    : "walking";
+        if (places.length < 2) {
+            return;
+        }
 
-            const newRoutingControl = L.Routing.control({
-                waypoints,
-                lineOptions: {
-                    styles: [{ color: "#6FA1EC", weight: 4 }],
-                    extendToWaypoints: false,
-                    missingRouteTolerance: 0,
-                },
-                // createMarker: () => null,
-                routeWhileDragging: false,
-                addWaypoints: false,
-                router: L.Routing.mapbox(
-                    process.env.NEXT_PUBLIC_MAPBOX_API_KEY!,
-                    {
-                        profile: `mapbox/${profile}`,
-                    },
-                ),
-            });
+        const waypoints = places.map((place) => L.latLng(place.x, place.y));
+        const profile =
+            transportMode === "car"
+                ? "driving"
+                : transportMode === "bike"
+                ? "cycling"
+                : "walking";
 
-            newRoutingControl.on("routesfound", (e) => {
-                const route = e.routes[0];
-                const totalDistance = (
-                    route.summary.totalDistance / 1000
-                ).toFixed(2);
-                const totalTime = (route.summary.totalTime / 3600).toFixed(2);
+        const newRoutingControl = L.Routing.control({
+            waypoints,
+            lineOptions: {
+                styles: [{ color: "#6FA1EC", weight: 4 }],
+                extendToWaypoints: false,
+                missingRouteTolerance: 0,
+            },
+            routeWhileDragging: false,
+            addWaypoints: false,
+            createMarker: () => null,
+            router: L.Routing.mapbox(process.env.NEXT_PUBLIC_MAPBOX_API_KEY!, {
+                profile: `mapbox/${profile}`,
+            }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
-                let distanceInstructions = 0;
-                let timeInstructions = 0;
-                const resultDistanceInstructions = [];
-                const resultTimeInstructions = [];
+        newRoutingControl.on("routesfound", (e) => {
+            const route = e.routes[0];
+            const totalDistance = (route.summary.totalDistance / 1000).toFixed(
+                2,
+            );
+            const totalTime = (route.summary.totalTime / 3600).toFixed(2);
 
-                setRouteTime([]);
-                setRouteDistance([]);
+            setRouteSegments([{ distance: totalDistance, time: totalTime }]);
+            setShowRoute(true);
+            setIsNavigationDisabled(false);
+        });
 
-                route.instructions.forEach(
-                    (obj: { time: number; distance: number; type: string }) => {
-                        timeInstructions += obj.time;
-                        distanceInstructions += obj.distance;
-
-                        if (obj.type === "WaypointReached") {
-                            resultDistanceInstructions.push(
-                                (distanceInstructions / 1000).toFixed(2),
-                            );
-                            resultTimeInstructions.push(
-                                convertTime(timeInstructions),
-                            );
-
-                            distanceInstructions = 0;
-                            timeInstructions = 0;
-                        }
-                    },
-                );
-
-                resultDistanceInstructions.push(
-                    (distanceInstructions / 1000).toFixed(2),
-                );
-                resultTimeInstructions.push(convertTime(timeInstructions));
-
-                setRouteTime(resultTimeInstructions);
-                setRouteDistance(resultDistanceInstructions);
-                setRouteSegments([
-                    { distance: totalDistance, time: totalTime },
-                ]);
-                setShowRoute(true);
-                setIsNavigationDisabled(false);
-            });
-
-            await newRoutingControl.addTo(window.map);
+        if (mapRef?.current) {
+            newRoutingControl.addTo(mapRef?.current);
 
             setIsRoute(date);
 
             setRoutingControl(newRoutingControl);
-            window.map.fitBounds(L.latLngBounds(waypoints));
-        },
-        [
-            routingControl,
-            setRoutingControl,
-            showRoute,
-            transportMode,
-            setShowRoute,
-        ],
-    );
+            mapRef?.current.fitBounds(L.latLngBounds(waypoints));
+        }
+    };
 
     const handleDragEnd = useCallback(
         (event: DragEndEvent, date: string, places: IPositions[]) => {
@@ -249,108 +205,137 @@ export default function Trip({
         [setSortedDates, sortedDates, routeSegments],
     );
 
-    const styleIsTransportMode = (mode: string): string => {
-        return transportMode === mode ? "!bg-blue-800" : "";
-    };
+    const transportModes = [
+        { id: "car", icon: FaCar, label: "Car" },
+        { id: "bike", icon: MdDirectionsBike, label: "Bike" },
+        { id: "walk", icon: FaWalking, label: "Walk" },
+    ];
 
     return (
-        <section className="absolute flex flex-col w-screen md:w-97 h-full pt-6 px-3 bg-white dark:bg-dark-mode-black z-[1999] transition">
-            <h1 className="mb-3 dark:text-white text-2xl sm:text-3xl font-bold">
-                Trip Plan
-            </h1>
-            <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mb-4">
-                <button
-                    type="button"
-                    className={`${styles.trip__btn} ${styleIsTransportMode(
-                        "car",
-                    )}`}
-                    onClick={() => setTransportMode("car")}
-                >
-                    <FaCar />
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.trip__btn} ${styleIsTransportMode(
-                        "bike",
-                    )}`}
-                    onClick={() => setTransportMode("bike")}
-                >
-                    <MdDirectionsBike />
-                </button>
-                <button
-                    type="button"
-                    className={`${styles.trip__btn} ${styleIsTransportMode(
-                        "walk",
-                    )}`}
-                    onClick={() => setTransportMode("walk")}
-                >
-                    <FaWalking />
-                </button>
-            </div>
-            <div className="trip__cards grid justify-items-center overflow-x-hidden overflow-y-scroll">
-                {sortedDates.length ? (
-                    sortedDates.map(({ date, places }, index) => (
-                        <div key={index}>
-                            <DndContext
-                                sensors={sensors}
-                                onDragEnd={(e: DragEndEvent) =>
-                                    handleDragEnd(e, date, places)
-                                }
-                                modifiers={[restrictToVerticalAxis]}
-                                collisionDetection={closestCenter}
+        <section className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1999] transition-colors">
+            <div className="p-4 md:p-6 border-b dark:border-gray-800">
+                <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-black dark:text-white">
+                    Trip Planner
+                </h1>
+                <div className="grid grid-cols-3 gap-3">
+                    {transportModes.map((mode) => {
+                        const Icon = mode.icon;
+
+                        return (
+                            <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => setTransportMode(mode.id)}
+                                className={`flex flex-col justify-center items-center gap-2 p-2 md:p-4 font-medium rounded-lg transition-all ${
+                                    transportMode === mode.id
+                                        ? "bg-bright-blue text-white shadow-lg scale-105"
+                                        : "bg-gray-100 dark:bg-dark-mode-black text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                                }`}
                             >
-                                <h2 className="mb-2 dark:text-white text-xl font-semibold transition">
+                                <Icon className="w-5 md:w-6 h-5 md:h-6" />
+                                <span className="text-sm">{mode.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+            <div className="custom-scroll grid gap-8 p-3 md:p-6 overflow-x-hidden overflow-y-auto">
+                {sortedDates.length > 0 ? (
+                    sortedDates.map(({ date, places }, dateIndex) => (
+                        <div key={dateIndex} className="grid gap-4">
+                            <div className="sticky -top-3 md:-top-6 py-3 bg-white dark:bg-dark-mode-black z-50">
+                                <h2 className="flex items-center gap-3 text-xl md:text-2xl font-bold text-black dark:text-white">
+                                    <span className="flex justify-center items-center w-8 md:w-10 h-8 md:h-10 text-sm font-bold bg-bright-blue text-white rounded-full">
+                                        {dateIndex + 1}
+                                    </span>
                                     {date}
                                 </h2>
-                                <SortableContext
-                                    items={places}
-                                    strategy={verticalListSortingStrategy}
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-3">
+                                <DndContext
+                                    sensors={sensors}
+                                    onDragEnd={(e: DragEndEvent) =>
+                                        handleDragEnd(e, date, places)
+                                    }
+                                    modifiers={[]}
+                                    collisionDetection={closestCenter}
                                 >
-                                    {places.map((place, index) => (
-                                        <div key={index}>
-                                            <PlaceCardTrip
-                                                place={place}
-                                                convertTime={convertTime}
-                                            />
-                                            {routeSegments.length > 0 &&
-                                                index !== places.length - 1 && (
-                                                    <RouteInfo
-                                                        index={index}
-                                                        routeDistance={
-                                                            routeDistance
-                                                        }
-                                                        routeTime={routeTime}
-                                                    />
-                                                )}
-                                        </div>
-                                    ))}
-                                </SortableContext>
-                                <div className="flex mt-3">
-                                    <button
-                                        type="button"
-                                        className={styles.trip__btn}
-                                        onClick={() =>
-                                            handleNavigation(places, date)
-                                        }
-                                        disabled={isNavigationDisabled}
+                                    <SortableContext
+                                        items={places}
+                                        strategy={rectSortingStrategy}
                                     >
-                                        Navigation
-                                    </button>
-                                    {isRoute === date && (
-                                        <p className="flex items-center gap-1 dark:text-white text-lg font-bold transition">
-                                            <FaInfoCircle className="text-blue-800 text-2xl" />
-                                            Route has been planned
-                                        </p>
+                                        {places.map((place) => (
+                                            <div key={place.id}>
+                                                <PlaceCardTrip
+                                                    place={place}
+                                                    convertTime={convertTime}
+                                                />
+                                            </div>
+                                        ))}
+                                    </SortableContext>
+                                </DndContext>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    type="button"
+                                    style={{
+                                        backgroundColor: isRoute
+                                            ? "#ef4444"
+                                            : "",
+                                    }}
+                                    onClick={() =>
+                                        handleNavigation(places, date)
+                                    }
+                                    disabled={
+                                        isNavigationDisabled ||
+                                        places.length < 2
+                                    }
+                                    className="flex justify-center items-center gap-2 px-6 py-3 font-medium text-white bg-bright-blue hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg shadow-md transition"
+                                >
+                                    {isNavigationDisabled ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Loading...
+                                        </>
+                                    ) : isRoute ? (
+                                        <>
+                                            <MdDeleteOutline className="w-5 h-5 mb-0.5" />
+                                            Clear Route
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaInfoCircle className="mb-0.5" />
+                                            Plan Route
+                                        </>
                                     )}
-                                </div>
-                            </DndContext>
+                                </button>
+                                {isRoute === date &&
+                                    routeSegments.length > 0 && (
+                                        <div className="flex items-center gap-2 font-medium text-green-600 dark:text-green-400">
+                                            <FaInfoCircle className="w-5 h-5" />
+                                            <span className="text-sm">
+                                                Route planned
+                                            </span>
+                                        </div>
+                                    )}
+                            </div>
+                            {places.length < 2 && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Add at least 2 places to plan a route
+                                </p>
+                            )}
                         </div>
                     ))
                 ) : (
-                    <div className="mb-4">
-                        <h1 className="mb-2 dark:text-white text-2xl font-semibold transition">
-                            Add places for the trip
-                        </h1>
+                    <div className="md:col-span-2 grid justify-items-center py-16 text-center">
+                        <FaInfoCircle className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
+                        <h3 className="mb-2 text-lg font-semibold text-black dark:text-white">
+                            No trips planned yet
+                        </h3>
+                        <p className="max-w-xs text-sm text-gray-600 dark:text-gray-400">
+                            Start adding places to your trip to create an
+                            itinerary
+                        </p>
                     </div>
                 )}
             </div>
