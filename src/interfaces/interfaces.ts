@@ -17,6 +17,27 @@ export interface IPositions {
     x: number;
     y: number;
     time: number;
+    address: string;
+    average_visit_duration: number;
+    description_short: string;
+    description_full: string;
+    facilities: {
+        parking: true;
+        pet_friendly: true;
+        wheelchair_access: false;
+        wifi: false;
+    };
+    price: number;
+    rating: number;
+    working_hours: {
+        fri: string;
+        mon: string;
+        sat: string;
+        sun: string;
+        thu: string;
+        tue: string;
+        wed: string;
+    };
 }
 
 export interface ISortedDates {
