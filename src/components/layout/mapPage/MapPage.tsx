@@ -12,10 +12,17 @@ import { Routing } from "leaflet";
 import dynamic from "next/dynamic";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
-import Trip from "@/components/layout/trip/Trip";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
-import Map from "@/components/layout/map/Map";
-import LoadingPlaceCard from "@/components/ui/placeCard/PlaceCardSkeleton";
+const Map = dynamic(() => import("@/components/layout/map/Map"), {
+    loading: () => (
+        <div className="w-full h-full bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
+    ),
+    ssr: false,
+});
+const Trip = dynamic(() => import("@/components/layout/trip/Trip"), {
+    loading: () => <div></div>,
+    ssr: false,
+});
 import Search from "@/components/layout/search/Search";
 import PlaceCardSkeleton from "@/components/ui/placeCard/PlaceCardSkeleton";
 
