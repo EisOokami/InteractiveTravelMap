@@ -1,0 +1,22 @@
+@use "./variables.scss" as *;
+
+@mixin webkit-scrollbar($track-color, $thumb-color, $bg-color: #f5f5f5) {
+    &::-webkit-scrollbar-track {
+        background-color: $track-color !important;
+    }
+
+    &::-webkit-scrollbar {
+        width: $scrollbar-width !important;
+        background-color: $bg-color !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $thumb-color !important;
+        border-radius: 100px !important;
+    }
+}
+
+@mixin dark-mode-control($bg: $color-dark-bg, $text: $color-dark-text) {
+    background-color: $bg !important;
+    color: $text !important;
+}

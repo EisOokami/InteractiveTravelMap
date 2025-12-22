@@ -1,3 +1,7 @@
+@use "../style/mixins.scss" as *;
+@use "../style/variables.scss" as *;
+@use "../style/leaflet-routing-machine.scss";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,40 +11,19 @@ body {
     overflow-y: hidden;
 }
 
-.search__card,
-.trip__cards,
-.place-card__scroll {
-    &::-webkit-scrollbar-track {
-        background-color: #d1d1d1;
-    }
-
-    &::-webkit-scrollbar {
-        width: 5px;
-        background-color: #f5f5f5;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #0096ff;
-        border-radius: 100px;
-    }
+.custom-scroll {
+    @include webkit-scrollbar(
+        $color-light-scrollbar-track,
+        $color-light-scrollbar-thumb
+    );
 }
 
-.dark .search__card,
-.dark .trip__cards,
-.dark .place-card__scroll {
-    &::-webkit-scrollbar-track {
-        background-color: #2b2b2b;
-    }
-
-    &::-webkit-scrollbar {
-        width: 5px;
-        background-color: #1a1a1a;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #0095ff;
-        border-radius: 100px;
-    }
+.dark .custom-scroll {
+    @include webkit-scrollbar(
+        $color-dark-scrollbar-track,
+        $color-light-scrollbar-thumb,
+        $color-dark-scrollbar-bg
+    );
 }
 
 :root {
