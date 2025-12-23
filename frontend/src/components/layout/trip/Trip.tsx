@@ -48,6 +48,10 @@ interface TripProps {
     setTransportMode: Dispatch<SetStateAction<string>>;
     sortedDates: ISortedDates[];
     setSortedDates: Dispatch<SetStateAction<ISortedDates[]>>;
+    routeSegments: IRouteSegments[];
+    setRouteSegments: Dispatch<SetStateAction<IRouteSegments[]>>;
+    isRoute: string | null;
+    setIsRoute: Dispatch<SetStateAction<string | null>>;
     mapRef: RefObject<L.Map | null>;
 }
 
@@ -62,10 +66,12 @@ export default function Trip({
     setTransportMode,
     sortedDates,
     setSortedDates,
+    routeSegments,
+    setRouteSegments,
+    isRoute,
+    setIsRoute,
     mapRef,
 }: TripProps) {
-    const [isRoute, setIsRoute] = useState<string | null>(null);
-    const [routeSegments, setRouteSegments] = useState<IRouteSegments[]>([]);
     const [isNavigationDisabled, setIsNavigationDisabled] =
         useState<boolean>(false);
     const sensors = useSensors(

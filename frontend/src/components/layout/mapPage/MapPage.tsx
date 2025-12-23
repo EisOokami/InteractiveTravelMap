@@ -5,6 +5,7 @@ import {
     IDates,
     IDatesStorage,
     IPositions,
+    IRouteSegments,
     ISortedDates,
 } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
@@ -69,6 +70,8 @@ export default function MapPage({
         useState<Routing.Control | null>(null);
     const [sortedDates, setSortedDates] = useState<ISortedDates[]>([]);
     const [dates, setDates] = useState<IDates[]>([]);
+    const [isRoute, setIsRoute] = useState<string | null>(null);
+    const [routeSegments, setRouteSegments] = useState<IRouteSegments[]>([]);
     const mapRef = useRef<L.Map | null>(null);
 
     const updateDatesStorage = useCallback(
@@ -153,6 +156,10 @@ export default function MapPage({
                                 setTransportMode={setTransportMode}
                                 sortedDates={sortedDates}
                                 setSortedDates={setSortedDates}
+                                isRoute={isRoute}
+                                setIsRoute={setIsRoute}
+                                routeSegments={routeSegments}
+                                setRouteSegments={setRouteSegments}
                                 mapRef={mapRef}
                             />
                         </motion.div>
