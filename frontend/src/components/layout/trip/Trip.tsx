@@ -36,6 +36,7 @@ import {
 } from "@/interfaces/interfaces";
 
 import PlaceCardTrip from "../../ui/placeCardTrip/PlaceCardTrip";
+import TransportButton from "@/components/ui/transportButton/TransportButton";
 
 interface TripProps {
     positions: IPositions[];
@@ -224,25 +225,16 @@ export default function Trip({
                     Trip Planner
                 </h1>
                 <div className="grid grid-cols-3 gap-3">
-                    {transportModes.map((mode) => {
-                        const Icon = mode.icon;
-
-                        return (
-                            <button
-                                key={mode.id}
-                                type="button"
-                                onClick={() => setTransportMode(mode.id)}
-                                className={`flex flex-col justify-center items-center gap-2 p-2 md:p-4 font-medium rounded-lg transition-all ${
-                                    transportMode === mode.id
-                                        ? "bg-bright-blue text-white shadow-lg scale-105"
-                                        : "bg-gray-100 dark:bg-dark-mode-black text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-                                }`}
-                            >
-                                <Icon className="w-5 md:w-6 h-5 md:h-6" />
-                                <span className="text-sm">{mode.label}</span>
-                            </button>
-                        );
-                    })}
+                    {transportModes.map((mode) => (
+                        <TransportButton
+                            key={mode.id}
+                            id={mode.id}
+                            icon={mode.icon}
+                            label={mode.label}
+                            transportMode={transportMode}
+                            setTransportMode={setTransportMode}
+                        />
+                    ))}
                 </div>
             </div>
             <div className="custom-scroll grid gap-8 p-3 md:p-6 overflow-x-hidden overflow-y-auto">
