@@ -1,0 +1,407 @@
+{
+  "positions": [
+    {
+      "address": "Powstańców Śląskich 95, 53-332 Wrocław",
+      "average_visit_duration": 60,
+      "category": "Shopping center",
+      "description_full": "Sky Tower is a multifunctional skyscraper in Wrocław, one of the tallest buildings in Poland. Apart from office spaces and apartments, it houses a modern shopping mall with a bowling alley and fitness center. The main attraction is the observation deck located on the 49th floor, offering a breathtaking panoramic view of the city and, on clear days, the Sudetes mountains. It is also famous for the 'Profile of Time' sculpture by Salvador Dalí located at the entrance.",
+      "description_short": "Tallest building in Wrocław with a shopping mall and observation deck.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 1,
+      "img": "https://ocdn.eu/pulscms/MDA_/f3c0e553ba7b0bcdbc01e4d6d372945e.jpg",
+      "location": "Wrocław",
+      "name": "Sky Tower",
+      "price": 300,
+      "rating": 4.5,
+      "time": 3600,
+      "working_hours": {
+        "fri": "09:00-21:00",
+        "mon": "09:00-21:00",
+        "sat": "09:00-21:00",
+        "sun": "10:00-20:00",
+        "thu": "09:00-21:00",
+        "tue": "09:00-21:00",
+        "wed": "09:00-21:00"
+      },
+      "x": 51.0945,
+      "y": 17.0197
+    },
+    {
+      "address": "1 Maja 3, 45-068 Opole",
+      "average_visit_duration": 30,
+      "category": "Restaurant",
+      "description_full": "Antalya Kebab u Bogusi has achieved cult status in Opole. It is a small, unassuming place that draws huge crowds due to its legendary portions and distinctive taste. Unlike typical chain kebab spots, this place is known for its homemade sauces and fresh ingredients. It's a must-visit for foodies looking for authentic, hearty street food experiences in the region.",
+      "description_short": "Popular kebab restaurant known for generous portions.",
+      "facilities": {
+        "parking": false,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": false
+      },
+      "id": 2,
+      "img": "https://d-art.ppstatic.pl/kadry/k/r/1/22/1e/65c0e1f838515_o_full.jpg",
+      "location": "Opole",
+      "name": "Antalya Kebab u Bogusi",
+      "price": 0,
+      "rating": 4.6,
+      "time": 1800,
+      "working_hours": {
+        "fri": "09:00-23:00",
+        "mon": "09:00-22:00",
+        "sat": "10:00-23:00",
+        "sun": "12:00-22:00",
+        "thu": "09:00-22:00",
+        "tue": "09:00-22:00",
+        "wed": "09:00-22:00"
+      },
+      "x": 50.551,
+      "y": 18
+    },
+    {
+      "address": "Zaruskiego 2, 41-200 Sosnowiec",
+      "average_visit_duration": 120,
+      "category": "Park",
+      "description_full": "Zagłębiowski Park Sportowy, officially known as ArcelorMittal Park, is a newly constructed, state-of-the-art sports complex in Sosnowiec. It includes a football stadium, an indoor arena for volleyball and basketball, and a winter stadium for ice hockey. The architecture is modern and cohesive, making it a hub for local sports fans and a venue for major cultural events and concerts.",
+      "description_short": "Modern sports complex featuring a stadium, arena, and ice rink.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 3,
+      "img": "https://lh5.googleusercontent.com/proxy/RfFucqcqYCBiq_-rsoPjGje67Cy9R1Zmtkkdp6dbq0ajWAjKj3iTu-T0dfSQGQvIpXwd39FVrJG14EcAFqKI7uG77jUezUOzodPpTDN8MUdHOH_BIzUthZ-4aN947xS6W0-BUGv8vxoDZdWoGu1WAN6BjOKoW1c-",
+      "location": "Sosnowiec",
+      "name": "Zagłębiowski Park Sportowy - ArcelorMittal Park",
+      "price": 0,
+      "rating": 4.7,
+      "time": 1800,
+      "working_hours": {
+        "fri": "08:00-22:00",
+        "mon": "08:00-22:00",
+        "sat": "08:00-22:00",
+        "sun": "08:00-22:00",
+        "thu": "08:00-22:00",
+        "tue": "08:00-22:00",
+        "wed": "08:00-22:00"
+      },
+      "x": 50.201,
+      "y": 19
+    },
+    {
+      "address": "Wydmy 1, 80-656 Gdańsk",
+      "average_visit_duration": 30,
+      "category": "Park",
+      "description_full": "Located just a few minutes' walk from one of the cleanest beaches in Gdańsk (Stogi Beach), this camping park offers a peaceful retreat surrounded by pine forests. It provides full sanitary facilities, electricity hookups for campers, and a secure, fenced area. It is an excellent starting point for exploring the Tri-City while staying close to nature. A tram terminus nearby allows easy access to the Gdańsk city center.",
+      "description_short": "Camping site located near the Stogi beach and pine forest.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": true,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 4,
+      "img": "https://app.camprest.com/Camping/Gallery/1ef5e1d8-7619-6d30-ad76-9604c412e003.jpg",
+      "location": "Gdańsk",
+      "name": "Camper & Camping Park",
+      "price": 0,
+      "rating": 4.3,
+      "time": 1800,
+      "working_hours": {
+        "fri": "00:00-24:00",
+        "mon": "00:00-24:00",
+        "sat": "00:00-24:00",
+        "sun": "00:00-24:00",
+        "thu": "00:00-24:00",
+        "tue": "00:00-24:00",
+        "wed": "00:00-24:00"
+      },
+      "x": 54.301,
+      "y": 18.65
+    },
+    {
+      "address": "Mikołaja Kopernika 3, 09-100 Płońsk",
+      "average_visit_duration": 120,
+      "category": "Health center",
+      "description_full": "The Municipal Sports and Recreation Center (MCSiR) in Płońsk is a comprehensive facility designed for active leisure. It features a swimming pool with water slides and a jacuzzi, a sauna zone for relaxation, and a fully equipped sports hall. The center regularly hosts local sports competitions and offers fitness classes, making it the heart of physical activity in the town.",
+      "description_short": "Sports center with swimming pool, sauna, and gym facilities.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": false
+      },
+      "id": 5,
+      "img": "https://mcsir.plonsk.pl/wp-content/uploads/2025/04/image-3.jpeg",
+      "location": "Płońsk",
+      "name": "Municipal Sports and Recreation Center in Płońsk",
+      "price": 100,
+      "rating": 4.4,
+      "time": 3600,
+      "working_hours": {
+        "fri": "06:00-22:00",
+        "mon": "06:00-22:00",
+        "sat": "08:00-20:00",
+        "sun": "08:00-20:00",
+        "thu": "06:00-22:00",
+        "tue": "06:00-22:00",
+        "wed": "06:00-22:00"
+      },
+      "x": 52.501,
+      "y": 17
+    },
+    {
+      "address": "Gorzowska 31, 66-433 Lubiszyn",
+      "average_visit_duration": 60,
+      "category": "Park",
+      "description_full": "Barlinek Landscape Park is a protected area known for its picturesque beech forests, clear lakes, and rolling hills. It serves as the European Capital of Nordic Walking, offering numerous marked trails for hikers and nature enthusiasts. The park is home to diverse wildlife, including protected bird species. It's a perfect destination for those seeking tranquility and contact with untouched nature.",
+      "description_short": "Scenic landscape park with diverse flora, fauna, and hiking trails.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": true,
+        "wheelchair_access": false,
+        "wifi": false
+      },
+      "id": 6,
+      "img": "https://www.zpkwz.pl/images/barlinecki_park_projekt.jpg",
+      "location": "Barlinek",
+      "name": "Barlinek Landscape Park",
+      "price": 0,
+      "rating": 4.7,
+      "time": 1800,
+      "working_hours": {
+        "fri": "00:00-24:00",
+        "mon": "00:00-24:00",
+        "sat": "00:00-24:00",
+        "sun": "00:00-24:00",
+        "thu": "00:00-24:00",
+        "tue": "00:00-24:00",
+        "wed": "00:00-24:00"
+      },
+      "x": 52.001,
+      "y": 15
+    },
+    {
+      "address": "Aleja Marszałka Józefa Piłsudskiego 15/23, 90-307 Łódź",
+      "average_visit_duration": 120,
+      "category": "Shopping center",
+      "description_full": "Galeria Łódzka is an award-winning shopping center that blends seamlessly with the post-industrial architecture of Łódź. Located near the famous Piotrkowska Street, it houses over 150 shops, including premium fashion brands, cafes, and service points. The building's design references the historic textile factories of the region, creating a unique shopping atmosphere.",
+      "description_short": "Large shopping mall with over 150 stores and services.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 7,
+      "img": "https://www.galeria-lodzka.pl/fileadmin/user_upload/TEST/Stage_images/GLL_photos/GL_STRONA_WWW_1920X1080_2.jpg",
+      "location": "Łódź",
+      "name": "Galeria Łódzka",
+      "price": 0,
+      "rating": 4.5,
+      "time": 3600,
+      "working_hours": {
+        "fri": "09:30-21:00",
+        "mon": "09:30-21:00",
+        "sat": "09:30-21:00",
+        "sun": "Closed",
+        "thu": "09:30-21:00",
+        "tue": "09:30-21:00",
+        "wed": "09:30-21:00"
+      },
+      "x": 51.701,
+      "y": 19.5
+    },
+    {
+      "address": "Zegrzyńska, 05-126 Nieporęt",
+      "average_visit_duration": 60,
+      "category": "Swimming complex",
+      "description_full": "The 'Dzika Plaża' (Wild Beach) in Nieporęt is one of the most popular summer destinations for residents of Warsaw and the surrounding areas. Located on the southern shore of Zegrze Lake, it offers a long sandy beach, a walking pier, and well-developed infrastructure including outdoor gyms, playgrounds, and water equipment rentals (kayaks, pedal boats). It's an ideal spot for sunbathing, swimming, and windsurfing.",
+      "description_short": "Popular sandy beach on Zegrze Reservoir with water sports rentals.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": true,
+        "wheelchair_access": false,
+        "wifi": false
+      },
+      "id": 8,
+      "img": "https://inmasovianstyle.com/wp-content/uploads/2022/07/nieporet_2021_1-1170x680-1-1170x680.jpg",
+      "location": "Nieporęt",
+      "name": "Zegrzyńskie Lake Beach",
+      "price": 150,
+      "rating": 4.2,
+      "time": 3600,
+      "working_hours": {
+        "fri": "00:00-24:00",
+        "mon": "00:00-24:00",
+        "sat": "00:00-24:00",
+        "sun": "00:00-24:00",
+        "thu": "00:00-24:00",
+        "tue": "00:00-24:00",
+        "wed": "00:00-24:00"
+      },
+      "x": 53.001,
+      "y": 19
+    },
+    {
+      "address": "Kurza 4, 70-795 Szczecin",
+      "average_visit_duration": 60,
+      "category": "Paintball center",
+      "description_full": "Star Paintball offers an immersive tactical experience located in the post-industrial scenery of old Szczecin factory buildings (Wiskord). The venue provides diverse scenarios such as 'Capture the Flag' or 'VIP Defense' within authentic, raw interiors filled with obstacles. It is equipped with high-quality markers and safety gear, making it a top choice for bachelor parties, team building, and adrenaline seekers.",
+      "description_short": "Adrenaline-filled paintball experience in abandoned buildings.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": false,
+        "wifi": false
+      },
+      "id": 9,
+      "img": "https://hydra.fit/cdn/shop/files/image_aa9199bd-0bd3-4461-9b77-af47c452d735_1024x1024.heic?v=1683040367",
+      "location": "Szczecin",
+      "name": "Star Paintball",
+      "price": 100,
+      "rating": 4.8,
+      "time": 5400,
+      "working_hours": {
+        "fri": "08:00-20:00",
+        "mon": "08:00-20:00",
+        "sat": "08:00-20:00",
+        "sun": "08:00-20:00",
+        "thu": "08:00-20:00",
+        "tue": "08:00-20:00",
+        "wed": "08:00-20:00"
+      },
+      "x": 53.251,
+      "y": 15
+    },
+    {
+      "address": "Aleja Tadeusza Rejtana 65, 35-326 Rzeszów",
+      "average_visit_duration": 120,
+      "category": "Shopping center",
+      "description_full": "CH Plaza Rzeszów is a well-established shopping destination in the city. It features a wide range of clothing boutiques, a large grocery supermarket, and a comprehensive food court. The center is also an entertainment hub, hosting a Cinema City multiplex and a 24-hour CityFit gym. Its convenient location and compact layout make it a favorite for quick and effective shopping trips.",
+      "description_short": "Modern mall with fashion brands, gym, and cinema.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 10,
+      "img": "https://pliki.propertynews.pl/i/04/43/51/044351_r0_940.jpg",
+      "location": "Rzeszów",
+      "name": "Plaza Rzeszów",
+      "price": 0,
+      "rating": 4.1,
+      "time": 3600,
+      "working_hours": {
+        "fri": "10:00-21:00",
+        "mon": "10:00-21:00",
+        "sat": "10:00-21:00",
+        "sun": "Closed",
+        "thu": "10:00-21:00",
+        "tue": "10:00-21:00",
+        "wed": "10:00-21:00"
+      },
+      "x": 50.001,
+      "y": 22
+    },
+    {
+      "address": "Bartosza Głowackiego 28, 07-410 Ostrołęka",
+      "average_visit_duration": 30,
+      "category": "Restaurant",
+      "description_full": "Frangos Pizza & Burger House brings American-style comfort food to Ostrołęka. Known for its crispy chicken, juicy gourmet burgers, and generously topped pizzas, it is a great spot for casual dining with friends. The interior is modern and welcoming, and the menu offers a variety of sets that provide great value for money.",
+      "description_short": "Cozy place serving burgers, pizza, and fast food.",
+      "facilities": {
+        "parking": false,
+        "pet_friendly": false,
+        "wheelchair_access": true,
+        "wifi": true
+      },
+      "id": 11,
+      "img": "https://smacznego.moja-ostroleka.pl/libs/r.php?src=https://smacznego.moja-ostroleka.pl/uploads/smacznego/frangos/frangos_308.jpg&w=600",
+      "location": "Ostrołęka",
+      "name": "Frangos Pizza & Burger House",
+      "price": 0,
+      "rating": 4.4,
+      "time": 1800,
+      "working_hours": {
+        "fri": "12:00-23:00",
+        "mon": "12:00-22:00",
+        "sat": "12:00-23:00",
+        "sun": "13:00-22:00",
+        "thu": "12:00-22:00",
+        "tue": "12:00-22:00",
+        "wed": "12:00-22:00"
+      },
+      "x": 53.071,
+      "y": 21.58
+    },
+    {
+      "address": "Grodzka 16, 20-112 Lublin",
+      "average_visit_duration": 40,
+      "category": "Restaurant",
+      "description_full": "Queen Mama is a charming Italian restaurant nestled in the heart of Lublin's Old Town. The interior is stylishly decorated, creating a romantic and cozy atmosphere. They specialize in authentic Italian cuisine, offering handmade pasta, wood-fired pizza, and delicious seafood dishes. It is highly rated for its friendly service and high-quality ingredients imported from Italy.",
+      "description_short": "Italian restaurant located in the historic Old Town.",
+      "facilities": {
+        "parking": false,
+        "pet_friendly": true,
+        "wheelchair_access": false,
+        "wifi": true
+      },
+      "id": 12,
+      "img": "https://d-art.ppstatic.pl/kadry/k/r/1/d4/70/5ef5ec75052b3_o_large.jpg",
+      "location": "Lublin",
+      "name": "Queen Mama",
+      "price": 0,
+      "rating": 4.6,
+      "time": 1800,
+      "working_hours": {
+        "fri": "12:00-23:00",
+        "mon": "12:00-22:00",
+        "sat": "12:00-23:00",
+        "sun": "12:00-22:00",
+        "thu": "12:00-22:00",
+        "tue": "12:00-22:00",
+        "wed": "12:00-22:00"
+      },
+      "x": 51.201,
+      "y": 22.6
+    },
+    {
+      "address": "Góra Świętej Anny, 47-154 Leśnica",
+      "average_visit_duration": 10,
+      "category": "Military monument",
+      "description_full": "The Monument of the Uprising Act on Mount St. Anna is a monumental stone structure designed by Xawery Dunikowski. It commemorates the Polish Silesian Uprisings of 1919–1921. Situated atop an ancient volcanic cone, the site also features a massive rock amphitheater carved into the hillside. It is a place of great historical significance and offers commanding views of the Opole region.",
+      "description_short": "Historic monument commemorating the Silesian Uprisings.",
+      "facilities": {
+        "parking": true,
+        "pet_friendly": true,
+        "wheelchair_access": false,
+        "wifi": false
+      },
+      "id": 13,
+      "img": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Pomnik_Czynu_Powsta%C5%84czego.jpg",
+      "location": "Lublin",
+      "name": "Monument of the Uprising Act on Mount St. Anna",
+      "price": 0,
+      "rating": 4.8,
+      "time": 3600,
+      "working_hours": {
+        "fri": "00:00-24:00",
+        "mon": "00:00-24:00",
+        "sat": "00:00-24:00",
+        "sun": "00:00-24:00",
+        "thu": "00:00-24:00",
+        "tue": "00:00-24:00",
+        "wed": "00:00-24:00"
+      },
+      "x": 50.501,
+      "y": 18.2
+    }
+  ]
+}

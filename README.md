@@ -38,7 +38,7 @@ To get a local copy up and running, follow these simple steps:
 ### Clone the repository
 
 ```sh
-git clone https://github.com/LakioLive/InteractiveMapTrip
+git clone https://github.com/EisOokami/InteractiveMapTrip
 cd InteractiveMapTrip
 ```
 
