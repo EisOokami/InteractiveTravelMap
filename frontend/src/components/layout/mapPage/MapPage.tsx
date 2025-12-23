@@ -15,7 +15,7 @@ import dynamic from "next/dynamic";
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 import Search from "@/components/layout/search/Search";
-import PlaceDetailsSkeleton from "@/components/ui/placeDetails/PlaceDetailsSkeleton";
+import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -28,7 +28,7 @@ const Trip = dynamic(() => import("@/components/layout/trip/Trip"), {
     ssr: false,
 });
 const PlaceDetails = dynamic(
-    () => import("@/components/ui/placeDetails/PlaceDetails"),
+    () => import("@/components/layout/placeDetails/PlaceDetails"),
 );
 
 const animationSettings = {

@@ -21,6 +21,10 @@ import { BiMoney } from "react-icons/bi";
 import { IDates, IDatesStorage, IPositions } from "@/interfaces/interfaces";
 import Image from "next/image";
 import { Routing } from "leaflet";
+import InfoCard from "@/components/ui/infoCard/InfoCard";
+import WorkingHours from "@/components/ui/workingHours/WorkingHours";
+import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
+import DateButton from "@/components/ui/dateButton/DateButton";
 
 interface PlaceDetailsProps {
     positions: IPositions[];
@@ -81,6 +85,15 @@ export default function PlaceDetails({
         }
     }, [setDates, formattedTodayDate, dates, positionId, updateDatesStorage]);
 
+    useEffect(() => {
+        const isAnyDateActive = dates.some((d) => d.active);
+
+        if (!isAnyDateActive && routingControl) {
+            routingControl.remove();
+            setRoutingControl(null);
+        }
+    }, [dates, routingControl, setRoutingControl]);
+
     const handleDateStorage = useCallback(() => {
         const nextDay = new Date(todayDate);
         nextDay.setDate(todayDate.getDate() + dates.length);
@@ -101,53 +114,11 @@ export default function PlaceDetails({
         updateDatesStorage(positionId, newDates);
     }, [dates, setDates, positionId, updateDatesStorage, todayDate]);
 
-    const handleActivateDate = useCallback(
-        (id: number) => {
-            const updatedDates = dates.map((dateObj) => {
-                if (dateObj.id === id) {
-                    return { ...dateObj, active: !dateObj.active };
-                }
-                return dateObj;
-            });
-
-            setDates(updatedDates);
-            updateDatesStorage(positionId, updatedDates);
-        },
-        [dates, setDates, positionId, updateDatesStorage],
-    );
-
-    useEffect(() => {
-        const isAnyDateActive = dates.some((d) => d.active);
-
-        if (!isAnyDateActive && routingControl) {
-            routingControl.remove();
-            setRoutingControl(null);
-        }
-    }, [dates, routingControl, setRoutingControl]);
-
     const handleOpenPlaceDetails = useCallback(() => {
         setOpenPlaceDetails(false);
         setZoomLocationX(52.083);
         setZoomLocationY(19.375);
     }, [setOpenPlaceDetails, setZoomLocationX, setZoomLocationY]);
-
-    const getDayName = (
-        key: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
-    ) => {
-        const days: Record<
-            "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
-            string
-        > = {
-            mon: "Monday",
-            tue: "Tuesday",
-            wed: "Wednesday",
-            thu: "Thursday",
-            fri: "Friday",
-            sat: "Saturday",
-            sun: "Sunday",
-        };
-        return days[key] || key;
-    };
 
     const formatPrice = (price: number) => {
         return price === 0 ? "Free" : `${price} PLN`;
@@ -206,65 +177,27 @@ export default function PlaceDetails({
                         {positions[positionId].description_full}
                     </p>
                     <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
-                            <BiMoney className="w-6 h-6 text-bright-blue" />
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Price
-                                </p>
-                                <p className="font-semibold text-black dark:text-white">
-                                    {formatPrice(positions[positionId].price)}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
-                            <IoTimeOutline className="w-6 h-6 text-bright-blue" />
-                            <div>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Duration
-                                </p>
-                                <p className="font-semibold text-black dark:text-white">
-                                    {formatDuration(
-                                        positions[positionId]
-                                            .average_visit_duration,
-                                    )}
-                                </p>
-                            </div>
-                        </div>
+                        <InfoCard
+                            icon={BiMoney}
+                            title="Price"
+                            info={formatPrice(positions[positionId].price)}
+                        />
+                        <InfoCard
+                            icon={IoTimeOutline}
+                            title="Duration"
+                            info={formatDuration(
+                                positions[positionId].average_visit_duration,
+                            )}
+                        />
                     </div>
                     <div className="mb-6">
                         <h2 className="flex items-center gap-2 mb-3 text-lg font-bold text-black dark:text-white">
                             <FaClock className="w-5 h-5 text-bright-blue" />
                             Working Hours
                         </h2>
-                        <div className="grid gap-2 p-4 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg">
-                            {Object.entries(
-                                positions[positionId].working_hours,
-                            ).map(([day, hours]) => (
-                                <div
-                                    key={day}
-                                    className="flex justify-between items-center text-sm"
-                                >
-                                    <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">
-                                        {getDayName(
-                                            day as
-                                                | "mon"
-                                                | "tue"
-                                                | "wed"
-                                                | "thu"
-                                                | "fri"
-                                                | "sat"
-                                                | "sun",
-                                        )}
-                                    </span>
-                                    <span className="text-gray-600 dark:text-gray-400">
-                                        {hours === "00:00-24:00"
-                                            ? "Open 24 hours"
-                                            : hours}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                        <WorkingHours
+                            workingHours={positions[positionId].working_hours}
+                        />
                     </div>
                     <div className="mb-6">
                         <h2 className="mb-3 text-lg font-bold text-black dark:text-white">
@@ -272,37 +205,26 @@ export default function PlaceDetails({
                         </h2>
                         <div className="flex flex-wrap gap-3">
                             {positions[positionId].facilities.parking && (
-                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg">
-                                    <FaParking className="w-5 h-5" />
-                                    <span className="text-sm font-medium">
-                                        Parking
-                                    </span>
-                                </div>
+                                <FacilityBadge
+                                    icon={FaParking}
+                                    name="Parking"
+                                />
                             )}
                             {positions[positionId].facilities.pet_friendly && (
-                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg">
-                                    <FaPaw className="w-5 h-5" />
-                                    <span className="text-sm font-medium">
-                                        Pet Friendly
-                                    </span>
-                                </div>
+                                <FacilityBadge
+                                    icon={FaPaw}
+                                    name="Pet Friendly"
+                                />
                             )}
                             {positions[positionId].facilities
                                 .wheelchair_access && (
-                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg">
-                                    <FaWheelchair className="w-5 h-5" />
-                                    <span className="text-sm font-medium">
-                                        Wheelchair Access
-                                    </span>
-                                </div>
+                                <FacilityBadge
+                                    icon={FaWheelchair}
+                                    name="Wheelchair Access"
+                                />
                             )}
                             {positions[positionId].facilities.wifi && (
-                                <div className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg">
-                                    <FaWifi className="w-5 h-5" />
-                                    <span className="text-sm font-medium">
-                                        WiFi
-                                    </span>
-                                </div>
+                                <FacilityBadge icon={FaWifi} name="WiFi" />
                             )}
                             {!positions[positionId].facilities.parking &&
                                 !positions[positionId].facilities
@@ -321,20 +243,17 @@ export default function PlaceDetails({
                             Select Visit Date
                         </h2>
                         <div className="grid grid-cols-5 gap-2">
-                            {dates.map((elem) => (
-                                <button
-                                    key={elem.id}
-                                    className={`flex justify-center items-center h-14 text-white rounded-lg transition ${
-                                        elem.active
-                                            ? "bg-blue-600 shadow-lg scale-105"
-                                            : "bg-bright-blue hover:bg-blue-600"
-                                    }`}
-                                    onClick={() => handleActivateDate(elem.id)}
-                                >
-                                    <span className="text-sm sm:text-base md:text-lg font-semibold">
-                                        {elem.date}
-                                    </span>
-                                </button>
+                            {dates.map((date) => (
+                                <DateButton
+                                    key={date.id}
+                                    id={date.id}
+                                    active={date.active}
+                                    date={date.date}
+                                    dates={dates}
+                                    positionId={positionId}
+                                    setDates={setDates}
+                                    updateDatesStorage={updateDatesStorage}
+                                />
                             ))}
                             <button
                                 className="flex justify-center items-center h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg transition"
