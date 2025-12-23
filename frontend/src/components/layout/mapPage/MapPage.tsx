@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import {
     IDates,
     IDatesStorage,
@@ -13,6 +13,9 @@ import dynamic from "next/dynamic";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
+import Search from "@/components/layout/search/Search";
+import PlaceDetailsSkeleton from "@/components/ui/placeDetails/PlaceDetailsSkeleton";
+
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
         <div className="w-full h-full bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
@@ -23,10 +26,9 @@ const Trip = dynamic(() => import("@/components/layout/trip/Trip"), {
     loading: () => <div></div>,
     ssr: false,
 });
-import Search from "@/components/layout/search/Search";
-import PlaceCardSkeleton from "@/components/ui/placeCard/PlaceCardSkeleton";
-
-const PlaceCard = lazy(() => import("@/components/ui/placeCard/PlaceCard"));
+const PlaceDetails = dynamic(
+    () => import("@/components/ui/placeDetails/PlaceDetails"),
+);
 
 const animationSettings = {
     initial: {
@@ -54,7 +56,7 @@ export default function MapPage({
 }) {
     const [openSearch, setOpenSearch] = useState<boolean>(false);
     const [openTrip, setOpenTrip] = useState<boolean>(false);
-    const [openPlaceCard, setOpenPlaceCard] = useState<boolean>(false);
+    const [openPlaceDetails, setOpenPlaceDetails] = useState<boolean>(false);
     const [zoomLocationX, setZoomLocationX] = useState<number>(52.083);
     const [zoomLocationY, setZoomLocationY] = useState<number>(19.375);
     const [selectedPosition, setSelectedPosition] = useState<number | null>(
@@ -86,7 +88,7 @@ export default function MapPage({
                     <Sidebar
                         openSearch={openSearch}
                         setOpenSearch={setOpenSearch}
-                        setOpenPlaceCard={setOpenPlaceCard}
+                        setOpenPlaceDetails={setOpenPlaceDetails}
                         openTrip={openTrip}
                         setOpenTrip={setOpenTrip}
                         setZoomLocationX={setZoomLocationX}
@@ -108,14 +110,16 @@ export default function MapPage({
                                 setZoomLocationX={setZoomLocationX}
                                 setZoomLocationY={setZoomLocationY}
                                 setSelectedPosition={setSelectedPosition}
-                                setOpenPlaceCard={setOpenPlaceCard}
+                                setOpenPlaceDetails={setOpenPlaceDetails}
                             />
-                            {openPlaceCard && (
-                                <Suspense fallback={<PlaceCardSkeleton />}>
-                                    <PlaceCard
+                            {openPlaceDetails && (
+                                <Suspense fallback={<PlaceDetailsSkeleton />}>
+                                    <PlaceDetails
                                         positions={positionsData}
                                         selectedPosition={selectedPosition}
-                                        setOpenPlaceCard={setOpenPlaceCard}
+                                        setOpenPlaceDetails={
+                                            setOpenPlaceDetails
+                                        }
                                         datesStorage={datesStorage}
                                         updateDatesStorage={updateDatesStorage}
                                         dates={dates}
@@ -163,9 +167,9 @@ export default function MapPage({
                         setZoomLocationX={setZoomLocationX}
                         setZoomLocationY={setZoomLocationY}
                         setSelectedPosition={setSelectedPosition}
-                        setOpenPlaceCard={setOpenPlaceCard}
+                        setOpenPlaceDetails={setOpenPlaceDetails}
                         setOpenTrip={setOpenTrip}
-                        openPlaceCard={openPlaceCard}
+                        openPlaceDetails={openPlaceDetails}
                         mapRef={mapRef}
                     />
                     <DarkModeBtn />
@@ -175,7 +179,7 @@ export default function MapPage({
                 <Sidebar
                     openSearch={openSearch}
                     setOpenSearch={setOpenSearch}
-                    setOpenPlaceCard={setOpenPlaceCard}
+                    setOpenPlaceDetails={setOpenPlaceDetails}
                     openTrip={openTrip}
                     setOpenTrip={setOpenTrip}
                     setZoomLocationX={setZoomLocationX}

@@ -8,7 +8,7 @@ import styles from "./Sidebar.module.scss";
 interface NavbarProps {
     openSearch: boolean;
     setOpenSearch: Dispatch<SetStateAction<boolean>>;
-    setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
+    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
     openTrip: boolean;
     setOpenTrip: Dispatch<SetStateAction<boolean>>;
     setZoomLocationX: Dispatch<SetStateAction<number>>;
@@ -18,7 +18,7 @@ interface NavbarProps {
 const Navbar = memo(function Navbar({
     openSearch,
     setOpenSearch,
-    setOpenPlaceCard,
+    setOpenPlaceDetails,
     openTrip,
     setOpenTrip,
     setZoomLocationX,
@@ -26,13 +26,13 @@ const Navbar = memo(function Navbar({
 }: NavbarProps) {
     const handleOpenMap = useCallback(() => {
         setOpenSearch(false);
-        setOpenPlaceCard(false);
+        setOpenPlaceDetails(false);
         setOpenTrip(false);
         setZoomLocationX(52.083);
         setZoomLocationY(19.375);
     }, [
         setOpenSearch,
-        setOpenPlaceCard,
+        setOpenPlaceDetails,
         setOpenTrip,
         setZoomLocationX,
         setZoomLocationY,
@@ -40,13 +40,13 @@ const Navbar = memo(function Navbar({
 
     const handleOpenSearch = useCallback(() => {
         setOpenSearch(!openSearch);
-        setOpenPlaceCard(false);
+        setOpenPlaceDetails(false);
         setOpenTrip(false);
         setZoomLocationX(52.083);
         setZoomLocationY(19.375);
     }, [
         openSearch,
-        setOpenPlaceCard,
+        setOpenPlaceDetails,
         setOpenTrip,
         setOpenSearch,
         setZoomLocationX,
@@ -55,14 +55,14 @@ const Navbar = memo(function Navbar({
 
     const handleOpenTrip = useCallback(() => {
         setOpenSearch(false);
-        setOpenPlaceCard(false);
+        setOpenPlaceDetails(false);
         setOpenTrip(!openTrip);
         setZoomLocationX(52.083);
         setZoomLocationY(19.375);
     }, [
         openTrip,
         setOpenSearch,
-        setOpenPlaceCard,
+        setOpenPlaceDetails,
         setOpenTrip,
         setZoomLocationX,
         setZoomLocationY,

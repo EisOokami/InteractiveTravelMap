@@ -33,9 +33,9 @@ interface MapProps {
     setZoomLocationX: Dispatch<SetStateAction<number>>;
     setZoomLocationY: Dispatch<SetStateAction<number>>;
     setSelectedPosition: Dispatch<SetStateAction<number | null>>;
-    setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
+    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
     setOpenTrip: Dispatch<SetStateAction<boolean>>;
-    openPlaceCard: boolean;
+    openPlaceDetails: boolean;
     mapRef: RefObject<L.Map | null>;
 }
 
@@ -57,9 +57,9 @@ export default function Map({
     setZoomLocationX,
     setZoomLocationY,
     setSelectedPosition,
-    setOpenPlaceCard,
+    setOpenPlaceDetails,
     setOpenTrip,
-    openPlaceCard,
+    openPlaceDetails,
     mapRef,
 }: MapProps) {
     useEffect(() => {
@@ -93,7 +93,7 @@ export default function Map({
     const handleButtonClick = (id: number) => {
         setSelectedPosition(id);
         setOpenSearch(true);
-        setOpenPlaceCard(true);
+        setOpenPlaceDetails(true);
         setOpenTrip(false);
     };
 
@@ -141,7 +141,7 @@ export default function Map({
                                     className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-300 cursor-pointer ${
                                         position.x === zoomLocationX &&
                                         position.y === zoomLocationY &&
-                                        openPlaceCard
+                                        openPlaceDetails
                                             ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
                                             : ""
                                     }`}

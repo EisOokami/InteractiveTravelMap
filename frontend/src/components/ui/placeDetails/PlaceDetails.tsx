@@ -22,10 +22,10 @@ import { IDates, IDatesStorage, IPositions } from "@/interfaces/interfaces";
 import Image from "next/image";
 import { Routing } from "leaflet";
 
-interface PlaceCardProps {
+interface PlaceDetailsProps {
     positions: IPositions[];
     selectedPosition: number | null;
-    setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
+    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
     datesStorage: IDatesStorage;
     updateDatesStorage: (markerId: number, dates: IDates[]) => void;
     dates: IDates[];
@@ -36,10 +36,10 @@ interface PlaceCardProps {
     setRoutingControl: Dispatch<SetStateAction<Routing.Control | null>>;
 }
 
-export default function PlaceCard({
+export default function PlaceDetails({
     positions,
     selectedPosition,
-    setOpenPlaceCard,
+    setOpenPlaceDetails,
     datesStorage,
     updateDatesStorage,
     dates,
@@ -48,7 +48,7 @@ export default function PlaceCard({
     setZoomLocationY,
     routingControl,
     setRoutingControl,
-}: PlaceCardProps) {
+}: PlaceDetailsProps) {
     const todayDate = useMemo(() => new Date(), []);
     const formattedTodayDate = `${
         todayDate.getDate() < 10
@@ -125,11 +125,11 @@ export default function PlaceCard({
         }
     }, [dates, routingControl, setRoutingControl]);
 
-    const handleOpenPlaceCard = useCallback(() => {
-        setOpenPlaceCard(false);
+    const handleOpenPlaceDetails = useCallback(() => {
+        setOpenPlaceDetails(false);
         setZoomLocationX(52.083);
         setZoomLocationY(19.375);
-    }, [setOpenPlaceCard, setZoomLocationX, setZoomLocationY]);
+    }, [setOpenPlaceDetails, setZoomLocationX, setZoomLocationY]);
 
     const getDayName = (
         key: "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
@@ -165,7 +165,7 @@ export default function PlaceCard({
             <div className="custom-scroll h-full overflow-y-auto">
                 <button
                     className="absolute top-4 left-4 flex justify-center items-center w-10 h-10 bg-bright-blue hover:bg-blue-600 rounded-full z-50 transition-colors shadow-lg"
-                    onClick={handleOpenPlaceCard}
+                    onClick={handleOpenPlaceDetails}
                 >
                     <IoArrowBack className="w-6 h-6 text-white" />
                 </button>

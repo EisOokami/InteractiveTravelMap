@@ -34,7 +34,7 @@ interface SearchProps {
     setZoomLocationX: Dispatch<SetStateAction<number>>;
     setZoomLocationY: Dispatch<SetStateAction<number>>;
     setSelectedPosition: Dispatch<SetStateAction<number | null>>;
-    setOpenPlaceCard: Dispatch<SetStateAction<boolean>>;
+    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function Search({
@@ -42,7 +42,7 @@ export default function Search({
     setZoomLocationX,
     setZoomLocationY,
     setSelectedPosition,
-    setOpenPlaceCard,
+    setOpenPlaceDetails,
 }: SearchProps) {
     const [valueLocation, setValueLocation] = useState<string>("");
     const [valueName, setValueName] = useState<string>("");
@@ -84,13 +84,13 @@ export default function Search({
             setZoomLocationX(x);
             setZoomLocationY(y);
             setSelectedPosition(key);
-            setOpenPlaceCard(true);
+            setOpenPlaceDetails(true);
         },
         [
             setZoomLocationX,
             setZoomLocationY,
             setSelectedPosition,
-            setOpenPlaceCard,
+            setOpenPlaceDetails,
         ],
     );
 
