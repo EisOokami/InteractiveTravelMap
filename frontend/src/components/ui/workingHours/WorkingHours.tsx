@@ -1,13 +1,13 @@
 import { IPositions } from "@/interfaces/interfaces";
-import { weekDays } from "@/types/types";
+import { WeekDays } from "@/types/types";
 
 interface WorkingHoursProps {
     workingHours: IPositions["working_hours"];
 }
 
 export default function WorkingHours({ workingHours }: WorkingHoursProps) {
-    const getDayName = (key: weekDays) => {
-        const days: Record<weekDays, string> = {
+    const getDayName = (key: WeekDays) => {
+        const days: Record<WeekDays, string> = {
             mon: "Monday",
             tue: "Tuesday",
             wed: "Wednesday",
@@ -27,7 +27,7 @@ export default function WorkingHours({ workingHours }: WorkingHoursProps) {
                     className="flex justify-between items-center text-sm"
                 >
                     <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">
-                        {getDayName(day as weekDays)}
+                        {getDayName(day as WeekDays)}
                     </span>
                     <span className="text-gray-600 dark:text-gray-400">
                         {hours === "00:00-24:00" ? "Open 24 hours" : hours}

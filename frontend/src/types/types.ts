@@ -1,1 +1,1 @@
-export type weekDays = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type WeekDays = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
