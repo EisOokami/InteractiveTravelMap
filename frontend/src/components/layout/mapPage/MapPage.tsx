@@ -11,9 +11,10 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { Routing } from "leaflet";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
-import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
+import MapDarkModeBtn from "@/components/ui/mapDarkModeBtn/MapDarkModeBtn";
 import Search from "@/components/layout/search/Search";
 import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
 
@@ -55,13 +56,19 @@ export default function MapPage({
 }: {
     positionsData: IPositions[];
 }) {
-    const [openSearch, setOpenSearch] = useState<boolean>(false);
+    const searchParams = useSearchParams();
+    const search = searchParams.get("placeCard");
+    const x = searchParams.get("x");
+    const y = searchParams.get("y");
+    const [openSearch, setOpenSearch] = useState<boolean>(!!search);
     const [openTrip, setOpenTrip] = useState<boolean>(false);
-    const [openPlaceDetails, setOpenPlaceDetails] = useState<boolean>(false);
-    const [zoomLocationX, setZoomLocationX] = useState<number>(52.083);
-    const [zoomLocationY, setZoomLocationY] = useState<number>(19.375);
+    const [openPlaceDetails, setOpenPlaceDetails] = useState<boolean>(
+        search !== null && Number.isInteger(Number(search)),
+    );
+    const [zoomLocationX, setZoomLocationX] = useState<number>(x ? +x : 52.083);
+    const [zoomLocationY, setZoomLocationY] = useState<number>(y ? +y : 19.375);
     const [selectedPosition, setSelectedPosition] = useState<number | null>(
-        null,
+        Number.isInteger(Number(search)) ? Number(search) : null,
     );
     const [datesStorage, setDatesStorage] = useState<IDatesStorage>({});
     const [showRoute, setShowRoute] = useState<boolean>(false);
@@ -179,7 +186,7 @@ export default function MapPage({
                         openPlaceDetails={openPlaceDetails}
                         mapRef={mapRef}
                     />
-                    <DarkModeBtn />
+                    <MapDarkModeBtn />
                 </main>
             </div>
             <div className="md:hidden">

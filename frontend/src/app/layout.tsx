@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { ThemeProvider } from "@/context/ThemeProvider";
 import "./globals.scss";
 
 const poppins = Poppins({
@@ -20,9 +21,18 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body className={`${poppins.className} antialiased`}>
-                {children}
+        <html lang="en" suppressHydrationWarning>
+            <body
+                className={`${poppins.className} antialiased flex flex-col min-h-svh`}
+            >
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    {children}
+                </ThemeProvider>
             </body>
         </html>
     );
