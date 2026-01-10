@@ -5,6 +5,7 @@ import { BiMoney } from "react-icons/bi";
 import { FaParking, FaPaw, FaStar, FaWheelchair, FaWifi } from "react-icons/fa";
 import { IoLocationSharp } from "react-icons/io5";
 import { MdAccessTime } from "react-icons/md";
+import { Badge } from "../shadcn/badge";
 
 interface PlaceCardProps {
     position: IPositions;
@@ -56,12 +57,14 @@ export default function PlaceCard({
                         height={200}
                     />
                 </div>
-                <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 text-sm font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                    <FaStar className="w-3.5 h-3.5" />
-                    {position.rating}
-                </div>
-                <div className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold text-white bg-bright-blue rounded-full">
-                    {position.category}
+                <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
+                    <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
+                        <FaStar className="w-3 h-3" />
+                        {position.rating}
+                    </Badge>
+                    <Badge className="w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">
+                        {position.category}
+                    </Badge>
                 </div>
             </div>
             <div className="grid content-between h-full p-4">
@@ -96,24 +99,24 @@ export default function PlaceCard({
                     </div>
                     <div className="flex flex-wrap gap-2 mt-3">
                         {position.facilities.parking && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaParking className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {position.facilities.pet_friendly && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaPaw className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {position.facilities.wheelchair_access && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaWheelchair className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {position.facilities.wifi && (
-                            <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaWifi className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                     </div>
                 </div>

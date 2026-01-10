@@ -1,5 +1,6 @@
 import { IDates } from "@/interfaces/interfaces";
 import { Dispatch, SetStateAction } from "react";
+import { Button } from "../shadcn/button";
 
 interface DateButtonProps {
     id: number;
@@ -33,8 +34,8 @@ export default function DateButton({
     };
 
     return (
-        <button
-            className={`flex justify-center items-center h-14 text-white rounded-lg transition ${
+        <Button
+            className={`h-14 text-white rounded-lg ${
                 active
                     ? "bg-blue-600 shadow-lg scale-105"
                     : "bg-bright-blue hover:bg-blue-600"
@@ -44,6 +45,6 @@ export default function DateButton({
             <span className="text-sm sm:text-base md:text-lg font-semibold">
                 {date}
             </span>
-        </button>
+        </Button>
     );
 }

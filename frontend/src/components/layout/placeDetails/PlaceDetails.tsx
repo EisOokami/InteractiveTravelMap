@@ -25,6 +25,8 @@ import InfoCard from "@/components/ui/infoCard/InfoCard";
 import WorkingHours from "@/components/ui/workingHours/WorkingHours";
 import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
 import DateButton from "@/components/ui/dateButton/DateButton";
+import { Button } from "@/components/ui/shadcn/button";
+import { Badge } from "@/components/ui/shadcn/badge";
 
 interface PlaceDetailsProps {
     positions: IPositions[];
@@ -134,12 +136,13 @@ export default function PlaceDetails({
     return (
         <section className="absolute w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black overflow-y-hidden z-[1099] transition-colors">
             <div className="custom-scroll h-full overflow-y-auto">
-                <button
-                    className="absolute top-4 left-4 flex justify-center items-center w-10 h-10 bg-bright-blue hover:bg-blue-600 rounded-full z-50 transition-colors shadow-lg"
-                    onClick={handleOpenPlaceDetails}
-                >
-                    <IoArrowBack className="w-6 h-6 text-white" />
-                </button>
+                    <Button
+                        className="bg-bright-blue hover:bg-blue-600 rounded-full z-50 shadow-lg"
+                        size="icon"
+                        onClick={handleOpenPlaceDetails}
+                    >
+                        <IoArrowBack className="w-10 h-10 text-white" />
+                    </Button>
                 <div className="relative w-full h-80">
                     <div className="relative w-full h-full">
                         <Image
@@ -153,13 +156,13 @@ export default function PlaceDetails({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="flex items-center gap-2 mb-2">
-                            <div className="flex items-center gap-1 px-3 py-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
+                            <Badge className="gap-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
                                 <FaStar className="w-4 h-4" />
                                 {positions[positionId].rating}
-                            </div>
-                            <span className="px-3 py-1 text-sm text-white font-semibold bg-bright-blue rounded-full">
+                            </Badge>
+                            <Badge className="text-sm text-white font-semibold bg-bright-blue rounded-full">
                                 {positions[positionId].category}
-                            </span>
+                            </Badge>
                         </div>
                     </div>
                 </div>
@@ -255,12 +258,12 @@ export default function PlaceDetails({
                                     updateDatesStorage={updateDatesStorage}
                                 />
                             ))}
-                            <button
-                                className="flex justify-center items-center h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg transition"
+                            <Button
+                                className="w-full h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg [&_svg]:size-6 md:[&_svg]:size-7"
                                 onClick={handleDateStorage}
                             >
-                                <FaPlusCircle className="w-6 md:w-8 h-6 md:h-8" />
-                            </button>
+                                <FaPlusCircle />
+                            </Button>
                         </div>
                     </div>
                 </div>

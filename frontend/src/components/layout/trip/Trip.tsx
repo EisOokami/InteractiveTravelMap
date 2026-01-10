@@ -37,6 +37,7 @@ import {
 
 import PlaceCardTrip from "../../ui/placeCardTrip/PlaceCardTrip";
 import TransportButton from "@/components/ui/transportButton/TransportButton";
+import { Button } from "@/components/ui/shadcn/button";
 
 interface TripProps {
     positions: IPositions[];
@@ -274,8 +275,7 @@ export default function Trip({
                                 </DndContext>
                             </div>
                             <div className="flex items-center gap-3">
-                                <button
-                                    type="button"
+                                <Button
                                     style={{
                                         backgroundColor: isRoute
                                             ? "#ef4444"
@@ -288,7 +288,7 @@ export default function Trip({
                                         isNavigationDisabled ||
                                         places.length < 2
                                     }
-                                    className="flex justify-center items-center gap-2 px-6 py-3 font-medium text-white bg-bright-blue hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg shadow-md transition"
+                                    className="gap-2 px-6 py-6 font-medium text-white bg-bright-blue hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg shadow-md transition [&_svg]:size-5"
                                 >
                                     {isNavigationDisabled ? (
                                         <>
@@ -297,7 +297,7 @@ export default function Trip({
                                         </>
                                     ) : isRoute ? (
                                         <>
-                                            <MdDeleteOutline className="w-5 h-5 mb-0.5" />
+                                            <MdDeleteOutline className="mb-0.5" />
                                             Clear Route
                                         </>
                                     ) : (
@@ -306,7 +306,7 @@ export default function Trip({
                                             Plan Route
                                         </>
                                     )}
-                                </button>
+                                </Button>
                                 {isRoute === date &&
                                     routeSegments.length > 0 && (
                                         <div className="flex items-center gap-2 font-medium text-green-600 dark:text-green-400">

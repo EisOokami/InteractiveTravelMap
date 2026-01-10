@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { IconType } from "react-icons";
+import { Button } from "../shadcn/button";
 
 interface TransportButtonProps {
     id: string;
@@ -17,17 +18,16 @@ export default function TransportButton({
     setTransportMode,
 }: TransportButtonProps) {
     return (
-        <button
-            type="button"
+        <Button
             onClick={() => setTransportMode(id)}
-            className={`flex flex-col justify-center items-center gap-2 p-2 md:p-4 font-medium rounded-lg transition-all ${
+            className={`flex flex-col justify-center items-center gap-2 p-2 md:p-4 h-full font-medium rounded-lg transition-all [&_svg]:size-5 md:[&_svg]:size-6 ${
                 transportMode === id
-                    ? "bg-bright-blue text-white shadow-lg scale-105"
+                    ? "bg-bright-blue text-white shadow-lg scale-105 hover:bg-bright-blue cursor-default"
                     : "bg-gray-100 dark:bg-dark-mode-black text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
             }`}
         >
-            <Icon className="w-5 md:w-6 h-5 md:h-6" />
+            <Icon />
             <span className="text-sm">{label}</span>
-        </button>
+        </Button>
     );
 }

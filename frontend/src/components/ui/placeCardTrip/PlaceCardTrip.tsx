@@ -14,7 +14,8 @@ import {
 import { IoLocationSharp } from "react-icons/io5";
 import { BiMoney } from "react-icons/bi";
 import { MdAccessTime } from "react-icons/md";
-import styles from "./PlaceCardTrip.module.scss";
+import { Badge } from "../shadcn/badge";
+import { Button } from "../shadcn/button";
 
 interface PlaceCardTripProps {
     place: IPositions;
@@ -57,12 +58,13 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
     return (
         <div ref={setNodeRef} style={style} {...attributes}>
             <div className="relative flex md:grid w-full max-w-full mb-4 bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden group cursor-default">
-                <div
+                <Button
                     {...listeners}
-                    className="absolute top-3 left-3 p-2 bg-white/90 hover:bg-white dark:bg-dark-mode-black dark:hover:bg-gray-900 rounded-lg shadow-md cursor-grab backdrop-blur-sm active:cursor-grabbing z-10 transition touch-none"
+                    size="icon"
+                    className="absolute top-3 left-3 bg-white/90 hover:bg-white dark:bg-dark-mode-black dark:hover:bg-gray-900 shadow-md cursor-grab backdrop-blur-sm active:cursor-grabbing z-10 touch-none"
                 >
                     <FaGripVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" />
-                </div>
+                </Button>
                 <div className="relative w-1/3 md:w-full max-w-48 md:max-w-full h-48 max-h-40 md:max-h-48 overflow-hidden">
                     <div className="relative w-full h-full">
                         <Image
@@ -74,12 +76,14 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                         />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    <div className="absolute top-3 right-3 flex items-center gap-1 px-1.5 md:px-2.5 py-0.5 md:py-1 text-xs md:text-sm font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                        <FaStar className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                        {place.rating}
-                    </div>
-                    <div className="absolute bottom-3 right-3 hidden sm:block px-3 py-1 text-xs font-semibold text-white bg-bright-blue rounded-full">
-                        {place.category}
+                    <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
+                        <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
+                            <FaStar className="w-3 h-3" />
+                            {place.rating}
+                        </Badge>
+                        <Badge className="hidden sm:block w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">
+                            {place.category}
+                        </Badge>
                     </div>
                 </div>
                 <div className="w-2/3 md:w-full p-4">
@@ -121,24 +125,24 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {place.facilities.parking && (
-                            <div className={styles["place-card__facility"]}>
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaParking className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {place.facilities.pet_friendly && (
-                            <div className={styles["place-card__facility"]}>
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaPaw className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {place.facilities.wheelchair_access && (
-                            <div className={styles["place-card__facility"]}>
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaWheelchair className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                         {place.facilities.wifi && (
-                            <div className={styles["place-card__facility"]}>
+                            <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <FaWifi className="w-3 h-3" />
-                            </div>
+                            </Badge>
                         )}
                     </div>
                 </div>

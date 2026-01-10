@@ -24,6 +24,7 @@ import Image from "next/image";
 import { IoLocationSharp } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import L, { divIcon } from "leaflet";
+import { Button } from "@/components/ui/shadcn/button";
 
 interface MapProps {
     setOpenSearch: Dispatch<SetStateAction<boolean>>;
@@ -203,7 +204,7 @@ export default function Map({
                                 <p className="mb-3 md:mb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2 md:line-clamp-3">
                                     {position.description_short}
                                 </p>
-                                <button
+                                <Button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handleButtonClick(position.id);
@@ -211,7 +212,7 @@ export default function Map({
                                     className="w-full px-4 py-2 md:py-3 text-white font-semibold bg-bright-blue hover:bg-blue-600 rounded-lg transition-colors shadow-lg"
                                 >
                                     More Details
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </Popup>
