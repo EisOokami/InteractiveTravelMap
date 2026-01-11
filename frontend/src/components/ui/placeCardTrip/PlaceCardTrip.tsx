@@ -45,7 +45,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
     };
 
     const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} PLN`;
+        return price === 0 ? "Free" : `${price} $`;
     };
 
     const formatDuration = (minutes: number) => {
@@ -98,7 +98,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                         {place.description_short}
                     </p>
                     <div className="hidden xl:grid grid-cols-2 gap-3 mb-4">
-                        <div className={styles["place-card__info"]}>
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg">
                             <BiMoney className="w-5 h-5 text-green-600 " />
                             <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -109,7 +109,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                                 </p>
                             </div>
                         </div>
-                        <div className={styles["place-card__info"]}>
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg">
                             <MdAccessTime className="w-5 h-5 text-bright-blue" />
                             <div>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">

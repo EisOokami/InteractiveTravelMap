@@ -81,7 +81,7 @@ const Navbar = memo(function Navbar({
 
     return (
         <nav className="md:grid font-mono bg-white dark:bg-dark-mode-black border-t-2 border-b-2 md:border-t-0 md:border-b-0 md:border-r-2 dark:border-dark-mode-gray-2 z-1999 transition">
-            <ul className="flex justify-around md:flex-col md:justify-center">
+            <ul className="flex md:flex-col justify-around md:justify-center">
                 <li
                     className={`${styles.sidebar__option} ${styleIsActiveMap}`}
                     onClick={handleOpenMap}

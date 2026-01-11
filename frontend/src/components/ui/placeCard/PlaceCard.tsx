@@ -30,7 +30,7 @@ export default function PlaceCard({
     };
 
     const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} PLN`;
+        return price === 0 ? "Free" : `${price} $`;
     };
 
     const formatDuration = (minutes: number) => {
@@ -50,11 +50,11 @@ export default function PlaceCard({
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
                 <div className="relative w-full h-full max-h-52 rounded-t-xl">
                     <Image
-                        className="w-full h-full object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300"
                         src={position.img}
                         alt={position.name}
                         width={300}
                         height={200}
+                        className="w-full h-full object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300"
                     />
                 </div>
                 <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">

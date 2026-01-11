@@ -143,7 +143,7 @@ export default function Search({
                 <div className="px-6 py-2 md:py-4 bg-gray-50 dark:bg-dark-mode-black/50 border-t dark:border-gray-800">
                     <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
                         Found{" "}
-                        <span className="font-bold text-black dark:text-white">
+                        <span className="font-semibold text-black dark:text-white">
                             {filteredPositions.length}
                         </span>{" "}
                         {filteredPositions.length === 1 ? "place" : "places"}

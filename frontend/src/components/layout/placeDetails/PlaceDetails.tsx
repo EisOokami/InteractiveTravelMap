@@ -123,7 +123,7 @@ export default function PlaceDetails({
     }, [setOpenPlaceDetails, setZoomLocationX, setZoomLocationY]);
 
     const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} PLN`;
+        return price === 0 ? "Free" : `${price} $`;
     };
 
     const formatDuration = (minutes: number) => {
@@ -136,6 +136,7 @@ export default function PlaceDetails({
     return (
         <section className="absolute w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black overflow-y-hidden z-[1099] transition-colors">
             <div className="custom-scroll h-full overflow-y-auto">
+                <div className="absolute top-4 left-4 flex gap-2">
                     <Button
                         className="bg-bright-blue hover:bg-blue-600 rounded-full z-50 shadow-lg"
                         size="icon"
@@ -143,6 +144,7 @@ export default function PlaceDetails({
                     >
                         <IoArrowBack className="w-10 h-10 text-white" />
                     </Button>
+                </div>
                 <div className="relative w-full h-80">
                     <div className="relative w-full h-full">
                         <Image

@@ -136,26 +136,23 @@ export default function Map({
                     position={[position.x, position.y]}
                     icon={divIcon({
                         html: renderToString(
-                            <div className="relative">
-                                <div className="absolute -bottom-1 left-1/2 w-8 h-2 bg-black/20 rounded-full blur-sm -translate-x-1/2" />
-                                <div
-                                    className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-300 cursor-pointer ${
-                                        position.x === zoomLocationX &&
-                                        position.y === zoomLocationY &&
-                                        openPlaceDetails
-                                            ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
-                                            : ""
-                                    }`}
-                                >
-                                    <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
-                                        <Image
-                                            src={position.img}
-                                            alt={position.name}
-                                            className="w-10 h-10 object-contain"
-                                            width={50}
-                                            height={50}
-                                        />
-                                    </div>
+                            <div
+                                className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-400 cursor-pointer select-none ${
+                                    position.x === zoomLocationX &&
+                                    position.y === zoomLocationY &&
+                                    openPlaceDetails
+                                        ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
+                                        : ""
+                                }`}
+                            >
+                                <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
+                                    <Image
+                                        src={position.img}
+                                        alt={position.name}
+                                        className="w-10 h-10 object-contain"
+                                        width={50}
+                                        height={50}
+                                    />
                                 </div>
                             </div>,
                         ),

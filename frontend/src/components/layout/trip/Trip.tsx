@@ -242,7 +242,7 @@ export default function Trip({
                 {sortedDates.length > 0 ? (
                     sortedDates.map(({ date, places }, dateIndex) => (
                         <div key={dateIndex} className="grid gap-4">
-                            <div className="sticky -top-3 md:-top-6 py-3 bg-white dark:bg-dark-mode-black z-50">
+                            <div className="sticky -top-3 md:-top-6 py-3 bg-white dark:bg-dark-mode-black z-50 transition-colors">
                                 <h2 className="flex items-center gap-3 text-xl md:text-2xl font-bold text-black dark:text-white">
                                     <span className="flex justify-center items-center w-8 md:w-10 h-8 md:h-10 text-sm font-bold bg-bright-blue text-white rounded-full">
                                         {dateIndex + 1}
