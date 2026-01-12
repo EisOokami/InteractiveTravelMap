@@ -48,7 +48,7 @@ export default function Features() {
     return (
         <section
             id="features"
-            className="grid place-items-center gap-5 container mx-auto scroll-mt-28 px-4"
+            className="grid place-items-center gap-5 container mx-auto scroll-mt-20 px-4 py-16 md:py-28 lg:py-32"
         >
             <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold">
                 Everything You Need to Plan Your Trip

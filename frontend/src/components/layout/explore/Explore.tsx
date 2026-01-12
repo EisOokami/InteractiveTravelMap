@@ -21,7 +21,7 @@ export default async function Explore() {
     return (
         <section
             id="explore"
-            className="grid place-items-center gap-5 container mx-auto scroll-mt-28 px-4 pb-16 md:pb-28 lg:pb-32"
+            className="grid place-items-center gap-5 container mx-auto scroll-mt-28 px-4 py-16 md:py-28 lg:py-32"
         >
             <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold">
                 Popular Destinations

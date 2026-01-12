@@ -213,9 +213,9 @@ export default function Trip({
     );
 
     const transportModes = [
-        { id: "car", icon: FaCar, label: "Car" },
-        { id: "bike", icon: MdDirectionsBike, label: "Bike" },
-        { id: "walk", icon: FaWalking, label: "Walk" },
+        { id: "car", icon: Car, label: "Car" },
+        { id: "bike", icon: Bike, label: "Bike" },
+        { id: "walk", icon: Footprints, label: "Walk" },
     ];
 
     return (

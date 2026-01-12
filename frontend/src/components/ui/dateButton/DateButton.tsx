@@ -35,10 +35,8 @@ export default function DateButton({
 
     return (
         <Button
-            className={`h-14 text-white rounded-lg ${
-                active
-                    ? "bg-blue-600 shadow-lg scale-105"
-                    : "bg-bright-blue hover:bg-blue-600"
+            className={`h-14 text-white hover:bg-blue-600 rounded-lg transition ${
+                active ? "bg-blue-600 shadow-lg scale-105" : "bg-bright-blue"
             }`}
             onClick={() => handleActivateDate(id)}
         >

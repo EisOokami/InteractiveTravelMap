@@ -46,7 +46,7 @@ export default function PlaceCard({
             className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
-                <div className="relative w-full h-full max-h-52 rounded-t-xl">
+                <div className="relative w-full h-full max-h-52 rounded-t-xl pointer-events-none select-none">
                     <Image
                         src={position.img}
                         alt={position.name}

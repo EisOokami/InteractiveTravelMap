@@ -24,7 +24,10 @@ export default function Header() {
     return (
         <header className="fixed w-full bg-white dark:bg-dark-mode-black border-b z-50">
             <div className="flex justify-between items-center container mx-auto px-4 py-3">
-                <a href="#hero" className="flex items-center gap-3 select-none">
+                <a
+                    href="#hero"
+                    className="flex items-center gap-3 w-64 select-none"
+                >
                     <Image
                         src="/logo.png"
                         alt="logo"
@@ -62,7 +65,7 @@ export default function Header() {
                         </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
-                <div className="hidden md:flex items-center gap-3">
+                <div className="hidden md:flex justify-end items-center gap-3 w-64">
                     <DarkModeBtn />
                     <Button
                         className="inline-flex text-white bg-bright-blue hover:bg-blue-600"
