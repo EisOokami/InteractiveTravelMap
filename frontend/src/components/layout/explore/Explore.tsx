@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/shadcn/button";
 import { getPositionsData } from "@/data/loaders";
+import { formatDuration } from "@/libs/formatDuration";
+import { formatPrice } from "@/libs/formatPrice";
 import {
     Accessibility,
     Banknote,
@@ -15,17 +17,6 @@ import Link from "next/link";
 
 export default async function Explore() {
     const positionsData = await getPositionsData();
-
-    const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} $`;
-    };
-
-    const formatDuration = (minutes: number) => {
-        if (minutes < 60) return `${minutes} min`;
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-    };
 
     return (
         <section

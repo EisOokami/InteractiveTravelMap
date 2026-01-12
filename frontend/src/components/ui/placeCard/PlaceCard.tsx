@@ -13,6 +13,8 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
+import { formatPrice } from "@/libs/formatPrice";
+import { formatDuration } from "@/libs/formatDuration";
 
 interface PlaceCardProps {
     position: IPositions;
@@ -34,17 +36,6 @@ export default function PlaceCard({
         setZoomLocationY(y);
         setSelectedPosition(key);
         setOpenPlaceDetails(true);
-    };
-
-    const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} $`;
-    };
-
-    const formatDuration = (minutes: number) => {
-        if (minutes < 60) return `${minutes} min`;
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
     };
 
     return (

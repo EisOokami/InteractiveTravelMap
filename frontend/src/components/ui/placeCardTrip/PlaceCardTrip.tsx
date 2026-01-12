@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import Image from "next/image";
 import { defaultAnimateLayoutChanges, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -13,20 +14,10 @@ import {
     Wifi,
 } from "lucide-react";
 import { IPositions } from "@/interfaces/interfaces";
-import Image from "next/image";
-import {
-    FaGripVertical,
-    FaParking,
-    FaPaw,
-    FaStar,
-    FaWheelchair,
-    FaWifi,
-} from "react-icons/fa";
-import { IoLocationSharp } from "react-icons/io5";
-import { BiMoney } from "react-icons/bi";
-import { MdAccessTime } from "react-icons/md";
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
+import { formatPrice } from "@/libs/formatPrice";
+import { formatDuration } from "@/libs/formatDuration";
 
 interface PlaceCardTripProps {
     place: IPositions;
@@ -53,17 +44,6 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
         zIndex: isDragging ? 1000 : 0,
         cursor: isDragging ? "grabbing" : "grab",
         transition: transition || "transform 200ms ease",
-    };
-
-    const formatPrice = (price: number) => {
-        return price === 0 ? "Free" : `${price} $`;
-    };
-
-    const formatDuration = (minutes: number) => {
-        if (minutes < 60) return `${minutes} min`;
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
     };
 
     return (
