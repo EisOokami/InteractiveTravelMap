@@ -27,6 +27,19 @@ import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
 import DateButton from "@/components/ui/dateButton/DateButton";
 import { Button } from "@/components/ui/shadcn/button";
 import { Badge } from "@/components/ui/shadcn/badge";
+import {
+    Accessibility,
+    ArrowLeft,
+    Banknote,
+    CirclePlus,
+    Clock,
+    Heart,
+    MapPin,
+    ParkingSquare,
+    PawPrint,
+    Star,
+    Wifi,
+} from "lucide-react";
 
 interface PlaceDetailsProps {
     positions: IPositions[];
@@ -142,7 +155,7 @@ export default function PlaceDetails({
                         size="icon"
                         onClick={handleOpenPlaceDetails}
                     >
-                        <IoArrowBack className="w-10 h-10 text-white" />
+                        <ArrowLeft className="w-10 h-10 text-white" />
                     </Button>
                 </div>
                 <div className="relative w-full h-80">
@@ -159,7 +172,7 @@ export default function PlaceDetails({
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="flex items-center gap-2 mb-2">
                             <Badge className="gap-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
-                                <FaStar className="w-4 h-4" />
+                                <Star className="w-4 h-4" />
                                 {positions[positionId].rating}
                             </Badge>
                             <Badge className="text-sm text-white font-semibold bg-bright-blue rounded-full">
@@ -173,7 +186,7 @@ export default function PlaceDetails({
                         {positions[positionId].name}
                     </h1>
                     <div className="flex items-center gap-2 mb-4 text-gray-600 dark:text-gray-300">
-                        <IoLocationSharp className="w-5 h-5 text-bright-blue" />
+                        <MapPin className="w-5 h-5 text-bright-blue" />
                         <span className="text-sm">
                             {positions[positionId].address}
                         </span>
@@ -183,12 +196,12 @@ export default function PlaceDetails({
                     </p>
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <InfoCard
-                            icon={BiMoney}
+                            icon={Banknote}
                             title="Price"
                             info={formatPrice(positions[positionId].price)}
                         />
                         <InfoCard
-                            icon={IoTimeOutline}
+                            icon={Clock}
                             title="Duration"
                             info={formatDuration(
                                 positions[positionId].average_visit_duration,
@@ -197,7 +210,7 @@ export default function PlaceDetails({
                     </div>
                     <div className="mb-6">
                         <h2 className="flex items-center gap-2 mb-3 text-lg font-bold text-black dark:text-white">
-                            <FaClock className="w-5 h-5 text-bright-blue" />
+                            <Clock className="w-5 h-5 text-bright-blue" />
                             Working Hours
                         </h2>
                         <WorkingHours
@@ -211,25 +224,25 @@ export default function PlaceDetails({
                         <div className="flex flex-wrap gap-3">
                             {positions[positionId].facilities.parking && (
                                 <FacilityBadge
-                                    icon={FaParking}
+                                    icon={ParkingSquare}
                                     name="Parking"
                                 />
                             )}
                             {positions[positionId].facilities.pet_friendly && (
                                 <FacilityBadge
-                                    icon={FaPaw}
+                                    icon={PawPrint}
                                     name="Pet Friendly"
                                 />
                             )}
                             {positions[positionId].facilities
                                 .wheelchair_access && (
                                 <FacilityBadge
-                                    icon={FaWheelchair}
+                                    icon={Accessibility}
                                     name="Wheelchair Access"
                                 />
                             )}
                             {positions[positionId].facilities.wifi && (
-                                <FacilityBadge icon={FaWifi} name="WiFi" />
+                                <FacilityBadge icon={Wifi} name="WiFi" />
                             )}
                             {!positions[positionId].facilities.parking &&
                                 !positions[positionId].facilities
@@ -264,7 +277,7 @@ export default function PlaceDetails({
                                 className="w-full h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg [&_svg]:size-6 md:[&_svg]:size-7"
                                 onClick={handleDateStorage}
                             >
-                                <FaPlusCircle />
+                                <CirclePlus />
                             </Button>
                         </div>
                     </div>

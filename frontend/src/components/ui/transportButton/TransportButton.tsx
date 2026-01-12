@@ -1,12 +1,12 @@
 import { Dispatch, SetStateAction } from "react";
-import { IconType } from "react-icons";
+import { LucideIcon } from "lucide-react";
 import { Button } from "../shadcn/button";
 
 interface TransportButtonProps {
     id: string;
     transportMode: string;
     label: string;
-    icon: IconType;
+    icon: LucideIcon;
     setTransportMode: Dispatch<SetStateAction<string>>;
 }
 

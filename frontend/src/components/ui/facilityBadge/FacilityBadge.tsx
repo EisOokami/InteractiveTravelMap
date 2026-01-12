@@ -1,8 +1,8 @@
-import { IconType } from "react-icons";
+import { LucideIcon } from "lucide-react";
 import { Badge } from "../shadcn/badge";
 
 interface FacilityBadgeProps {
-    icon: IconType;
+    icon: LucideIcon;
     name: string;
 }
 

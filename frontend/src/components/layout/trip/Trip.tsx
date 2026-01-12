@@ -25,8 +25,7 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { MdDeleteOutline, MdDirectionsBike } from "react-icons/md";
-import { FaCar, FaWalking, FaInfoCircle } from "react-icons/fa";
+import { Bike, Car, Footprints, Info, Trash2 } from "lucide-react";
 import {
     IDatesMap,
     IDatesStorage,
@@ -297,12 +296,12 @@ export default function Trip({
                                         </>
                                     ) : isRoute ? (
                                         <>
-                                            <MdDeleteOutline className="mb-0.5" />
+                                            <Trash2 className="mb-0.5" />
                                             Clear Route
                                         </>
                                     ) : (
                                         <>
-                                            <FaInfoCircle className="mb-0.5" />
+                                            <Info className="mb-0.5" />
                                             Plan Route
                                         </>
                                     )}
@@ -310,7 +309,7 @@ export default function Trip({
                                 {isRoute === date &&
                                     routeSegments.length > 0 && (
                                         <div className="flex items-center gap-2 font-medium text-green-600 dark:text-green-400">
-                                            <FaInfoCircle className="w-5 h-5" />
+                                            <Info className="w-5 h-5" />
                                             <span className="text-sm">
                                                 Route planned
                                             </span>
@@ -326,7 +325,7 @@ export default function Trip({
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">
-                        <FaInfoCircle className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
+                        <Info className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
                         <h3 className="mb-2 text-lg font-semibold text-black dark:text-white">
                             No trips planned yet
                         </h3>

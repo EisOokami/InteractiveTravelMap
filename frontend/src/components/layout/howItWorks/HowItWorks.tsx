@@ -1,11 +1,10 @@
+import Link from "next/link";
 import Image from "next/image";
-import { FaStar } from "react-icons/fa";
-import { IPositions } from "@/interfaces/interfaces";
 import { getPositionsData } from "@/data/loaders";
+import { MapPin, Star } from "lucide-react";
+import { IPositions } from "@/interfaces/interfaces";
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 import { Button } from "@/components/ui/shadcn/button";
-import { IoLocationSharp } from "react-icons/io5";
-import Link from "next/link";
 
 const features = [
     {
@@ -35,7 +34,7 @@ const features = [
                                 <div className="absolute bottom-4 left-4 right-4">
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm font-semibold text-white bg-yellow-500 rounded-full">
-                                            <FaStar className="w-3 md:w-4 h-3 md:h-4" />
+                                            <Star className="w-3 md:w-4 h-3 md:h-4" />
                                             {positionsData[0].rating}
                                         </div>
                                         <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">
@@ -49,7 +48,7 @@ const features = [
                                     {positionsData[0].name}
                                 </h3>
                                 <div className="flex items-center gap-2 mb-2 md:mb-4 text-gray-600 dark:text-gray-300">
-                                    <IoLocationSharp className="min-w-4 md:min-w-5 min-h-4 md:min-h-5 text-bright-blue" />
+                                    <MapPin className="min-w-4 md:min-w-5 min-h-4 md:min-h-5 text-bright-blue" />
                                     <span className="text-sm line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
                                         {positionsData[0].address}
                                     </span>

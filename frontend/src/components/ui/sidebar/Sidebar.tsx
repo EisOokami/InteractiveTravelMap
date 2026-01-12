@@ -1,8 +1,7 @@
 "use client";
 
 import { Dispatch, memo, SetStateAction, useCallback } from "react";
-import { FaMapMarkerAlt, FaSearch } from "react-icons/fa";
-import { FaPersonHiking } from "react-icons/fa6";
+import { Bookmark, Map, Route, Search } from "lucide-react";
 import styles from "./Sidebar.module.scss";
 
 interface NavbarProps {
@@ -86,7 +85,7 @@ const Navbar = memo(function Navbar({
                     className={`${styles.sidebar__option} ${styleIsActiveMap}`}
                     onClick={handleOpenMap}
                 >
-                    <FaMapMarkerAlt />
+                    <Map />
                     <div
                         className={styles["sidebar__option--bg-gradient"]}
                     ></div>
@@ -95,7 +94,7 @@ const Navbar = memo(function Navbar({
                     className={`${styles.sidebar__option} ${styleIsActiveSearch}`}
                     onClick={handleOpenSearch}
                 >
-                    <FaSearch />
+                    <Search />
                     <div
                         className={styles["sidebar__option--bg-gradient"]}
                     ></div>
@@ -104,7 +103,7 @@ const Navbar = memo(function Navbar({
                     className={`${styles.sidebar__option} ${styleIsActiveTrip}`}
                     onClick={handleOpenTrip}
                 >
-                    <FaPersonHiking />
+                    <Route />
                     <div
                         className={styles["sidebar__option--bg-gradient"]}
                     ></div>

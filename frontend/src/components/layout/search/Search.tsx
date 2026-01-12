@@ -1,7 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction, useState } from "react";
-import { IoSearchOutline } from "react-icons/io5";
+import { Search as SearchIcon } from "lucide-react";
 import { IPositions } from "@/interfaces/interfaces";
 
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
@@ -52,7 +52,7 @@ export default function Search({
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">
-                        <IoSearchOutline className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
+                        <SearchIcon className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
                         <h3 className="mb-2 text-lg font-semibold text-black dark:text-white">
                             No places found
                         </h3>

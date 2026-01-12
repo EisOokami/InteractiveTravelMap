@@ -1,7 +1,7 @@
-import { IconType } from "react-icons";
+import { LucideIcon } from "lucide-react";
 
 interface InfoCardProps {
-    icon: IconType;
+    icon: LucideIcon;
     title: string;
     info: string;
 }

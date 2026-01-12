@@ -1,11 +1,18 @@
 import { IPositions } from "@/interfaces/interfaces";
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
-import { BiMoney } from "react-icons/bi";
-import { FaParking, FaPaw, FaStar, FaWheelchair, FaWifi } from "react-icons/fa";
-import { IoLocationSharp } from "react-icons/io5";
-import { MdAccessTime } from "react-icons/md";
 import { Badge } from "../shadcn/badge";
+import {
+    Accessibility,
+    Banknote,
+    Clock,
+    Heart,
+    MapPin,
+    ParkingSquare,
+    PawPrint,
+    Star,
+    Wifi,
+} from "lucide-react";
 
 interface PlaceCardProps {
     position: IPositions;
@@ -59,7 +66,7 @@ export default function PlaceCard({
                 </div>
                 <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
                     <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                        <FaStar className="w-3 h-3" />
+                        <Star className="w-3 h-3" />
                         {position.rating}
                     </Badge>
                     <Badge className="w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">
@@ -76,20 +83,20 @@ export default function PlaceCard({
                         {position.description_short}
                     </p>
                     <div className="flex items-center gap-2 mb-3 text-sm text-gray-600 dark:text-gray-400">
-                        <IoLocationSharp className="w-4 h-4 text-bright-blue" />
+                        <MapPin className="w-4 h-4 text-bright-blue" />
                         <span className="truncate">{position.location}</span>
                     </div>
                 </div>
                 <div>
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                         <div className="flex items-center gap-2">
-                            <BiMoney className="w-5 h-5 text-green-600" />
+                            <Banknote className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-semibold text-black dark:text-white">
                                 {formatPrice(position.price)}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <MdAccessTime className="w-5 h-5 text-bright-blue" />
+                            <Clock className="w-5 h-5 text-bright-blue" />
                             <span className="text-sm font-semibold text-black dark:text-white">
                                 {formatDuration(
                                     position.average_visit_duration,
@@ -100,22 +107,22 @@ export default function PlaceCard({
                     <div className="flex flex-wrap gap-2 mt-3">
                         {position.facilities.parking && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
-                                <FaParking className="w-3 h-3" />
+                                <ParkingSquare className="w-3 h-3" />
                             </Badge>
                         )}
                         {position.facilities.pet_friendly && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
-                                <FaPaw className="w-3 h-3" />
+                                <PawPrint className="w-3 h-3" />
                             </Badge>
                         )}
                         {position.facilities.wheelchair_access && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
-                                <FaWheelchair className="w-3 h-3" />
+                                <Accessibility className="w-3 h-3" />
                             </Badge>
                         )}
                         {position.facilities.wifi && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
-                                <FaWifi className="w-3 h-3" />
+                                <Wifi className="w-3 h-3" />
                             </Badge>
                         )}
                     </div>

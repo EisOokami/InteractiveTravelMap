@@ -1,7 +1,6 @@
 "use client";
 
-import { FiMoon } from "react-icons/fi";
-import { LuSun } from "react-icons/lu";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "../shadcn/button";
 import { useTheme } from "next-themes";
 
@@ -19,7 +18,7 @@ export default function MapDarkModeBtn() {
             onClick={toggleDarkMode}
             aria-label="Toggle dark mode"
         >
-            {theme === "dark" ? <FiMoon /> : <LuSun />}
+            {theme === "dark" ? <Moon /> : <Sun />}
         </Button>
     );
 }

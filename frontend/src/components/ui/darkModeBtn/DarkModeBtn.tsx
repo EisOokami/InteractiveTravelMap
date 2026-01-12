@@ -1,9 +1,8 @@
 "use client";
 
-import { FiMoon } from "react-icons/fi";
-import { LuSun } from "react-icons/lu";
-import { Button } from "../shadcn/button";
 import { useTheme } from "next-themes";
+import { Button } from "../shadcn/button";
+import { Moon, Sun } from "lucide-react";
 
 export default function DarkModeBtn() {
     const { theme, setTheme } = useTheme();
@@ -19,7 +18,7 @@ export default function DarkModeBtn() {
             className="bg-white hover:bg-gray-100 dark:bg-dark-mode-black dark:hover:bg-dark-mode-gray-2 rounded-lg z-[1001] cursor-pointer"
             onClick={toggleDarkMode}
         >
-            {theme === "dark" ? <FiMoon /> : <LuSun />}
+            {theme === "dark" ? <Moon /> : <Sun />}
         </Button>
     );
 }
