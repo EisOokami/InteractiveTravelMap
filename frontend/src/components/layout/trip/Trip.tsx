@@ -1,13 +1,6 @@
 "use client";
 
-import {
-    useState,
-    useEffect,
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    RefObject,
-} from "react";
+import { useState, useEffect, RefObject } from "react";
 import L from "leaflet";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
@@ -25,14 +18,17 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
+import { IDatesMap, IPositions } from "@/interfaces/interfaces";
 import { Bike, Car, Footprints, Info, Trash2 } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/store";
 import {
-    IDatesMap,
-    IDatesStorage,
-    IPositions,
-    IRouteSegments,
-    ISortedDates,
-} from "@/interfaces/interfaces";
+    setRouteSegments,
+    setRoutingControl,
+    setShowRoute,
+    setTransportMode,
+} from "@/libs/redux/features/routes/routesSlice";
+import { setSortedDates } from "@/libs/redux/features/dates/datesSlice";
 
 import PlaceCardTrip from "../../ui/placeCardTrip/PlaceCardTrip";
 import TransportButton from "@/components/ui/transportButton/TransportButton";
@@ -40,39 +36,11 @@ import { Button } from "@/components/ui/shadcn/button";
 
 interface TripProps {
     positions: IPositions[];
-    datesStorage: IDatesStorage;
-    showRoute: boolean;
-    setShowRoute: Dispatch<SetStateAction<boolean>>;
-    routingControl: L.Routing.Control | null;
-    setRoutingControl: Dispatch<SetStateAction<L.Routing.Control | null>>;
-    transportMode: string;
-    setTransportMode: Dispatch<SetStateAction<string>>;
-    sortedDates: ISortedDates[];
-    setSortedDates: Dispatch<SetStateAction<ISortedDates[]>>;
-    routeSegments: IRouteSegments[];
-    setRouteSegments: Dispatch<SetStateAction<IRouteSegments[]>>;
-    isRoute: string | null;
-    setIsRoute: Dispatch<SetStateAction<string | null>>;
     mapRef: RefObject<L.Map | null>;
 }
 
-export default function Trip({
-    positions,
-    datesStorage,
-    showRoute,
-    setShowRoute,
-    routingControl,
-    setRoutingControl,
-    transportMode,
-    setTransportMode,
-    sortedDates,
-    setSortedDates,
-    routeSegments,
-    setRouteSegments,
-    isRoute,
-    setIsRoute,
-    mapRef,
-}: TripProps) {
+export default function Trip({ positions, mapRef }: TripProps) {
+    const [isRoute, setIsRoute] = useState<string | null>(null);
     const [isNavigationDisabled, setIsNavigationDisabled] =
         useState<boolean>(false);
     const sensors = useSensors(
@@ -81,6 +49,23 @@ export default function Trip({
             coordinateGetter: sortableKeyboardCoordinates,
         }),
     );
+    const datesStorage = useSelector(
+        (state: RootState) => state.dates.datesStorage,
+    );
+    const showRoute = useSelector((state: RootState) => state.routes.showRoute);
+    const transportMode = useSelector(
+        (state: RootState) => state.routes.transportMode,
+    );
+    const routingControl = useSelector(
+        (state: RootState) => state.routes.routingControl,
+    );
+    const routeSegments = useSelector(
+        (state: RootState) => state.routes.routeSegments,
+    );
+    const sortedDates = useSelector(
+        (state: RootState) => state.dates.sortedDates,
+    );
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const datesMap: IDatesMap = {};
@@ -110,8 +95,8 @@ export default function Trip({
             })
             .map((date) => ({ date, places: datesMap[date] }));
 
-        setSortedDates(sortedDatesArray);
-    }, [datesStorage, positions, setSortedDates]);
+        dispatch(setSortedDates(sortedDatesArray));
+    }, [datesStorage, dispatch, positions]);
 
     const convertTime = (totalSeconds: number): string => {
         const totalMinutes = totalSeconds / 60;
@@ -123,12 +108,12 @@ export default function Trip({
     const handleNavigation = (places: IPositions[], date: string) => {
         setIsNavigationDisabled(true);
         setIsRoute(null);
-        setRouteSegments([]);
+        dispatch(setRouteSegments([]));
 
         if (showRoute && routingControl) {
             routingControl.remove();
-            setRoutingControl(null);
-            setShowRoute(false);
+            dispatch(setRoutingControl(null));
+            dispatch(setShowRoute(false));
             setIsNavigationDisabled(false);
 
             return;
@@ -169,8 +154,12 @@ export default function Trip({
             );
             const totalTime = (route.summary.totalTime / 3600).toFixed(2);
 
-            setRouteSegments([{ distance: totalDistance, time: totalTime }]);
-            setShowRoute(true);
+            dispatch(
+                setRouteSegments([
+                    { distance: totalDistance, time: totalTime },
+                ]),
+            );
+            dispatch(setShowRoute(true));
             setIsNavigationDisabled(false);
         });
 
@@ -179,38 +168,37 @@ export default function Trip({
 
             setIsRoute(date);
 
-            setRoutingControl(newRoutingControl);
+            dispatch(setRoutingControl(newRoutingControl));
             mapRef?.current.fitBounds(L.latLngBounds(waypoints));
         }
     };
 
-    const handleDragEnd = useCallback(
-        (event: DragEndEvent, date: string, places: IPositions[]) => {
-            const { active, over } = event;
+    const handleDragEnd = (
+        event: DragEndEvent,
+        date: string,
+        places: IPositions[],
+    ) => {
+        const { active, over } = event;
 
-            if (over && active.id !== over.id && routeSegments.length === 0) {
-                const activeIndex = places.findIndex(
-                    (place) => place.id === active.id,
-                );
-                const overIndex = places.findIndex(
-                    (place) => place.id === over.id,
-                );
+        if (over && active.id !== over.id && routeSegments.length === 0) {
+            const activeIndex = places.findIndex(
+                (place) => place.id === active.id,
+            );
+            const overIndex = places.findIndex((place) => place.id === over.id);
 
-                const newPlaces = [...places];
-                const [removed] = newPlaces.splice(activeIndex, 1);
-                newPlaces.splice(overIndex, 0, removed);
+            const newPlaces = [...places];
+            const [removed] = newPlaces.splice(activeIndex, 1);
+            newPlaces.splice(overIndex, 0, removed);
 
-                const newSortedDates = sortedDates.map((sortedDate) =>
-                    sortedDate.date === date
-                        ? { date, places: newPlaces }
-                        : sortedDate,
-                );
+            const newSortedDates = sortedDates.map((sortedDate) =>
+                sortedDate.date === date
+                    ? { date, places: newPlaces }
+                    : sortedDate,
+            );
 
-                setSortedDates(newSortedDates);
-            }
-        },
-        [setSortedDates, sortedDates, routeSegments],
-    );
+            dispatch(setSortedDates(newSortedDates));
+        }
+    };
 
     const transportModes = [
         { id: "car", icon: Car, label: "Car" },
@@ -232,7 +220,9 @@ export default function Trip({
                             icon={mode.icon}
                             label={mode.label}
                             transportMode={transportMode}
-                            setTransportMode={setTransportMode}
+                            setTransportMode={(value: string) =>
+                                dispatch(setTransportMode(value))
+                            }
                         />
                     ))}
                 </div>

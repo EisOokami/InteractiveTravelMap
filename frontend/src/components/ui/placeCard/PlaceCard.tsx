@@ -1,7 +1,7 @@
 import { IPositions } from "@/interfaces/interfaces";
 import Image from "next/image";
-import { Dispatch, SetStateAction } from "react";
 import { Badge } from "../shadcn/badge";
+import { Button } from "../shadcn/button";
 import {
     Accessibility,
     Banknote,
@@ -15,28 +15,33 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/store";
+import {
+    setOpenPlaceDetails,
+    setOpenSearch,
+} from "@/libs/redux/features/ui/uiSlice";
+import {
+    setSelectedPosition,
+    setZoomLocationX,
+    setZoomLocationY,
+} from "@/libs/redux/features/map/mapSlice";
 
 interface PlaceCardProps {
     position: IPositions;
-    setZoomLocationX: Dispatch<SetStateAction<number>>;
-    setZoomLocationY: Dispatch<SetStateAction<number>>;
-    setSelectedPosition: Dispatch<SetStateAction<number | null>>;
-    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function PlaceCard({
-    position,
-    setZoomLocationX,
-    setZoomLocationY,
-    setSelectedPosition,
-    setOpenPlaceDetails,
-}: PlaceCardProps) {
+export default function PlaceCard({ position }: PlaceCardProps) {
+    const dispatch = useDispatch();
+
     const handleZoomLocation = (x: number, y: number, key: number) => {
-        setZoomLocationX(x);
-        setZoomLocationY(y);
-        setSelectedPosition(key);
-        setOpenPlaceDetails(true);
+        dispatch(setZoomLocationX(x));
+        dispatch(setZoomLocationY(y));
+        dispatch(setSelectedPosition(key));
+        dispatch(setOpenPlaceDetails(true));
+        dispatch(setOpenSearch(true));
     };
+
 
     return (
         <div

@@ -1,71 +1,60 @@
 "use client";
 
-import { Dispatch, memo, SetStateAction, useCallback } from "react";
+import { memo } from "react";
 import { Bookmark, Map, Route, Search } from "lucide-react";
 import styles from "./Sidebar.module.scss";
-
-interface NavbarProps {
-    openSearch: boolean;
-    setOpenSearch: Dispatch<SetStateAction<boolean>>;
-    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
-    openTrip: boolean;
-    setOpenTrip: Dispatch<SetStateAction<boolean>>;
-    setZoomLocationX: Dispatch<SetStateAction<number>>;
-    setZoomLocationY: Dispatch<SetStateAction<number>>;
-}
-
-const Navbar = memo(function Navbar({
-    openSearch,
-    setOpenSearch,
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/store";
+import {
     setOpenPlaceDetails,
-    openTrip,
+    setOpenSearch,
     setOpenTrip,
+} from "@/libs/redux/features/ui/uiSlice";
+import {
     setZoomLocationX,
     setZoomLocationY,
-}: NavbarProps) {
-    const handleOpenMap = useCallback(() => {
-        setOpenSearch(false);
-        setOpenPlaceDetails(false);
-        setOpenTrip(false);
-        setZoomLocationX(52.083);
-        setZoomLocationY(19.375);
-    }, [
-        setOpenSearch,
-        setOpenPlaceDetails,
-        setOpenTrip,
-        setZoomLocationX,
-        setZoomLocationY,
-    ]);
+} from "@/libs/redux/features/map/mapSlice";
 
-    const handleOpenSearch = useCallback(() => {
-        setOpenSearch(!openSearch);
-        setOpenPlaceDetails(false);
-        setOpenTrip(false);
-        setZoomLocationX(52.083);
-        setZoomLocationY(19.375);
-    }, [
-        openSearch,
-        setOpenPlaceDetails,
-        setOpenTrip,
-        setOpenSearch,
-        setZoomLocationX,
-        setZoomLocationY,
-    ]);
+const Navbar = memo(function Navbar() {
+    const openSearch = useSelector((state: RootState) => state.ui.openSearch);
+    const openTrip = useSelector((state: RootState) => state.ui.openTrip);
+    const openPlaceDetails = useSelector(
+        (state: RootState) => state.ui.openPlaceDetails,
+    );
+    const dispatch = useDispatch();
 
-    const handleOpenTrip = useCallback(() => {
-        setOpenSearch(false);
-        setOpenPlaceDetails(false);
-        setOpenTrip(!openTrip);
-        setZoomLocationX(52.083);
-        setZoomLocationY(19.375);
-    }, [
-        openTrip,
-        setOpenSearch,
-        setOpenPlaceDetails,
-        setOpenTrip,
-        setZoomLocationX,
-        setZoomLocationY,
-    ]);
+    const handleOpenMap = () => {
+        dispatch(setOpenSearch(false));
+        dispatch(setOpenPlaceDetails(false));
+        dispatch(setOpenTrip(false));
+        dispatch(setZoomLocationX(52.083));
+        dispatch(setZoomLocationY(19.375));
+    };
+
+    const handleOpenSearch = () => {
+        if (openSearch && openPlaceDetails) {
+            dispatch(setOpenPlaceDetails(false));
+            dispatch(setZoomLocationX(52.083));
+            dispatch(setZoomLocationY(19.375));
+
+            return;
+        }
+
+        dispatch(setOpenSearch(!openSearch));
+        dispatch(setOpenPlaceDetails(false));
+        dispatch(setOpenTrip(false));
+        dispatch(setZoomLocationX(52.083));
+        dispatch(setZoomLocationY(19.375));
+    };
+
+    const handleOpenTrip = () => {
+        dispatch(setOpenSearch(false));
+        dispatch(setOpenPlaceDetails(false));
+        dispatch(setOpenTrip(!openTrip));
+        dispatch(setZoomLocationX(52.083));
+        dispatch(setZoomLocationY(19.375));
+    };
+
 
     const styleIsActiveMap =
         !openSearch && !openTrip

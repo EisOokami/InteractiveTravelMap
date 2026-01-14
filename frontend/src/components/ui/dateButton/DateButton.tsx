@@ -1,5 +1,4 @@
 import { IDates } from "@/interfaces/interfaces";
-import { Dispatch, SetStateAction } from "react";
 import { Button } from "../shadcn/button";
 
 interface DateButtonProps {
@@ -7,8 +6,8 @@ interface DateButtonProps {
     date: string;
     active: boolean;
     dates: IDates[];
-    setDates: Dispatch<SetStateAction<IDates[]>>;
-    updateDatesStorage: (markerId: number, dates: IDates[]) => void;
+    setDates: (value: IDates[]) => void;
+    updateDatesStorage: (value: { markerId: number; dates: IDates[] }) => void;
     positionId: number;
 }
 
@@ -30,7 +29,7 @@ export default function DateButton({
         });
 
         setDates(updatedDates);
-        updateDatesStorage(positionId, updatedDates);
+        updateDatesStorage({ markerId: positionId, dates: updatedDates });
     };
 
     return (

@@ -1,15 +1,8 @@
 "use client";
 
-import { Suspense, useCallback, useRef, useState } from "react";
-import {
-    IDates,
-    IDatesStorage,
-    IPositions,
-    IRouteSegments,
-    ISortedDates,
-} from "@/interfaces/interfaces";
+import { Suspense, useRef, useEffect, useState } from "react";
+import { IPositions } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-import { Routing } from "leaflet";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 
@@ -17,6 +10,17 @@ import Sidebar from "@/components/ui/sidebar/Sidebar";
 import MapDarkModeBtn from "@/components/ui/mapDarkModeBtn/MapDarkModeBtn";
 import Search from "@/components/layout/search/Search";
 import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
+import { RootState } from "@/libs/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    setSelectedPosition,
+    setZoomLocationX,
+    setZoomLocationY,
+} from "@/libs/redux/features/map/mapSlice";
+import {
+    setOpenPlaceDetails,
+    setOpenSearch,
+} from "@/libs/redux/features/ui/uiSlice";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -60,50 +64,39 @@ export default function MapPage({
     const search = searchParams.get("placeCard");
     const x = searchParams.get("x");
     const y = searchParams.get("y");
-    const [openSearch, setOpenSearch] = useState<boolean>(!!search);
-    const [openTrip, setOpenTrip] = useState<boolean>(false);
-    const [openPlaceDetails, setOpenPlaceDetails] = useState<boolean>(
-        search !== null && Number.isInteger(Number(search)),
+    const openSearch = useSelector((state: RootState) => state.ui.openSearch);
+    const openTrip = useSelector((state: RootState) => state.ui.openTrip);
+    const openPlaceDetails = useSelector(
+        (state: RootState) => state.ui.openPlaceDetails,
     );
-    const [zoomLocationX, setZoomLocationX] = useState<number>(x ? +x : 52.083);
-    const [zoomLocationY, setZoomLocationY] = useState<number>(y ? +y : 19.375);
-    const [selectedPosition, setSelectedPosition] = useState<number | null>(
-        Number.isInteger(Number(search)) ? Number(search) : null,
-    );
-    const [datesStorage, setDatesStorage] = useState<IDatesStorage>({});
-    const [showRoute, setShowRoute] = useState<boolean>(false);
-    const [transportMode, setTransportMode] = useState<string>("car");
-    const [routingControl, setRoutingControl] =
-        useState<Routing.Control | null>(null);
-    const [sortedDates, setSortedDates] = useState<ISortedDates[]>([]);
-    const [dates, setDates] = useState<IDates[]>([]);
-    const [isRoute, setIsRoute] = useState<string | null>(null);
-    const [routeSegments, setRouteSegments] = useState<IRouteSegments[]>([]);
+    const dispatch = useDispatch();
     const mapRef = useRef<L.Map | null>(null);
 
-    const updateDatesStorage = useCallback(
-        (markerId: number, dates: IDates[]) => {
-            setDatesStorage((prevState) => ({
-                ...prevState,
-                [markerId]: dates,
-            }));
-        },
-        [],
-    );
+    useEffect(() => {
+        dispatch(setOpenSearch(!!search));
+
+        dispatch(
+            setOpenPlaceDetails(search && Number.isInteger(Number(search))),
+        );
+
+        if (Number.isInteger(Number(search))) {
+            dispatch(setSelectedPosition(Number(search)));
+        }
+
+        if (x) {
+            dispatch(setZoomLocationX(+x));
+        }
+
+        if (y) {
+            dispatch(setZoomLocationY(+y));
+        }
+    }, [dispatch, search, x, y]);
 
     return (
         <section className="flex flex-col h-svh">
             <div className="grow flex">
                 <div className="hidden md:flex">
-                    <Sidebar
-                        openSearch={openSearch}
-                        setOpenSearch={setOpenSearch}
-                        setOpenPlaceDetails={setOpenPlaceDetails}
-                        openTrip={openTrip}
-                        setOpenTrip={setOpenTrip}
-                        setZoomLocationX={setZoomLocationX}
-                        setZoomLocationY={setZoomLocationY}
-                    />
+                    <Sidebar />
                 </div>
                 <AnimatePresence>
                     {openSearch && (
@@ -115,30 +108,10 @@ export default function MapPage({
                             animate="animate"
                             exit="exit"
                         >
-                            <Search
-                                positions={positionsData}
-                                setZoomLocationX={setZoomLocationX}
-                                setZoomLocationY={setZoomLocationY}
-                                setSelectedPosition={setSelectedPosition}
-                                setOpenPlaceDetails={setOpenPlaceDetails}
-                            />
-                            {openPlaceDetails && (
+                            <Search positions={positionsData} />
+                            {openPlaceDetails && openSearch && (
                                 <Suspense fallback={<PlaceDetailsSkeleton />}>
-                                    <PlaceDetails
-                                        positions={positionsData}
-                                        selectedPosition={selectedPosition}
-                                        setOpenPlaceDetails={
-                                            setOpenPlaceDetails
-                                        }
-                                        datesStorage={datesStorage}
-                                        updateDatesStorage={updateDatesStorage}
-                                        dates={dates}
-                                        setDates={setDates}
-                                        setZoomLocationX={setZoomLocationX}
-                                        setZoomLocationY={setZoomLocationY}
-                                        routingControl={routingControl}
-                                        setRoutingControl={setRoutingControl}
-                                    />
+                                    <PlaceDetails positions={positionsData} />
                                 </Suspense>
                             )}
                         </motion.div>
@@ -152,53 +125,17 @@ export default function MapPage({
                             animate="animate"
                             exit="exit"
                         >
-                            <Trip
-                                positions={positionsData}
-                                datesStorage={datesStorage}
-                                showRoute={showRoute}
-                                setShowRoute={setShowRoute}
-                                routingControl={routingControl}
-                                setRoutingControl={setRoutingControl}
-                                transportMode={transportMode}
-                                setTransportMode={setTransportMode}
-                                sortedDates={sortedDates}
-                                setSortedDates={setSortedDates}
-                                isRoute={isRoute}
-                                setIsRoute={setIsRoute}
-                                routeSegments={routeSegments}
-                                setRouteSegments={setRouteSegments}
-                                mapRef={mapRef}
-                            />
+                            <Trip positions={positionsData} mapRef={mapRef} />
                         </motion.div>
                     )}
                 </AnimatePresence>
                 <main className="md:relative grow h-full">
-                    <Map
-                        setOpenSearch={setOpenSearch}
-                        positions={positionsData}
-                        zoomLocationX={zoomLocationX}
-                        zoomLocationY={zoomLocationY}
-                        setZoomLocationX={setZoomLocationX}
-                        setZoomLocationY={setZoomLocationY}
-                        setSelectedPosition={setSelectedPosition}
-                        setOpenPlaceDetails={setOpenPlaceDetails}
-                        setOpenTrip={setOpenTrip}
-                        openPlaceDetails={openPlaceDetails}
-                        mapRef={mapRef}
-                    />
+                    <Map positions={positionsData} mapRef={mapRef} />
                     <MapDarkModeBtn />
                 </main>
             </div>
             <div className="md:hidden">
-                <Sidebar
-                    openSearch={openSearch}
-                    setOpenSearch={setOpenSearch}
-                    setOpenPlaceDetails={setOpenPlaceDetails}
-                    openTrip={openTrip}
-                    setOpenTrip={setOpenTrip}
-                    setZoomLocationX={setZoomLocationX}
-                    setZoomLocationY={setZoomLocationY}
-                />
+                <Sidebar />
             </div>
         </section>
     );

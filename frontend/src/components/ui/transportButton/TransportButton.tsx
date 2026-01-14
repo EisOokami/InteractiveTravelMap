@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import { LucideIcon } from "lucide-react";
 import { Button } from "../shadcn/button";
 
@@ -7,7 +6,7 @@ interface TransportButtonProps {
     transportMode: string;
     label: string;
     icon: LucideIcon;
-    setTransportMode: Dispatch<SetStateAction<string>>;
+    setTransportMode: (value: string) => void;
 }
 
 export default function TransportButton({

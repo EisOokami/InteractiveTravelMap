@@ -1,12 +1,6 @@
 "use client";
 
-import {
-    Dispatch,
-    RefObject,
-    SetStateAction,
-    useCallback,
-    useEffect,
-} from "react";
+import { RefObject, useEffect } from "react";
 import { renderToString } from "react-dom/server";
 import {
     LayersControl,
@@ -24,18 +18,21 @@ import Image from "next/image";
 import L, { divIcon } from "leaflet";
 import { Button } from "@/components/ui/shadcn/button";
 import { MapPin, Star } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    setOpenPlaceDetails,
+    setOpenSearch,
+    setOpenTrip,
+} from "@/libs/redux/features/ui/uiSlice";
+import { RootState } from "@/libs/redux/store";
+import {
+    setSelectedPosition,
+    setZoomLocationX,
+    setZoomLocationY,
+} from "@/libs/redux/features/map/mapSlice";
 
 interface MapProps {
-    setOpenSearch: Dispatch<SetStateAction<boolean>>;
     positions: IPositions[];
-    zoomLocationX: number;
-    zoomLocationY: number;
-    setZoomLocationX: Dispatch<SetStateAction<number>>;
-    setZoomLocationY: Dispatch<SetStateAction<number>>;
-    setSelectedPosition: Dispatch<SetStateAction<number | null>>;
-    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
-    setOpenTrip: Dispatch<SetStateAction<boolean>>;
-    openPlaceDetails: boolean;
     mapRef: RefObject<L.Map | null>;
 }
 
@@ -49,19 +46,18 @@ function ChangeView({ center }: { center: [number, number] }) {
     return null;
 }
 
-export default function Map({
-    setOpenSearch,
-    positions,
-    zoomLocationX,
-    zoomLocationY,
-    setZoomLocationX,
-    setZoomLocationY,
-    setSelectedPosition,
-    setOpenPlaceDetails,
-    setOpenTrip,
-    openPlaceDetails,
-    mapRef,
-}: MapProps) {
+export default function Map({ positions, mapRef }: MapProps) {
+    const openPlaceDetails = useSelector(
+        (state: RootState) => state.ui.openPlaceDetails,
+    );
+    const zoomLocationX = useSelector(
+        (state: RootState) => state.map.zoomLocationX,
+    );
+    const zoomLocationY = useSelector(
+        (state: RootState) => state.map.zoomLocationY,
+    );
+    const dispatch = useDispatch();
+
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             const mapContainer = document.querySelector(".leaflet-container");
@@ -82,19 +78,16 @@ export default function Map({
         };
     }, [mapRef]);
 
-    const handleZoomLocation = useCallback(
-        (x: number, y: number) => {
-            setZoomLocationX(x);
-            setZoomLocationY(y);
-        },
-        [setZoomLocationX, setZoomLocationY],
-    );
+    const handleZoomLocation = (x: number, y: number) => {
+        dispatch(setZoomLocationX(x));
+        dispatch(setZoomLocationY(y));
+    };
 
     const handleButtonClick = (id: number) => {
-        setSelectedPosition(id);
-        setOpenSearch(true);
-        setOpenPlaceDetails(true);
-        setOpenTrip(false);
+        dispatch(setSelectedPosition(id));
+        dispatch(setOpenSearch(true));
+        dispatch(setOpenPlaceDetails(true));
+        dispatch(setOpenTrip(false));
     };
 
     return (

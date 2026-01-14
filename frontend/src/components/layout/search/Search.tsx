@@ -9,19 +9,9 @@ import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAn
 
 interface SearchProps {
     positions: IPositions[];
-    setZoomLocationX: Dispatch<SetStateAction<number>>;
-    setZoomLocationY: Dispatch<SetStateAction<number>>;
-    setSelectedPosition: Dispatch<SetStateAction<number | null>>;
-    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function Search({
-    positions,
-    setZoomLocationX,
-    setZoomLocationY,
-    setSelectedPosition,
-    setOpenPlaceDetails,
-}: SearchProps) {
+export default function Search({ positions }: SearchProps) {
     const [filteredPositions, setFilteredPositions] =
         useState<IPositions[]>(positions);
 
@@ -41,14 +31,7 @@ export default function Search({
             <div className="custom-scroll grid sm:grid-cols-2 place-content-start justify-center gap-5 h-full p-4 overflow-y-auto">
                 {filteredPositions.length ? (
                     filteredPositions.map((position) => (
-                        <PlaceCard
-                            key={position.id}
-                            position={position}
-                            setOpenPlaceDetails={setOpenPlaceDetails}
-                            setSelectedPosition={setSelectedPosition}
-                            setZoomLocationX={setZoomLocationX}
-                            setZoomLocationY={setZoomLocationY}
-                        />
+                        <PlaceCard key={position.id} position={position} />
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">

@@ -1,26 +1,8 @@
 "use client";
 
-import {
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useMemo,
-} from "react";
-import {
-    FaClock,
-    FaParking,
-    FaPaw,
-    FaPlusCircle,
-    FaStar,
-    FaWheelchair,
-    FaWifi,
-} from "react-icons/fa";
-import { IoArrowBack, IoLocationSharp, IoTimeOutline } from "react-icons/io5";
-import { BiMoney } from "react-icons/bi";
-import { IDates, IDatesStorage, IPositions } from "@/interfaces/interfaces";
+import { useCallback, useEffect, useMemo } from "react";
+import { IPositions } from "@/interfaces/interfaces";
 import Image from "next/image";
-import { Routing } from "leaflet";
 import InfoCard from "@/components/ui/infoCard/InfoCard";
 import WorkingHours from "@/components/ui/workingHours/WorkingHours";
 import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
@@ -42,34 +24,35 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/libs/redux/store";
+import { setOpenPlaceDetails } from "@/libs/redux/features/ui/uiSlice";
+import {
+    setZoomLocationX,
+    setZoomLocationY,
+} from "@/libs/redux/features/map/mapSlice";
+import { setRoutingControl } from "@/libs/redux/features/routes/routesSlice";
+import {
+    setDates,
+    updateDatesStorage,
+} from "@/libs/redux/features/dates/datesSlice";
 
 interface PlaceDetailsProps {
     positions: IPositions[];
-    selectedPosition: number | null;
-    setOpenPlaceDetails: Dispatch<SetStateAction<boolean>>;
-    datesStorage: IDatesStorage;
-    updateDatesStorage: (markerId: number, dates: IDates[]) => void;
-    dates: IDates[];
-    setDates: Dispatch<SetStateAction<IDates[]>>;
-    setZoomLocationX: Dispatch<SetStateAction<number>>;
-    setZoomLocationY: Dispatch<SetStateAction<number>>;
-    routingControl: Routing.Control | null;
-    setRoutingControl: Dispatch<SetStateAction<Routing.Control | null>>;
 }
 
-export default function PlaceDetails({
-    positions,
-    selectedPosition,
-    setOpenPlaceDetails,
-    datesStorage,
-    updateDatesStorage,
-    dates,
-    setDates,
-    setZoomLocationX,
-    setZoomLocationY,
-    routingControl,
-    setRoutingControl,
-}: PlaceDetailsProps) {
+export default function PlaceDetails({ positions }: PlaceDetailsProps) {
+    const selectedPosition = useSelector(
+        (state: RootState) => state.map.selectedPosition,
+    );
+    const datesStorage = useSelector(
+        (state: RootState) => state.dates.datesStorage,
+    );
+    const routingControl = useSelector(
+        (state: RootState) => state.routes.routingControl,
+    );
+    const dates = useSelector((state: RootState) => state.dates.dates);
+    const dispatch = useDispatch();
     const todayDate = useMemo(() => new Date(), []);
     const formattedTodayDate = `${
         todayDate.getDate() < 10
@@ -83,8 +66,8 @@ export default function PlaceDetails({
     const positionId = selectedPosition !== null ? selectedPosition - 1 : 0;
 
     useEffect(() => {
-        setDates(datesStorage[positionId] || []);
-    }, [setDates, datesStorage, positionId]);
+        dispatch(setDates(datesStorage[positionId] || []));
+    }, [dispatch, datesStorage, positionId]);
 
     useEffect(() => {
         if (!dates.some((dateObj) => dateObj.date === formattedTodayDate)) {
@@ -97,19 +80,21 @@ export default function PlaceDetails({
                 },
             ];
 
-            setDates(newDates);
-            updateDatesStorage(positionId, newDates);
+            dispatch(setDates(newDates));
+            dispatch(
+                updateDatesStorage({ markerId: positionId, dates: newDates }),
+            );
         }
-    }, [setDates, formattedTodayDate, dates, positionId, updateDatesStorage]);
+    }, [dispatch, formattedTodayDate, dates, positionId]);
 
     useEffect(() => {
         const isAnyDateActive = dates.some((d) => d.active);
 
         if (!isAnyDateActive && routingControl) {
             routingControl.remove();
-            setRoutingControl(null);
+            dispatch(setRoutingControl(null));
         }
-    }, [dates, routingControl, setRoutingControl]);
+    }, [dates, routingControl, dispatch]);
 
     const handleDateStorage = useCallback(() => {
         const nextDay = new Date(todayDate);
@@ -127,14 +112,14 @@ export default function PlaceDetails({
             { id: dates.length + 1, date: formattedNextDay, active: false },
         ];
 
-        setDates(newDates);
-        updateDatesStorage(positionId, newDates);
-    }, [dates, setDates, positionId, updateDatesStorage, todayDate]);
+        dispatch(setDates(newDates));
+        dispatch(updateDatesStorage({ markerId: positionId, dates: newDates }));
+    }, [dates, dispatch, positionId, todayDate]);
 
     const handleOpenPlaceDetails = () => {
-        setOpenPlaceDetails(false);
-        setZoomLocationX(52.083);
-        setZoomLocationY(19.375);
+        dispatch(setOpenPlaceDetails(false));
+        dispatch(setZoomLocationX(52.083));
+        dispatch(setZoomLocationY(19.375));
     };
 
     return (
@@ -260,8 +245,12 @@ export default function PlaceDetails({
                                     date={date.date}
                                     dates={dates}
                                     positionId={positionId}
-                                    setDates={setDates}
-                                    updateDatesStorage={updateDatesStorage}
+                                    setDates={(value) =>
+                                        dispatch(setDates(value))
+                                    }
+                                    updateDatesStorage={(value) =>
+                                        dispatch(updateDatesStorage(value))
+                                    }
                                 />
                             ))}
                             <Button
