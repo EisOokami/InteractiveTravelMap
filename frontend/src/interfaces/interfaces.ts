@@ -22,10 +22,10 @@ export interface IPosition {
     description_short: string;
     description_full: string;
     facilities: {
-        parking: true;
-        pet_friendly: true;
-        wheelchair_access: false;
-        wifi: false;
+        parking: boolean;
+        pet_friendly: boolean;
+        wheelchair_access: boolean;
+        wifi: boolean;
     };
     price: number;
     rating: number;
