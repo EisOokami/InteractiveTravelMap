@@ -1,13 +1,13 @@
-import { IDates } from "@/interfaces/interfaces";
+import { IDate } from "@/interfaces/interfaces";
 import { Button } from "../shadcn/button";
 
 interface DateButtonProps {
     id: number;
     date: string;
     active: boolean;
-    dates: IDates[];
-    setDates: (value: IDates[]) => void;
-    updateDatesStorage: (value: { markerId: number; dates: IDates[] }) => void;
+    dates: IDate[];
+    setDates: (value: IDate[]) => void;
+    updateDatesStorage: (value: { markerId: number; dates: IDate[] }) => void;
     positionId: number;
 }
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
@@ -22,7 +22,7 @@ async function fetchData(url: string) {
     }
 }
 
-export async function getPositionsData(): Promise<IPositions[]> {
+export async function getPositionsData(): Promise<IPosition[]> {
     const url = new URL("/positions", baseUrl);
 
     const fetchedData = await fetchData(url.href);

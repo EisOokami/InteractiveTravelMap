@@ -1,4 +1,4 @@
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import Image from "next/image";
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
@@ -28,7 +28,7 @@ import {
 } from "@/libs/redux/features/map/mapSlice";
 
 interface PlaceCardProps {
-    position: IPositions;
+    position: IPosition;
 }
 
 export default function PlaceCard({ position }: PlaceCardProps) {

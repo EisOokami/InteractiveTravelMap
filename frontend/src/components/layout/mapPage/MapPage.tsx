@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useRef, useEffect, useState } from "react";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -58,7 +58,7 @@ const animationSettings = {
 export default function MapPage({
     positionsData,
 }: {
-    positionsData: IPositions[];
+    positionsData: IPosition[];
 }) {
     const searchParams = useSearchParams();
     const search = searchParams.get("placeCard");

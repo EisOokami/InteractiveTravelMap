@@ -1,8 +1,8 @@
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import { WeekDays } from "@/types/types";
 
 interface WorkingHoursProps {
-    workingHours: IPositions["working_hours"];
+    workingHours: IPosition["working_hours"];
 }
 
 export default function WorkingHours({ workingHours }: WorkingHoursProps) {

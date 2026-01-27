@@ -18,7 +18,7 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { IDatesMap, IPositions } from "@/interfaces/interfaces";
+import { IDateMap, IPosition } from "@/interfaces/interfaces";
 import { Bike, Car, Footprints, Info, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
@@ -35,7 +35,7 @@ import TransportButton from "@/components/ui/transportButton/TransportButton";
 import { Button } from "@/components/ui/shadcn/button";
 
 interface TripProps {
-    positions: IPositions[];
+    positions: IPosition[];
     mapRef: RefObject<L.Map | null>;
 }
 
@@ -68,7 +68,7 @@ export default function Trip({ positions, mapRef }: TripProps) {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const datesMap: IDatesMap = {};
+        const datesMap: IDateMap = {};
 
         Object.keys(datesStorage).forEach((positionId) => {
             const dates = datesStorage[+positionId];
@@ -105,7 +105,7 @@ export default function Trip({ positions, mapRef }: TripProps) {
         return `${hours}.${minutes.toString().padStart(2, "0")}`;
     };
 
-    const handleNavigation = (places: IPositions[], date: string) => {
+    const handleNavigation = (places: IPosition[], date: string) => {
         setIsNavigationDisabled(true);
         setIsRoute(null);
         dispatch(setRouteSegments([]));
@@ -176,7 +176,7 @@ export default function Trip({ positions, mapRef }: TripProps) {
     const handleDragEnd = (
         event: DragEndEvent,
         date: string,
-        places: IPositions[],
+        places: IPosition[],
     ) => {
         const { active, over } = event;
 

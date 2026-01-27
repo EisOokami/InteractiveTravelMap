@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import Image from "next/image";
 import InfoCard from "@/components/ui/infoCard/InfoCard";
 import WorkingHours from "@/components/ui/workingHours/WorkingHours";
@@ -38,7 +38,7 @@ import {
 } from "@/libs/redux/features/dates/datesSlice";
 
 interface PlaceDetailsProps {
-    positions: IPositions[];
+    positions: IPosition[];
 }
 
 export default function PlaceDetails({ positions }: PlaceDetailsProps) {

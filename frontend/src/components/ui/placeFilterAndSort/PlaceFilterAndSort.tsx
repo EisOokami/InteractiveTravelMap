@@ -28,7 +28,7 @@ import { Separator } from "../shadcn/separator";
 import { Slider } from "../shadcn/slider";
 import { Checkbox } from "../shadcn/checkbox";
 import { Button } from "../shadcn/button";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import {
     Sheet,
     SheetClose,
@@ -43,8 +43,8 @@ import { ScrollArea } from "../shadcn/scroll-area";
 import { FacilityKeys, SortOption } from "@/types/types";
 
 interface PlaceFilterAndSortProps {
-    positionsData: IPositions[];
-    setFilteredPositions?: Dispatch<SetStateAction<IPositions[]>>;
+    positionsData: IPosition[];
+    setFilteredPositions?: Dispatch<SetStateAction<IPosition[]>>;
 }
 
 export default function PlaceFilterAndSort({

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPositionsData } from "@/data/loaders";
 import { MapPin, Star } from "lucide-react";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 import { Button } from "@/components/ui/shadcn/button";
 
@@ -12,7 +12,7 @@ const features = [
         title: "Explore on Map",
         description:
             "View all places on an interactive map, see photos, ratings, and detailed information.",
-        component: (positionsData: IPositions[]) => (
+        component: (positionsData: IPosition[]) => (
             <div className="relative grid content-center justify-items-center h-40 bg-[url(/map1.png)] bg-center">
                 <input
                     type="checkbox"

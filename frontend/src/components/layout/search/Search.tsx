@@ -2,18 +2,18 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 
 interface SearchProps {
-    positions: IPositions[];
+    positions: IPosition[];
 }
 
 export default function Search({ positions }: SearchProps) {
     const [filteredPositions, setFilteredPositions] =
-        useState<IPositions[]>(positions);
+        useState<IPosition[]>(positions);
 
     return (
         <section className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1002] transition-colors">

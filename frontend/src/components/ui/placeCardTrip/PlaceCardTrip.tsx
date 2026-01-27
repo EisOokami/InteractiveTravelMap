@@ -13,14 +13,14 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
 
 interface PlaceCardTripProps {
-    place: IPositions;
+    place: IPosition;
     convertTime: (totalSeconds: number) => string;
 }
 

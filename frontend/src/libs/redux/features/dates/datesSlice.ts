@@ -1,10 +1,10 @@
-import { IDates, IDatesStorage, ISortedDates } from "@/interfaces/interfaces";
+import { IDate, IDateStorage, ISortedDate } from "@/interfaces/interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface MapState {
-    datesStorage: IDatesStorage;
-    sortedDates: ISortedDates[];
-    dates: IDates[];
+    datesStorage: IDateStorage;
+    sortedDates: ISortedDate[];
+    dates: IDate[];
 }
 
 const initialState: MapState = {
@@ -17,18 +17,18 @@ export const datesSlice = createSlice({
     name: "map",
     initialState,
     reducers: {
-        setDatesStorage: (state, action: PayloadAction<IDatesStorage>) => {
+        setDatesStorage: (state, action: PayloadAction<IDateStorage>) => {
             state.datesStorage = action.payload;
         },
-        setSortedDates: (state, action: PayloadAction<ISortedDates[]>) => {
+        setSortedDates: (state, action: PayloadAction<ISortedDate[]>) => {
             state.sortedDates = action.payload;
         },
-        setDates: (state, action: PayloadAction<IDates[]>) => {
+        setDates: (state, action: PayloadAction<IDate[]>) => {
             state.dates = action.payload;
         },
         updateDatesStorage: (
             state,
-            action: PayloadAction<{ markerId: number; dates: IDates[] }>,
+            action: PayloadAction<{ markerId: number; dates: IDate[] }>,
         ) => {
             const { markerId, dates } = action.payload;
 

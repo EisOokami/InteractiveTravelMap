@@ -1,14 +1,14 @@
-export interface IDates {
+export interface IDate {
     id: number;
     date: string;
     active: boolean;
 }
 
-export interface IDatesStorage {
-    [key: number]: IDates[];
+export interface IDateStorage {
+    [key: number]: IDate[];
 }
 
-export interface IPositions {
+export interface IPosition {
     id: number;
     name: string;
     location: string;
@@ -40,16 +40,16 @@ export interface IPositions {
     };
 }
 
-export interface ISortedDates {
+export interface ISortedDate {
     date: string;
-    places: IPositions[];
+    places: IPosition[];
 }
 
-export interface IRouteSegments {
+export interface IRouteSegment {
     distance: string;
     time: string;
 }
 
-export interface IDatesMap {
-    [key: string]: IPositions[];
+export interface IDateMap {
+    [key: string]: IPosition[];
 }

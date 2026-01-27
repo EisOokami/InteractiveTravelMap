@@ -1,11 +1,11 @@
-import { IRouteSegments } from "@/interfaces/interfaces";
+import { IRouteSegment } from "@/interfaces/interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Routing } from "leaflet";
 
 interface RoutesState {
     showRoute: boolean;
     transportMode: string;
-    routeSegments: IRouteSegments[];
+    routeSegments: IRouteSegment[];
     routingControl: Routing.Control | null;
 }
 
@@ -26,7 +26,7 @@ const routesSlice = createSlice({
         setTransportMode: (state, action: PayloadAction<string>) => {
             state.transportMode = action.payload;
         },
-        setRouteSegments: (state, action: PayloadAction<IRouteSegments[]>) => {
+        setRouteSegments: (state, action: PayloadAction<IRouteSegment[]>) => {
             state.routeSegments = action.payload;
         },
         setRoutingControl: (

@@ -11,7 +11,7 @@ import {
     LayerGroup,
     Popup,
 } from "react-leaflet";
-import { IPositions } from "@/interfaces/interfaces";
+import { IPosition } from "@/interfaces/interfaces";
 import "leaflet/dist/leaflet.css";
 import "./Map.scss";
 import Image from "next/image";
@@ -32,7 +32,7 @@ import {
 } from "@/libs/redux/features/map/mapSlice";
 
 interface MapProps {
-    positions: IPositions[];
+    positions: IPosition[];
     mapRef: RefObject<L.Map | null>;
 }
 
