@@ -19,7 +19,7 @@ import {
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { IDateMap, IPosition } from "@/interfaces/interfaces";
-import { Bike, Car, Footprints, Info, Trash2 } from "lucide-react";
+import { Bike, Car, CircleCheck, Footprints, Info, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 import {
@@ -128,8 +128,8 @@ export default function Trip({ positions, mapRef }: TripProps) {
             transportMode === "car"
                 ? "driving"
                 : transportMode === "bike"
-                ? "cycling"
-                : "walking";
+                  ? "cycling"
+                  : "walking";
 
         const newRoutingControl = L.Routing.control({
             waypoints,
@@ -299,7 +299,7 @@ export default function Trip({ positions, mapRef }: TripProps) {
                                 {isRoute === date &&
                                     routeSegments.length > 0 && (
                                         <div className="flex items-center gap-2 font-medium text-green-600 dark:text-green-400">
-                                            <Info className="w-5 h-5" />
+                                            <CircleCheck className="w-5 h-5" />
                                             <span className="text-sm">
                                                 Route planned
                                             </span>
