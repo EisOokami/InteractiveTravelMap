@@ -10,8 +10,10 @@ import Sidebar from "@/components/ui/sidebar/Sidebar";
 import MapDarkModeBtn from "@/components/ui/mapDarkModeBtn/MapDarkModeBtn";
 import Search from "@/components/layout/search/Search";
 import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
+import Favorite from "../favorite/Favorite";
 import { RootState } from "@/libs/redux/store";
 import { useDispatch, useSelector } from "react-redux";
+import { setFavorites } from "@/libs/redux/features/favorites/favoritesSlice";
 import {
     setSelectedPosition,
     setZoomLocationX,
@@ -60,17 +62,47 @@ export default function MapPage({
 }: {
     positionsData: IPosition[];
 }) {
+    const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const searchParams = useSearchParams();
     const search = searchParams.get("placeCard");
     const x = searchParams.get("x");
     const y = searchParams.get("y");
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
     const openTrip = useSelector((state: RootState) => state.ui.openTrip);
+    const openFavorite = useSelector(
+        (state: RootState) => state.ui.openFavorite,
+    );
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
     );
+    const favorites = useSelector(
+        (state: RootState) => state.favorites.favorites,
+    );
     const dispatch = useDispatch();
     const mapRef = useRef<L.Map | null>(null);
+
+    useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const raw = localStorage.getItem("favorites");
+
+        if (raw) {
+            dispatch(setFavorites(JSON.parse(raw)));
+        }
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsInitialized(true);
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!isInitialized) {
+            return;
+        }
+
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+    }, [favorites, isInitialized]);
 
     useEffect(() => {
         dispatch(setOpenSearch(!!search));
@@ -126,6 +158,23 @@ export default function MapPage({
                             exit="exit"
                         >
                             <Trip positions={positionsData} mapRef={mapRef} />
+                        </motion.div>
+                    )}
+                    {openFavorite && (
+                        <motion.div
+                            key="favorite"
+                            className="relative h-full md:h-screen z-1001 md:z-0"
+                            variants={animationSettings}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                        >
+                            <Favorite positions={positionsData} />
+                            {openPlaceDetails && openFavorite && (
+                                <Suspense fallback={<PlaceDetailsSkeleton />}>
+                                    <PlaceDetails positions={positionsData} />
+                                </Suspense>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>

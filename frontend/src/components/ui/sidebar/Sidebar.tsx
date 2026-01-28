@@ -6,6 +6,7 @@ import styles from "./Sidebar.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 import {
+    setOpenFavorite,
     setOpenPlaceDetails,
     setOpenSearch,
     setOpenTrip,
@@ -18,6 +19,9 @@ import {
 const Navbar = memo(function Navbar() {
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
     const openTrip = useSelector((state: RootState) => state.ui.openTrip);
+    const openFavorite = useSelector(
+        (state: RootState) => state.ui.openFavorite,
+    );
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
     );
@@ -27,6 +31,7 @@ const Navbar = memo(function Navbar() {
         dispatch(setOpenSearch(false));
         dispatch(setOpenPlaceDetails(false));
         dispatch(setOpenTrip(false));
+        dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
     };
@@ -43,6 +48,7 @@ const Navbar = memo(function Navbar() {
         dispatch(setOpenSearch(!openSearch));
         dispatch(setOpenPlaceDetails(false));
         dispatch(setOpenTrip(false));
+        dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
     };
@@ -51,19 +57,39 @@ const Navbar = memo(function Navbar() {
         dispatch(setOpenSearch(false));
         dispatch(setOpenPlaceDetails(false));
         dispatch(setOpenTrip(!openTrip));
+        dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
     };
 
+    const handleOpenFavorite = () => {
+        if (openFavorite && openPlaceDetails) {
+            dispatch(setOpenPlaceDetails(false));
+            dispatch(setZoomLocationX(52.083));
+            dispatch(setZoomLocationY(19.375));
+
+            return;
+        }
+
+        dispatch(setOpenSearch(false));
+        dispatch(setOpenPlaceDetails(false));
+        dispatch(setOpenTrip(false));
+        dispatch(setOpenFavorite(!openFavorite));
+        dispatch(setZoomLocationX(52.083));
+        dispatch(setZoomLocationY(19.375));
+    };
 
     const styleIsActiveMap =
-        !openSearch && !openTrip
+        !openSearch && !openTrip && !openFavorite
             ? styles["sidebar__option--active"]
             : "border-white dark:border-dark-mode-black";
     const styleIsActiveSearch = openSearch
         ? styles["sidebar__option--active"]
         : "border-white dark:border-dark-mode-black";
     const styleIsActiveTrip = openTrip
+        ? styles["sidebar__option--active"]
+        : "border-white dark:border-dark-mode-black";
+    const styleIsActiveFavorite = openFavorite
         ? styles["sidebar__option--active"]
         : "border-white dark:border-dark-mode-black";
 
@@ -93,6 +119,15 @@ const Navbar = memo(function Navbar() {
                     onClick={handleOpenTrip}
                 >
                     <Route />
+                    <div
+                        className={styles["sidebar__option--bg-gradient"]}
+                    ></div>
+                </li>
+                <li
+                    className={`${styles.sidebar__option} ${styleIsActiveFavorite}`}
+                    onClick={handleOpenFavorite}
+                >
+                    <Bookmark />
                     <div
                         className={styles["sidebar__option--bg-gradient"]}
                     ></div>

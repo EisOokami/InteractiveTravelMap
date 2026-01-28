@@ -3,12 +3,14 @@ import { createSlice } from "@reduxjs/toolkit";
 interface UIState {
     openSearch: boolean;
     openTrip: boolean;
+    openFavorite: boolean;
     openPlaceDetails: boolean;
 }
 
 const initialState: UIState = {
     openSearch: false,
     openTrip: false,
+    openFavorite: false,
     openPlaceDetails: false,
 };
 
@@ -22,13 +24,20 @@ const uiSlice = createSlice({
         setOpenTrip: (state, action) => {
             state.openTrip = action.payload;
         },
+        setOpenFavorite: (state, action) => {
+            state.openFavorite = action.payload;
+        },
         setOpenPlaceDetails: (state, action) => {
             state.openPlaceDetails = action.payload;
         },
     },
 });
 
-export const { setOpenSearch, setOpenTrip, setOpenPlaceDetails } =
-    uiSlice.actions;
+export const {
+    setOpenSearch,
+    setOpenTrip,
+    setOpenFavorite,
+    setOpenPlaceDetails,
+} = uiSlice.actions;
 
 export default uiSlice.reducer;

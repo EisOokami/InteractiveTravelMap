@@ -36,12 +36,16 @@ import {
     setDates,
     updateDatesStorage,
 } from "@/libs/redux/features/dates/datesSlice";
+import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
 
 interface PlaceDetailsProps {
     positions: IPosition[];
 }
 
 export default function PlaceDetails({ positions }: PlaceDetailsProps) {
+    const favorites = useSelector(
+        (state: RootState) => state.favorites.favorites,
+    );
     const selectedPosition = useSelector(
         (state: RootState) => state.map.selectedPosition,
     );
@@ -64,6 +68,7 @@ export default function PlaceDetails({ positions }: PlaceDetailsProps) {
             : todayDate.getMonth() + 1
     }`;
     const positionId = selectedPosition !== null ? selectedPosition - 1 : 0;
+    const isFavorite = favorites.includes(positions[positionId].id);
 
     useEffect(() => {
         dispatch(setDates(datesStorage[positionId] || []));
@@ -132,6 +137,20 @@ export default function PlaceDetails({ positions }: PlaceDetailsProps) {
                         onClick={handleOpenPlaceDetails}
                     >
                         <ArrowLeft className="w-10 h-10 text-white" />
+                    </Button>
+                    <Button
+                        className="text-red-500 bg-white/90 dark:bg-dark-mode-black/90 rounded-full shadow-lg z-50"
+                        size="icon"
+                        variant="secondary"
+                        onClick={() =>
+                            positions[positionId] &&
+                            dispatch(toggleFavorite(positions[positionId].id))
+                        }
+                    >
+                        <Heart
+                            fill={isFavorite ? "#ef4444" : "transparent"}
+                            className="w-6 h-6"
+                        />
                     </Button>
                 </div>
                 <div className="relative w-full h-80">

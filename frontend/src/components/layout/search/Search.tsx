@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
 import { IPosition } from "@/interfaces/interfaces";
 

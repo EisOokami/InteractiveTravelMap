@@ -26,12 +26,16 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
+import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
 
 interface PlaceCardProps {
     position: IPosition;
 }
 
 export default function PlaceCard({ position }: PlaceCardProps) {
+    const favorites = useSelector(
+        (state: RootState) => state.favorites.favorites,
+    );
     const dispatch = useDispatch();
 
     const handleZoomLocation = (x: number, y: number, key: number) => {
@@ -42,6 +46,7 @@ export default function PlaceCard({ position }: PlaceCardProps) {
         dispatch(setOpenSearch(true));
     };
 
+    const isFavorite = favorites.includes(position.id);
 
     return (
         <div
@@ -51,6 +56,26 @@ export default function PlaceCard({ position }: PlaceCardProps) {
             className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
+                <Button
+                    onClick={(e) => {
+                        e.stopPropagation();
+
+                        dispatch(toggleFavorite(position.id));
+                    }}
+                    aria-label={
+                        isFavorite
+                            ? "Remove from favorites"
+                            : "Add to favorites"
+                    }
+                    className="absolute top-3 left-3 text-red-500 bg-white/90 hover:bg-gray-100 dark:bg-dark-mode-black/90 rounded-full hover:scale-110 transition-transform z-30"
+                    size="icon"
+                    variant="secondary"
+                >
+                    <Heart
+                        fill={isFavorite ? "#ef4444" : "transparent"}
+                        className="w-4 h-4"
+                    />
+                </Button>
                 <div className="relative w-full h-full max-h-52 rounded-t-xl pointer-events-none select-none">
                     <Image
                         src={position.img}
