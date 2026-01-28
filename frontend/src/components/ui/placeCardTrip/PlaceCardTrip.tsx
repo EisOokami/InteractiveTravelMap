@@ -69,7 +69,7 @@ export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                     <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
                         <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                            <Star className="w-3 h-3" />
+                            <Star className="w-3 h-3" fill="#fff" />
                             {place.rating}
                         </Badge>
                         <Badge className="hidden sm:block w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">

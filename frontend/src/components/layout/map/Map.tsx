@@ -171,7 +171,10 @@ export default function Map({ positions, mapRef }: MapProps) {
                                 <div className="absolute bottom-4 left-4 right-4">
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm font-semibold text-white bg-yellow-500 rounded-full">
-                                            <Star className="w-3 md:w-4 h-3 md:h-4" />
+                                            <Star
+                                                className="w-3 md:w-4 h-3 md:h-4"
+                                                fill="#fff"
+                                            />
                                             {position.rating}
                                         </div>
                                         <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">

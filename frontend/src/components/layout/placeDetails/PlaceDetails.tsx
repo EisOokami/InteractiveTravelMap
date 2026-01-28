@@ -167,7 +167,7 @@ export default function PlaceDetails({ positions }: PlaceDetailsProps) {
                     <div className="absolute bottom-4 left-4 right-4">
                         <div className="flex items-center gap-2 mb-2">
                             <Badge className="gap-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
-                                <Star className="w-4 h-4" />
+                                <Star className="w-4 h-4" fill="#fff" />
                                 {positions[positionId].rating}
                             </Badge>
                             <Badge className="text-sm text-white font-semibold bg-bright-blue rounded-full">

@@ -34,7 +34,10 @@ const features = [
                                 <div className="absolute bottom-4 left-4 right-4">
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm font-semibold text-white bg-yellow-500 rounded-full">
-                                            <Star className="w-3 md:w-4 h-3 md:h-4" />
+                                            <Star
+                                                className="w-3 md:w-4 h-3 md:h-4"
+                                                fill="#fff"
+                                            />
                                             {positionsData[0].rating}
                                         </div>
                                         <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">
@@ -97,7 +100,7 @@ const features = [
         title: "Search & Discover",
         description:
             "Browse through thousands of destinations or search for specific places you want to visit.",
-        component: (positionsData: IPositions[]) => (
+        component: (positionsData: IPosition[]) => (
             <div className="grid place-content-center h-44 lg:h-48 xl:h-full">
                 <PlaceFilterAndSort positionsData={positionsData} />
             </div>
@@ -161,7 +164,7 @@ const features = [
         title: "Start Your Journey",
         description:
             "Get directions, plan your route, and embark on your perfect adventure.",
-        component: (positionsData: IPositions[]) => (
+        component: (positionsData: IPosition[]) => (
             <div className="relative w-full h-44 lg:h-48 xl:h-full bg-[url(/line.svg)] bg-center bg-no-repeat bg-cover pointer-events-none select-none">
                 <div className="absolute top-7 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg">
                     <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">

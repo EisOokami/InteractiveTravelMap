@@ -87,7 +87,7 @@ export default function PlaceCard({ position }: PlaceCardProps) {
                 </div>
                 <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
                     <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                        <Star className="w-3 h-3" />
+                        <Star className="w-3 h-3" fill="#fff" />
                         {position.rating}
                     </Badge>
                     <Badge className="w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">

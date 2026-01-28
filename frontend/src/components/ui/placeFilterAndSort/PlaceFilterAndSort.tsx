@@ -251,7 +251,10 @@ export default function PlaceFilterAndSort({
                                     </SelectItem>
                                     <SelectItem value="rating_desc">
                                         <div className="flex items-center gap-2">
-                                            <Star className="h-4 w-4" />
+                                            <Star
+                                                className="h-4 w-4"
+                                                fill="#fff"
+                                            />
                                             <span>Highest Rated</span>
                                         </div>
                                     </SelectItem>

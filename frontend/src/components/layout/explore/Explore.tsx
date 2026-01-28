@@ -47,7 +47,7 @@ export default async function Explore() {
                                 />
                             </div>
                             <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 text-sm font-bold text-white bg-yellow-500 rounded-full shadow-lg">
-                                <Star className="w-3.5 h-3.5" />
+                                <Star className="w-3.5 h-3.5" fill="#fff" />
                                 {position.rating}
                             </div>
                             <div className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold text-white bg-bright-blue rounded-full">
