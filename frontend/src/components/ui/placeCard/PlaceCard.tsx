@@ -110,13 +110,13 @@ export default function PlaceCard({ position }: PlaceCardProps) {
                 </div>
                 <div>
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 lg:gap-2">
                             <Banknote className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-semibold text-black dark:text-white">
                                 {formatPrice(position.price)}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 lg:gap-2">
                             <Clock className="w-5 h-5 text-bright-blue" />
                             <span className="text-sm font-semibold text-black dark:text-white">
                                 {formatDuration(
