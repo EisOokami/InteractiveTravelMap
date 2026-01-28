@@ -66,7 +66,7 @@ export default function Header() {
                     </NavigationMenuList>
                 </NavigationMenu>
                 <div className="hidden md:flex justify-end items-center gap-3 w-64">
-                    <DarkModeBtn />
+                    <DarkModeBtn variant="outline" size="icon" />
                     <Button
                         className="inline-flex text-white bg-bright-blue hover:bg-blue-600"
                         asChild

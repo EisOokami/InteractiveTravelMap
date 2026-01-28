@@ -7,7 +7,6 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
-import MapDarkModeBtn from "@/components/ui/mapDarkModeBtn/MapDarkModeBtn";
 import Search from "@/components/layout/search/Search";
 import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
 import Favorite from "../favorite/Favorite";
@@ -23,6 +22,7 @@ import {
     setOpenPlaceDetails,
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
+import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -180,7 +180,10 @@ export default function MapPage({
                 </AnimatePresence>
                 <main className="md:relative grow h-full">
                     <Map positions={positionsData} mapRef={mapRef} />
-                    <MapDarkModeBtn />
+                    <DarkModeBtn
+                        variant="secondary"
+                        className="absolute top-20 left-2.5 p-2"
+                    />
                 </main>
             </div>
             <div className="md:hidden">
