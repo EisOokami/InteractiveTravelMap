@@ -31,7 +31,6 @@ import { Button } from "../shadcn/button";
 import { IPosition } from "@/interfaces/interfaces";
 import {
     Sheet,
-    SheetClose,
     SheetContent,
     SheetDescription,
     SheetFooter,
@@ -449,14 +448,12 @@ export default function PlaceFilterAndSort({
                         >
                             Reset
                         </Button>
-                        <SheetClose asChild>
-                            <Button
-                                className="flex-1 text-white bg-bright-blue hover:bg-blue-600"
-                                onClick={handleFilterPositions}
-                            >
-                                Apply Filters
-                            </Button>
-                        </SheetClose>
+                        <Button
+                            className="flex-1 text-white bg-bright-blue hover:bg-blue-600"
+                            onClick={handleFilterPositions}
+                        >
+                            Apply Filters
+                        </Button>
                     </div>
                 </SheetFooter>
             </SheetContent>
