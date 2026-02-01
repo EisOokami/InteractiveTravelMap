@@ -40,7 +40,13 @@ import {
     SheetTrigger,
 } from "../shadcn/sheet";
 import { ScrollArea } from "../shadcn/scroll-area";
+import { z } from "zod";
 import { FacilityKeys, SortOption } from "@/types/types";
+import { ZodErrors } from "../zodErrors/ZodErrors";
+
+const schema = z.object({
+    name: z.string().max(255, "Name must be less than 255 characters long"),
+});
 
 interface PlaceFilterAndSortProps {
     positionsData: IPosition[];
@@ -73,6 +79,7 @@ export default function PlaceFilterAndSort({
             wifi: false,
         },
     );
+    const [nameError, setNameError] = useState<string[] | undefined>();
 
     const categories = useMemo(
         () =>
@@ -106,6 +113,21 @@ export default function PlaceFilterAndSort({
         }
 
         const filteredResult = positionsData.filter((position) => {
+            const validatedFields = schema.safeParse({
+                name: position.name.toLowerCase().trim(),
+            });
+
+            if (!validatedFields.success) {
+                setNameError(
+                    z.flattenError(validatedFields.error).fieldErrors.name,
+                );
+
+                console.error(validatedFields.error.message);
+                throw new Error("Value must contain only numbers");
+            }
+
+            setNameError(undefined);
+
             const matchesSearch = position.name
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase());
@@ -216,6 +238,7 @@ export default function PlaceFilterAndSort({
                                         setSearchQuery(e.target.value)
                                     }
                                 />
+                                <ZodErrors error={nameError} />
                             </div>
                         </div>
                         <div className="grid gap-2">
