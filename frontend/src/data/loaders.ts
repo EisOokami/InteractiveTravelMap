@@ -23,7 +23,7 @@ async function fetchData(url: string) {
 }
 
 export async function getPositionsData(): Promise<IPosition[]> {
-    const url = new URL("/positions", baseUrl);
+    const url = new URL("/places", baseUrl);
 
     const fetchedData = await fetchData(url.href);
 
