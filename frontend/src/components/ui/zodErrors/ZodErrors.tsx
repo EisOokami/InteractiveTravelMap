@@ -1,5 +1,8 @@
 import { CircleAlert } from "lucide-react";
-import { ZodErrorsProps } from "./ZodErrors.interfaces";
+
+interface ZodErrorsProps {
+    error: string[] | undefined;
+}
 
 export function ZodErrors({ error }: Readonly<ZodErrorsProps>) {
     if (!error) {
