@@ -18,7 +18,7 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { IDateMap, IPosition } from "@/interfaces/interfaces";
+import { IDateMap, IPlace } from "@/interfaces/interfaces";
 import { Bike, Car, CircleCheck, Footprints, Info, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
@@ -35,11 +35,11 @@ import TransportButton from "@/components/ui/transportButton/TransportButton";
 import { Button } from "@/components/ui/shadcn/button";
 
 interface TripProps {
-    positions: IPosition[];
+    places: IPlace[];
     mapRef: RefObject<L.Map | null>;
 }
 
-export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
+export default function Trip({ places, mapRef }: Readonly<TripProps>) {
     const [isRoute, setIsRoute] = useState<string | null>(null);
     const [isNavigationDisabled, setIsNavigationDisabled] =
         useState<boolean>(false);
@@ -70,8 +70,8 @@ export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
     useEffect(() => {
         const datesMap: IDateMap = {};
 
-        Object.keys(datesStorage).forEach((positionId) => {
-            const dates = datesStorage[+positionId];
+        Object.keys(datesStorage).forEach((placeId) => {
+            const dates = datesStorage[+placeId];
 
             dates.forEach((dateObj) => {
                 if (dateObj.active) {
@@ -79,7 +79,7 @@ export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
                         datesMap[dateObj.date] = [];
                     }
 
-                    datesMap[dateObj.date].push(positions[+positionId]);
+                    datesMap[dateObj.date].push(places[+placeId]);
                 }
             });
         });
@@ -96,7 +96,7 @@ export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
             .map((date) => ({ date, places: datesMap[date] }));
 
         dispatch(setSortedDates(sortedDatesArray));
-    }, [datesStorage, dispatch, positions]);
+    }, [datesStorage, dispatch, places]);
 
     const convertTime = (totalSeconds: number): string => {
         const totalMinutes = totalSeconds / 60;
@@ -105,7 +105,7 @@ export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
         return `${hours}.${minutes.toString().padStart(2, "0")}`;
     };
 
-    const handleNavigation = (places: IPosition[], date: string) => {
+    const handleNavigation = (places: IPlace[], date: string) => {
         setIsNavigationDisabled(true);
         setIsRoute(null);
         dispatch(setRouteSegments([]));
@@ -176,7 +176,7 @@ export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
     const handleDragEnd = (
         event: DragEndEvent,
         date: string,
-        places: IPosition[],
+        places: IPlace[],
     ) => {
         const { active, over } = event;
 

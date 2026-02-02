@@ -11,7 +11,7 @@ import {
     LayerGroup,
     Popup,
 } from "react-leaflet";
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 import "leaflet/dist/leaflet.css";
 import "./Map.scss";
 import Image from "next/image";
@@ -32,7 +32,7 @@ import {
 } from "@/libs/redux/features/map/mapSlice";
 
 interface MapProps {
-    positions: IPosition[];
+    places: IPlace[];
     mapRef: RefObject<L.Map | null>;
 }
 
@@ -46,7 +46,7 @@ function ChangeView({ center }: Readonly<{ center: [number, number] }>) {
     return null;
 }
 
-export default function Map({ positions, mapRef }: Readonly<MapProps>) {
+export default function Map({ places, mapRef }: Readonly<MapProps>) {
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
     );
@@ -122,16 +122,16 @@ export default function Map({ positions, mapRef }: Readonly<MapProps>) {
                     />
                 </LayersControl.BaseLayer>
             </LayersControl>
-            {positions.map((position) => (
+            {places.map((place) => (
                 <Marker
-                    key={position.id}
-                    position={[position.x, position.y]}
+                    key={place.id}
+                    position={[place.x, place.y]}
                     icon={divIcon({
                         html: renderToString(
                             <div
                                 className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-400 cursor-pointer select-none ${
-                                    position.x === zoomLocationX &&
-                                    position.y === zoomLocationY &&
+                                    place.x === zoomLocationX &&
+                                    place.y === zoomLocationY &&
                                     openPlaceDetails
                                         ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
                                         : ""
@@ -139,8 +139,8 @@ export default function Map({ positions, mapRef }: Readonly<MapProps>) {
                             >
                                 <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
                                     <Image
-                                        src={position.img}
-                                        alt={position.name}
+                                        src={place.img}
+                                        alt={place.name}
                                         className="w-10 h-10 object-contain"
                                         width={50}
                                         height={50}
@@ -154,15 +154,15 @@ export default function Map({ positions, mapRef }: Readonly<MapProps>) {
                         popupAnchor: [0, -48],
                     })}
                     eventHandlers={{
-                        click: () => handleZoomLocation(position.x, position.y),
+                        click: () => handleZoomLocation(place.x, place.y),
                     }}
                 >
                     <Popup className="custom-popup" closeButton={true}>
                         <div className="w-full bg-white dark:bg-dark-mode-black overflow-hidden transition-colors">
                             <div className="relative w-full h-36 md:h-52">
                                 <Image
-                                    src={position.img}
-                                    alt={position.name}
+                                    src={place.img}
+                                    alt={place.name}
                                     className="w-full h-full object-cover"
                                     width={200}
                                     height={200}
@@ -175,31 +175,31 @@ export default function Map({ positions, mapRef }: Readonly<MapProps>) {
                                                 className="w-3 md:w-4 h-3 md:h-4"
                                                 fill="#fff"
                                             />
-                                            {position.rating}
+                                            {place.rating}
                                         </div>
                                         <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">
-                                            {position.category}
+                                            {place.category}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="px-4 md:px-6 py-4 md:py-5">
                                 <h3 className="mb-2 text-xl md:text-2xl font-bold text-black dark:text-white transition-colors line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
-                                    {position.name}
+                                    {place.name}
                                 </h3>
                                 <div className="flex items-center gap-2 mb-2 md:mb-4 text-gray-600 dark:text-gray-300">
                                     <MapPin className="min-w-4 md:min-w-5 min-h-4 md:min-h-5 text-bright-blue" />
                                     <span className="text-sm line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
-                                        {position.address}
+                                        {place.address}
                                     </span>
                                 </div>
                                 <p className="mb-3 md:mb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2 md:line-clamp-3">
-                                    {position.description_short}
+                                    {place.description_short}
                                 </p>
                                 <Button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleButtonClick(position.id);
+                                        handleButtonClick(place.id);
                                     }}
                                     className="w-full px-4 py-2 md:py-3 text-white font-semibold bg-bright-blue hover:bg-blue-600 rounded-lg transition-colors shadow-lg"
                                 >

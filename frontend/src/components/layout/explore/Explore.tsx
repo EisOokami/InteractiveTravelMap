@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/shadcn/button";
-import { getPositionsData } from "@/data/loaders";
+import { getPlacesData } from "@/data/loaders";
 import { formatDuration } from "@/libs/formatDuration";
 import { formatPrice } from "@/libs/formatPrice";
 import {
@@ -16,7 +16,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default async function Explore() {
-    const positionsData = await getPositionsData();
+    const placesData = await getPlacesData();
 
     return (
         <section
@@ -30,42 +30,42 @@ export default async function Explore() {
                 Explore trending places and hidden gems loved by travelers
             </p>
             <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-10 mt-10">
-                {positionsData.slice(0, 4).map((position) => (
+                {placesData.slice(0, 4).map((place) => (
                     <Link
-                        key={position.id}
-                        href={`/map?placeCard=${position.id}&x=${position.x}&y=${position.y}`}
+                        key={place.id}
+                        href={`/map?placeId=${place.id}&x=${place.x}&y=${place.y}`}
                         className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all group"
                     >
                         <div className="relative min-h-48 overflow-hidden rounded-t-xl">
                             <div className="relative w-full h-full max-h-52 rounded-t-xl">
                                 <Image
                                     className="w-full h-full object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300  pointer-events-none select-none"
-                                    src={position.img}
-                                    alt={position.name}
+                                    src={place.img}
+                                    alt={place.name}
                                     width={300}
                                     height={200}
                                 />
                             </div>
                             <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 text-sm font-bold text-white bg-yellow-500 rounded-full shadow-lg">
                                 <Star className="w-3.5 h-3.5" fill="#fff" />
-                                {position.rating}
+                                {place.rating}
                             </div>
                             <div className="absolute bottom-3 left-3 px-3 py-1 text-xs font-semibold text-white bg-bright-blue rounded-full">
-                                {position.category}
+                                {place.category}
                             </div>
                         </div>
                         <div className="grid content-between h-full p-4">
                             <div>
                                 <h3 className="mb-2 text-lg font-bold text-black dark:text-white line-clamp-2">
-                                    {position.name}
+                                    {place.name}
                                 </h3>
                                 <p className="mb-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                    {position.description_short}
+                                    {place.description_short}
                                 </p>
                                 <div className="flex items-center gap-2 mb-3 text-sm text-gray-600 dark:text-gray-400">
                                     <MapPin className="w-4 h-4 text-bright-blue" />
                                     <span className="truncate">
-                                        {position.location}
+                                        {place.location}
                                     </span>
                                 </div>
                             </div>
@@ -74,35 +74,35 @@ export default async function Explore() {
                                     <div className="flex items-center gap-2">
                                         <Banknote className="w-5 h-5 text-green-600" />
                                         <span className="text-sm font-semibold text-black dark:text-white">
-                                            {formatPrice(position.price)}
+                                            {formatPrice(place.price)}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Clock className="w-5 h-5 text-bright-blue" />
                                         <span className="text-sm font-semibold text-black dark:text-white">
                                             {formatDuration(
-                                                position.average_visit_duration,
+                                                place.average_visit_duration,
                                             )}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-3">
-                                    {position.facilities.parking && (
+                                    {place.facilities.parking && (
                                         <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                             <SquareParking className="w-3 h-3" />
                                         </div>
                                     )}
-                                    {position.facilities.pet_friendly && (
+                                    {place.facilities.pet_friendly && (
                                         <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                             <PawPrint className="w-3 h-3" />
                                         </div>
                                     )}
-                                    {position.facilities.wheelchair_access && (
+                                    {place.facilities.wheelchair_access && (
                                         <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                             <Accessibility className="w-3 h-3" />
                                         </div>
                                     )}
-                                    {position.facilities.wifi && (
+                                    {place.facilities.wifi && (
                                         <div className="flex items-center gap-1 px-2 py-1 text-xs text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                             <Wifi className="w-3 h-3" />
                                         </div>

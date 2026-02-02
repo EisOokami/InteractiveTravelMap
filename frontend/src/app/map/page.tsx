@@ -1,9 +1,9 @@
-import { getPositionsData } from "@/data/loaders";
+import { getPlacesData } from "@/data/loaders";
 
 import MapPageClient from "@/components/layout/mapPage/MapPage";
 
 export default async function MapPage() {
-    const positionsData = await getPositionsData();
+    const placesData = await getPlacesData();
 
-    return <MapPageClient positionsData={positionsData} />;
+    return <MapPageClient placesData={placesData} />;
 }

@@ -1,18 +1,20 @@
 import { Bookmark } from "lucide-react";
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 import { useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 
 interface FavoriteProps {
-    positions: IPosition[];
+    places: IPlace[];
 }
 
-export default function Favorite({ positions }: Readonly<FavoriteProps>) {
+export default function Favorite({ places }: Readonly<FavoriteProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );
-    const favoritePlaces = positions.filter((p) => favorites.includes(p.id));
+    const favoritePlaces = places.filter((place) =>
+        favorites.includes(place.id),
+    );
 
     return (
         <section className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1002] transition-colors">
@@ -23,8 +25,8 @@ export default function Favorite({ positions }: Readonly<FavoriteProps>) {
             </div>
             <div className="custom-scroll grid sm:grid-cols-2 gap-8 p-3 md:p-6 overflow-x-hidden overflow-y-auto">
                 {favoritePlaces.length ? (
-                    favoritePlaces.map((position) => (
-                        <PlaceCard key={position.id} position={position} />
+                    favoritePlaces.map((place) => (
+                        <PlaceCard key={place.id} place={place} />
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">

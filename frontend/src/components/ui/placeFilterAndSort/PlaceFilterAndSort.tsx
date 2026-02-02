@@ -28,7 +28,7 @@ import { Separator } from "../shadcn/separator";
 import { Slider } from "../shadcn/slider";
 import { Checkbox } from "../shadcn/checkbox";
 import { Button } from "../shadcn/button";
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 import {
     Sheet,
     SheetContent,
@@ -48,13 +48,13 @@ const schema = z.object({
 });
 
 interface PlaceFilterAndSortProps {
-    positionsData: IPosition[];
-    setFilteredPositions?: Dispatch<SetStateAction<IPosition[]>>;
+    placesData: IPlace[];
+    setFilteredPlaces?: Dispatch<SetStateAction<IPlace[]>>;
 }
 
 export default function PlaceFilterAndSort({
-    positionsData,
-    setFilteredPositions,
+    placesData,
+    setFilteredPlaces,
 }: Readonly<PlaceFilterAndSortProps>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSort, setSelectedSort] = useState<SortOption>("default");
@@ -62,7 +62,7 @@ export default function PlaceFilterAndSort({
     const [selectedLocation, setSelectedLocation] = useState<string>("all");
     const [priceRange, setPriceRange] = useState<number[]>([
         0,
-        positionsData.reduce(
+        placesData.reduce(
             (accumulator, currentValue) =>
                 accumulator > currentValue.price
                     ? accumulator
@@ -81,39 +81,33 @@ export default function PlaceFilterAndSort({
     const [nameError, setNameError] = useState<string[] | undefined>();
 
     const categories = useMemo(
-        () =>
-            Array.from(
-                new Set(positionsData.map((position) => position.category)),
-            ),
-        [positionsData],
+        () => Array.from(new Set(placesData.map((place) => place.category))),
+        [placesData],
     );
     const locations = useMemo(
-        () =>
-            Array.from(
-                new Set(positionsData.map((position) => position.location)),
-            ),
-        [positionsData],
+        () => Array.from(new Set(placesData.map((place) => place.location))),
+        [placesData],
     );
     const maxPrice = useMemo(
         () =>
-            positionsData.reduce(
+            placesData.reduce(
                 (accumulator, currentValue) =>
                     accumulator > currentValue.price
                         ? accumulator
                         : currentValue.price,
                 0,
             ),
-        [positionsData],
+        [placesData],
     );
 
-    const handleFilterPositions = useCallback(() => {
-        if (!setFilteredPositions) {
+    const handleFilterPlaces = useCallback(() => {
+        if (!setFilteredPlaces) {
             return;
         }
 
-        const filteredResult = positionsData.filter((position) => {
+        const filteredResult = placesData.filter((place) => {
             const validatedFields = schema.safeParse({
-                name: position.name.toLowerCase().trim(),
+                name: place.name.toLowerCase().trim(),
             });
 
             if (!validatedFields.success) {
@@ -127,26 +121,25 @@ export default function PlaceFilterAndSort({
 
             setNameError(undefined);
 
-            const matchesSearch = position.name
+            const matchesSearch = place.name
                 .toLowerCase()
                 .includes(searchQuery.toLowerCase());
 
             const matchesCategory =
                 selectedCategory === "all" ||
-                position.category === selectedCategory;
+                place.category === selectedCategory;
 
             const matchesLocation =
                 selectedLocation === "all" ||
-                position.location === selectedLocation;
+                place.location === selectedLocation;
 
             const matchesPrice =
-                position.price >= priceRange[0] &&
-                position.price <= priceRange[1];
+                place.price >= priceRange[0] && place.price <= priceRange[1];
 
             const matchesFacilities = (
                 Object.keys(facilities) as FacilityKeys[]
             ).every((key) => {
-                return !facilities[key] || position.facilities[key];
+                return !facilities[key] || place.facilities[key];
             });
 
             return (
@@ -175,7 +168,7 @@ export default function PlaceFilterAndSort({
             }
         });
 
-        setFilteredPositions(filteredResult);
+        setFilteredPlaces(filteredResult);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
@@ -184,7 +177,7 @@ export default function PlaceFilterAndSort({
         selectedLocation,
         priceRange,
         facilities,
-        positionsData,
+        placesData,
     ]);
 
     const handleResetFilters = () => {
@@ -450,7 +443,7 @@ export default function PlaceFilterAndSort({
                         </Button>
                         <Button
                             className="flex-1 text-white bg-bright-blue hover:bg-blue-600"
-                            onClick={handleFilterPositions}
+                            onClick={handleFilterPlaces}
                         >
                             Apply Filters
                         </Button>

@@ -1,4 +1,4 @@
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 import Image from "next/image";
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
@@ -22,37 +22,35 @@ import {
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
 import {
-    setSelectedPosition,
+    setSelectedPlace,
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
 import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
 
 interface PlaceCardProps {
-    position: IPosition;
+    place: IPlace;
 }
 
-export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
+export default function PlaceCard({ place }: Readonly<PlaceCardProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );
     const dispatch = useDispatch();
 
-    const handleZoomLocation = (x: number, y: number, key: number) => {
+    const handleZoomLocation = (x: number, y: number, placeId: number) => {
         dispatch(setZoomLocationX(x));
         dispatch(setZoomLocationY(y));
-        dispatch(setSelectedPosition(key));
+        dispatch(setSelectedPlace(placeId));
         dispatch(setOpenPlaceDetails(true));
         dispatch(setOpenSearch(true));
     };
 
-    const isFavorite = favorites.includes(position.id);
+    const isFavorite = favorites.includes(place.id);
 
     return (
         <div
-            onClick={() =>
-                handleZoomLocation(position.x, position.y, position.id)
-            }
+            onClick={() => handleZoomLocation(place.x, place.y, place.id)}
             className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
@@ -60,7 +58,7 @@ export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
                     onClick={(e) => {
                         e.stopPropagation();
 
-                        dispatch(toggleFavorite(position.id));
+                        dispatch(toggleFavorite(place.id));
                     }}
                     aria-label={
                         isFavorite
@@ -78,8 +76,8 @@ export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
                 </Button>
                 <div className="relative w-full h-full max-h-52 rounded-t-xl pointer-events-none select-none">
                     <Image
-                        src={position.img}
-                        alt={position.name}
+                        src={place.img}
+                        alt={place.name}
                         width={300}
                         height={200}
                         className="w-full h-full object-cover rounded-t-xl group-hover:scale-105 transition-transform duration-300"
@@ -88,24 +86,24 @@ export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
                 <div className="absolute bottom-3 left-3 grid lg:flex items-center gap-1.5">
                     <Badge className="gap-1 w-fit text-xs font-bold text-white bg-yellow-500 rounded-full shadow-lg">
                         <Star className="w-3 h-3" fill="#fff" />
-                        {position.rating}
+                        {place.rating}
                     </Badge>
                     <Badge className="w-fit text-xs font-semibold text-white bg-bright-blue rounded-full">
-                        {position.category}
+                        {place.category}
                     </Badge>
                 </div>
             </div>
             <div className="grid content-between h-full p-4">
                 <div>
                     <h3 className="mb-2 text-lg font-bold text-black dark:text-white line-clamp-2">
-                        {position.name}
+                        {place.name}
                     </h3>
                     <p className="mb-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                        {position.description_short}
+                        {place.description_short}
                     </p>
                     <div className="flex items-center gap-2 mb-3 text-sm text-gray-600 dark:text-gray-400">
                         <MapPin className="w-4 h-4 text-bright-blue" />
-                        <span className="truncate">{position.location}</span>
+                        <span className="truncate">{place.location}</span>
                     </div>
                 </div>
                 <div>
@@ -113,35 +111,33 @@ export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
                         <div className="flex items-center gap-1 lg:gap-2">
                             <Banknote className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-semibold text-black dark:text-white">
-                                {formatPrice(position.price)}
+                                {formatPrice(place.price)}
                             </span>
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2">
                             <Clock className="w-5 h-5 text-bright-blue" />
                             <span className="text-sm font-semibold text-black dark:text-white">
-                                {formatDuration(
-                                    position.average_visit_duration,
-                                )}
+                                {formatDuration(place.average_visit_duration)}
                             </span>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-3">
-                        {position.facilities.parking && (
+                        {place.facilities.parking && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <ParkingSquare className="w-3 h-3" />
                             </Badge>
                         )}
-                        {position.facilities.pet_friendly && (
+                        {place.facilities.pet_friendly && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <PawPrint className="w-3 h-3" />
                             </Badge>
                         )}
-                        {position.facilities.wheelchair_access && (
+                        {place.facilities.wheelchair_access && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <Accessibility className="w-3 h-3" />
                             </Badge>
                         )}
-                        {position.facilities.wifi && (
+                        {place.facilities.wifi && (
                             <Badge className="px-1.5 py-1 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded">
                                 <Wifi className="w-3 h-3" />
                             </Badge>

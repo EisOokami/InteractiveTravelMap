@@ -8,7 +8,7 @@ interface DateButtonProps {
     dates: IDate[];
     setDates: (value: IDate[]) => void;
     updateDatesStorage: (value: { markerId: number; dates: IDate[] }) => void;
-    positionId: number;
+    placeId: number;
 }
 
 export default function DateButton({
@@ -18,7 +18,7 @@ export default function DateButton({
     dates,
     setDates,
     updateDatesStorage,
-    positionId,
+    placeId,
 }: Readonly<DateButtonProps>) {
     const handleActivateDate = (id: number) => {
         const updatedDates = dates.map((dateObj) => {
@@ -29,7 +29,7 @@ export default function DateButton({
         });
 
         setDates(updatedDates);
-        updateDatesStorage({ markerId: positionId, dates: updatedDates });
+        updateDatesStorage({ markerId: placeId, dates: updatedDates });
     };
 
     return (

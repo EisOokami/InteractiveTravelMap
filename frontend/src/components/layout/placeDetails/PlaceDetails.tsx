@@ -37,13 +37,14 @@ import {
     updateDatesStorage,
 } from "@/libs/redux/features/dates/datesSlice";
 import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
+import { IPlace } from "@/interfaces/interfaces";
 
 interface PlaceDetailsProps {
-    positions: IPosition[];
+    placeDetailsData: IPlace;
 }
 
 export default function PlaceDetails({
-    positions,
+    placeDetailsData,
 }: Readonly<PlaceDetailsProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
@@ -69,12 +70,12 @@ export default function PlaceDetails({
             ? "0" + (todayDate.getMonth() + 1)
             : todayDate.getMonth() + 1
     }`;
-    const positionId = selectedPosition !== null ? selectedPosition - 1 : 0;
-    const isFavorite = favorites.includes(positions[positionId].id);
+    const placeId = selectedPosition !== null ? selectedPosition - 1 : 0;
+    const isFavorite = favorites.includes(placeDetailsData[placeId].id);
 
     useEffect(() => {
-        dispatch(setDates(datesStorage[positionId] || []));
-    }, [dispatch, datesStorage, positionId]);
+        dispatch(setDates(datesStorage[placeId] || []));
+    }, [dispatch, datesStorage, placeId]);
 
     useEffect(() => {
         if (!dates.some((dateObj) => dateObj.date === formattedTodayDate)) {
@@ -89,10 +90,13 @@ export default function PlaceDetails({
 
             dispatch(setDates(newDates));
             dispatch(
-                updateDatesStorage({ markerId: positionId, dates: newDates }),
+                updateDatesStorage({
+                    markerId: placeId,
+                    dates: newDates,
+                }),
             );
         }
-    }, [dispatch, formattedTodayDate, dates, positionId]);
+    }, [dispatch, formattedTodayDate, dates, placeId]);
 
     useEffect(() => {
         const isAnyDateActive = dates.some((d) => d.active);
@@ -103,7 +107,7 @@ export default function PlaceDetails({
         }
     }, [dates, routingControl, dispatch]);
 
-    const handleDateStorage = useCallback(() => {
+    const handleDateStorage = () => {
         const nextDay = new Date(todayDate);
         nextDay.setDate(todayDate.getDate() + dates.length);
         const formattedNextDay = `${
@@ -120,8 +124,13 @@ export default function PlaceDetails({
         ];
 
         dispatch(setDates(newDates));
-        dispatch(updateDatesStorage({ markerId: positionId, dates: newDates }));
-    }, [dates, dispatch, positionId, todayDate]);
+        dispatch(
+            updateDatesStorage({
+                markerId: placeId,
+                dates: newDates,
+            }),
+        );
+    };
 
     const handleOpenPlaceDetails = () => {
         dispatch(setOpenPlaceDetails(false));
@@ -145,8 +154,10 @@ export default function PlaceDetails({
                         size="icon"
                         variant="secondary"
                         onClick={() =>
-                            positions[positionId] &&
-                            dispatch(toggleFavorite(positions[positionId].id))
+                            placeDetailsData[placeId] &&
+                            dispatch(
+                                toggleFavorite(placeDetailsData[placeId].id),
+                            )
                         }
                     >
                         <Heart
@@ -159,8 +170,8 @@ export default function PlaceDetails({
                     <div className="relative w-full h-full">
                         <Image
                             className="w-full h-full object-cover"
-                            src={positions[positionId].img}
-                            alt={positions[positionId].name}
+                            src={placeDetailsData[placeId].img}
+                            alt={placeDetailsData[placeId].name}
                             width={600}
                             height={320}
                         />
@@ -170,38 +181,39 @@ export default function PlaceDetails({
                         <div className="flex items-center gap-2 mb-2">
                             <Badge className="gap-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
                                 <Star className="w-4 h-4" fill="#fff" />
-                                {positions[positionId].rating}
+                                {placeDetailsData[placeId].rating}
                             </Badge>
                             <Badge className="text-sm text-white font-semibold bg-bright-blue rounded-full">
-                                {positions[positionId].category}
+                                {placeDetailsData[placeId].category}
                             </Badge>
                         </div>
                     </div>
                 </div>
                 <div className="px-6 py-6">
                     <h1 className="mb-2 text-3xl font-bold text-black dark:text-white transition-colors">
-                        {positions[positionId].name}
+                        {placeDetailsData[placeId].name}
                     </h1>
                     <div className="flex items-center gap-2 mb-4 text-gray-600 dark:text-gray-300">
                         <MapPin className="w-5 h-5 text-bright-blue" />
                         <span className="text-sm">
-                            {positions[positionId].address}
+                            {placeDetailsData[placeId].address}
                         </span>
                     </div>
                     <p className="mb-6 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {positions[positionId].description_full}
+                        {placeDetailsData[placeId].description_full}
                     </p>
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <InfoCard
                             icon={Banknote}
                             title="Price"
-                            info={formatPrice(positions[positionId].price)}
+                            info={formatPrice(placeDetailsData[placeId].price)}
                         />
                         <InfoCard
                             icon={Clock}
                             title="Duration"
                             info={formatDuration(
-                                positions[positionId].average_visit_duration,
+                                placeDetailsData[placeId]
+                                    .average_visit_duration,
                             )}
                         />
                     </div>
@@ -211,7 +223,9 @@ export default function PlaceDetails({
                             Working Hours
                         </h2>
                         <WorkingHours
-                            workingHours={positions[positionId].working_hours}
+                            workingHours={
+                                placeDetailsData[placeId].working_hours
+                            }
                         />
                     </div>
                     <div className="mb-6">
@@ -219,34 +233,35 @@ export default function PlaceDetails({
                             Facilities
                         </h2>
                         <div className="flex flex-wrap gap-3">
-                            {positions[positionId].facilities.parking && (
+                            {placeDetailsData[placeId].facilities.parking && (
                                 <FacilityBadge
                                     icon={ParkingSquare}
                                     name="Parking"
                                 />
                             )}
-                            {positions[positionId].facilities.pet_friendly && (
+                            {placeDetailsData[placeId].facilities
+                                .pet_friendly && (
                                 <FacilityBadge
                                     icon={PawPrint}
                                     name="Pet Friendly"
                                 />
                             )}
-                            {positions[positionId].facilities
+                            {placeDetailsData[placeId].facilities
                                 .wheelchair_access && (
                                 <FacilityBadge
                                     icon={Accessibility}
                                     name="Wheelchair Access"
                                 />
                             )}
-                            {positions[positionId].facilities.wifi && (
+                            {placeDetailsData[placeId].facilities.wifi && (
                                 <FacilityBadge icon={Wifi} name="WiFi" />
                             )}
-                            {!positions[positionId].facilities.parking &&
-                                !positions[positionId].facilities
+                            {!placeDetailsData[placeId].facilities.parking &&
+                                !placeDetailsData[placeId].facilities
                                     .pet_friendly &&
-                                !positions[positionId].facilities
+                                !placeDetailsData[placeId].facilities
                                     .wheelchair_access &&
-                                !positions[positionId].facilities.wifi && (
+                                !placeDetailsData[placeId].facilities.wifi && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                         No facilities information available
                                     </p>
@@ -265,7 +280,7 @@ export default function PlaceDetails({
                                     active={date.active}
                                     date={date.date}
                                     dates={dates}
-                                    positionId={positionId}
+                                    placeId={placeId}
                                     setDates={(value) =>
                                         dispatch(setDates(value))
                                     }

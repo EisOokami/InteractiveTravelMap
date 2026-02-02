@@ -5,6 +5,7 @@ import { IPosition } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
+import { IPlace } from "@/interfaces/interfaces";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import Search from "@/components/layout/search/Search";
@@ -58,10 +59,10 @@ const animationSettings = {
 };
 
 interface MapPageProps {
-    positionsData: IPlace[];
+    placesData: IPlace[];
 }
 
-export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
+export default function MapPage({ placesData }: Readonly<MapPageProps>) {
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const searchParams = useSearchParams();
     const search = searchParams.get("placeCard");
@@ -105,14 +106,18 @@ export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
     }, [favorites, isInitialized]);
 
     useEffect(() => {
-        dispatch(setOpenSearch(!!search));
+        if (!placeId) {
+            return;
+        }
+
+        dispatch(setOpenSearch(!!placeId));
 
         dispatch(
-            setOpenPlaceDetails(search && Number.isInteger(Number(search))),
+            setOpenPlaceDetails(placeId && Number.isInteger(Number(placeId))),
         );
 
-        if (Number.isInteger(Number(search))) {
-            dispatch(setSelectedPosition(Number(search)));
+        if (Number.isInteger(Number(placeId))) {
+            dispatch(setSelectedPlace(Number(placeId)));
         }
 
         if (x) {
@@ -122,7 +127,7 @@ export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
         if (y) {
             dispatch(setZoomLocationY(+y));
         }
-    }, [dispatch, search, x, y]);
+    }, [dispatch, placeId, x, y]);
 
     return (
         <section className="flex flex-col h-svh">
@@ -140,10 +145,10 @@ export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
                             animate="animate"
                             exit="exit"
                         >
-                            <Search positions={positionsData} />
+                            <Search places={placesData} />
                             {openPlaceDetails && openSearch && (
                                 <Suspense fallback={<PlaceDetailsSkeleton />}>
-                                    <PlaceDetails positions={positionsData} />
+                                    <PlaceDetails placeDetailsData={placeDetailsData} />
                                 </Suspense>
                             )}
                         </motion.div>
@@ -157,7 +162,7 @@ export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
                             animate="animate"
                             exit="exit"
                         >
-                            <Trip positions={positionsData} mapRef={mapRef} />
+                            <Trip places={placesData} mapRef={mapRef} />
                         </motion.div>
                     )}
                     {openFavorite && (
@@ -169,17 +174,17 @@ export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
                             animate="animate"
                             exit="exit"
                         >
-                            <Favorite positions={positionsData} />
+                            <Favorite places={placesData} />
                             {openPlaceDetails && openFavorite && (
                                 <Suspense fallback={<PlaceDetailsSkeleton />}>
-                                    <PlaceDetails positions={positionsData} />
+                                    <PlaceDetails placeDetailsData={placeDetailsData} />
                                 </Suspense>
                             )}
                         </motion.div>
                     )}
                 </AnimatePresence>
                 <main className="md:relative grow h-full">
-                    <Map positions={positionsData} mapRef={mapRef} />
+                    <Map places={placesData} mapRef={mapRef} />
                     <DarkModeBtn
                         variant="secondary"
                         className="absolute top-20 left-2.5 p-2"

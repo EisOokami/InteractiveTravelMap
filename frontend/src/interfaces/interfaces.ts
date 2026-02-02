@@ -8,7 +8,7 @@ export interface IDateStorage {
     [key: number]: IDate[];
 }
 
-export interface IPosition {
+export interface IPlace {
     id: number;
     name: string;
     location: string;
@@ -42,7 +42,7 @@ export interface IPosition {
 
 export interface ISortedDate {
     date: string;
-    places: IPosition[];
+    places: IPlace[];
 }
 
 export interface IRouteSegment {
@@ -51,5 +51,5 @@ export interface IRouteSegment {
 }
 
 export interface IDateMap {
-    [key: string]: IPosition[];
+    [key: string]: IPlace[];
 }

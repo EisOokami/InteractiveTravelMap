@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getPositionsData } from "@/data/loaders";
+import { getPlacesData } from "@/data/loaders";
 import { MapPin, Star } from "lucide-react";
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 import { Button } from "@/components/ui/shadcn/button";
 
@@ -12,7 +12,7 @@ const features = [
         title: "Explore on Map",
         description:
             "View all places on an interactive map, see photos, ratings, and detailed information.",
-        component: (positionsData: IPosition[]) => (
+        component: (placesData: IPlace[]) => (
             <div className="relative grid content-center justify-items-center h-40 bg-[url(/map1.png)] bg-center">
                 <input
                     type="checkbox"
@@ -24,8 +24,8 @@ const features = [
                         <div className="w-full bg-white dark:bg-dark-mode-black dark:border rounded-xl shadow-xl overflow-hidden transition-colors">
                             <div className="relative w-full h-36 md:h-52">
                                 <Image
-                                    src={positionsData[0].img}
-                                    alt={positionsData[0].name}
+                                    src={placesData[0].img}
+                                    alt={placesData[0].name}
                                     className="w-full h-full object-cover"
                                     width={320}
                                     height={210}
@@ -38,33 +38,33 @@ const features = [
                                                 className="w-3 md:w-4 h-3 md:h-4"
                                                 fill="#fff"
                                             />
-                                            {positionsData[0].rating}
+                                            {placesData[0].rating}
                                         </div>
                                         <span className="px-3 py-1 text-xs md:text-sm text-white font-semibold bg-bright-blue rounded-full">
-                                            {positionsData[0].category}
+                                            {placesData[0].category}
                                         </span>
                                     </div>
                                 </div>
                             </div>
                             <div className="px-4 md:px-6 py-4 md:py-5">
                                 <h3 className="mb-2 text-xl md:text-2xl font-bold text-black dark:text-white transition-colors line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
-                                    {positionsData[0].name}
+                                    {placesData[0].name}
                                 </h3>
                                 <div className="flex items-center gap-2 mb-2 md:mb-4 text-gray-600 dark:text-gray-300">
                                     <MapPin className="min-w-4 md:min-w-5 min-h-4 md:min-h-5 text-bright-blue" />
                                     <span className="text-sm line-clamp-1 sm:line-clamp-2 md:line-clamp-none">
-                                        {positionsData[0].address}
+                                        {placesData[0].address}
                                     </span>
                                 </div>
                                 <p className="mb-3 md:mb-5 text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2 md:line-clamp-3">
-                                    {positionsData[0].description_short}
+                                    {placesData[0].description_short}
                                 </p>
                                 <Button
                                     className="w-full px-4 py-2 md:py-3 text-white font-semibold bg-bright-blue hover:bg-blue-600 rounded-lg transition-colors shadow-lg"
                                     asChild
                                 >
                                     <Link
-                                        href={`/map?placeCard=${positionsData[0].id}&x=${positionsData[0].x}&y=${positionsData[0].y}`}
+                                        href={`/map?placeCard=${placesData[0].id}&x=${placesData[0].x}&y=${placesData[0].y}`}
                                     >
                                         More Details
                                     </Link>
@@ -83,8 +83,8 @@ const features = [
                     <div className="marker flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 cursor-pointer transition-all duration-400">
                         <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
                             <Image
-                                src={positionsData[0].img}
-                                alt={positionsData[0].name}
+                                src={placesData[0].img}
+                                alt={placesData[0].name}
                                 className="w-10 h-10 object-cover pointer-events-none select-none"
                                 width={50}
                                 height={50}
@@ -100,9 +100,9 @@ const features = [
         title: "Search & Discover",
         description:
             "Browse through thousands of destinations or search for specific places you want to visit.",
-        component: (positionsData: IPosition[]) => (
+        component: (placesData: IPlace[]) => (
             <div className="grid place-content-center h-44 lg:h-48 xl:h-full">
-                <PlaceFilterAndSort positionsData={positionsData} />
+                <PlaceFilterAndSort placesData={placesData} />
             </div>
         ),
     },
@@ -164,13 +164,13 @@ const features = [
         title: "Start Your Journey",
         description:
             "Get directions, plan your route, and embark on your perfect adventure.",
-        component: (positionsData: IPosition[]) => (
+        component: (placesData: IPlace[]) => (
             <div className="relative w-full h-44 lg:h-48 xl:h-full bg-[url(/line.svg)] bg-center bg-no-repeat bg-cover pointer-events-none select-none">
                 <div className="absolute top-7 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg">
                     <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
                         <Image
-                            src={positionsData[0].img}
-                            alt={positionsData[0].name}
+                            src={placesData[0].img}
+                            alt={placesData[0].name}
                             className="w-10 h-10 object-cover"
                             width={50}
                             height={50}
@@ -180,8 +180,8 @@ const features = [
                 <div className="absolute right-0 bottom-7 flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg">
                     <div className="flex justify-center items-center w-9 h-9 overflow-hidden rounded-full">
                         <Image
-                            src={positionsData[1].img}
-                            alt={positionsData[1].name}
+                            src={placesData[1].img}
+                            alt={placesData[1].name}
                             className="w-10 h-10 object-cover"
                             width={50}
                             height={50}
@@ -194,7 +194,7 @@ const features = [
 ];
 
 export default async function HowItWorks() {
-    const positionsData = await getPositionsData();
+    const placesData = await getPlacesData();
 
     return (
         <section
@@ -224,7 +224,7 @@ export default async function HowItWorks() {
                             </h3>
                         </div>
                         <div className="relative h-full mb-5">
-                            {feature.component(positionsData)}
+                            {feature.component(placesData)}
                         </div>
                         <p className="self-end text-muted-foreground leading-relaxed">
                             {feature.description}
