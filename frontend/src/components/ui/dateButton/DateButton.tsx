@@ -19,7 +19,7 @@ export default function DateButton({
     setDates,
     updateDatesStorage,
     positionId,
-}: DateButtonProps) {
+}: Readonly<DateButtonProps>) {
     const handleActivateDate = (id: number) => {
         const updatedDates = dates.map((dateObj) => {
             if (dateObj.id === id) {

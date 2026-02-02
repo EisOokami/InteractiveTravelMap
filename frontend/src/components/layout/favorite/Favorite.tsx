@@ -8,7 +8,7 @@ interface FavoriteProps {
     positions: IPosition[];
 }
 
-export default function Favorite({ positions }: FavoriteProps) {
+export default function Favorite({ positions }: Readonly<FavoriteProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );

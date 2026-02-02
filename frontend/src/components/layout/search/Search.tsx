@@ -11,7 +11,7 @@ interface SearchProps {
     positions: IPosition[];
 }
 
-export default function Search({ positions }: SearchProps) {
+export default function Search({ positions }: Readonly<SearchProps>) {
     const [filteredPositions, setFilteredPositions] =
         useState<IPosition[]>(positions);
 

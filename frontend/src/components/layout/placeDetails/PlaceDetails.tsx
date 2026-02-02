@@ -42,7 +42,9 @@ interface PlaceDetailsProps {
     positions: IPosition[];
 }
 
-export default function PlaceDetails({ positions }: PlaceDetailsProps) {
+export default function PlaceDetails({
+    positions,
+}: Readonly<PlaceDetailsProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );

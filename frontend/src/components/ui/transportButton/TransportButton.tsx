@@ -15,7 +15,7 @@ export default function TransportButton({
     label,
     icon: Icon,
     setTransportMode,
-}: TransportButtonProps) {
+}: Readonly<TransportButtonProps>) {
     return (
         <Button
             onClick={() => setTransportMode(id)}

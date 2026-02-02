@@ -18,7 +18,7 @@ export default function CategoryDropdown({
     uniqueCategories,
     selectedCategory,
     setSelectedCategory,
-}: CategoryDropdownProps) {
+}: Readonly<CategoryDropdownProps>) {
     const handleCategoryChange = (category: string) => {
         setSelectedCategory(category);
     };

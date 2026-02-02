@@ -55,7 +55,7 @@ interface PlaceFilterAndSortProps {
 export default function PlaceFilterAndSort({
     positionsData,
     setFilteredPositions,
-}: PlaceFilterAndSortProps) {
+}: Readonly<PlaceFilterAndSortProps>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedSort, setSelectedSort] = useState<SortOption>("default");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");

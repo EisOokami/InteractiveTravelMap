@@ -36,7 +36,7 @@ interface MapProps {
     mapRef: RefObject<L.Map | null>;
 }
 
-function ChangeView({ center }: { center: [number, number] }) {
+function ChangeView({ center }: Readonly<{ center: [number, number] }>) {
     const map = useMap();
 
     useEffect(() => {
@@ -46,7 +46,7 @@ function ChangeView({ center }: { center: [number, number] }) {
     return null;
 }
 
-export default function Map({ positions, mapRef }: MapProps) {
+export default function Map({ positions, mapRef }: Readonly<MapProps>) {
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
     );

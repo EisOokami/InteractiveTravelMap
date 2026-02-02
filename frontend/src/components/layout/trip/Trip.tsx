@@ -39,7 +39,7 @@ interface TripProps {
     mapRef: RefObject<L.Map | null>;
 }
 
-export default function Trip({ positions, mapRef }: TripProps) {
+export default function Trip({ positions, mapRef }: Readonly<TripProps>) {
     const [isRoute, setIsRoute] = useState<string | null>(null);
     const [isNavigationDisabled, setIsNavigationDisabled] =
         useState<boolean>(false);

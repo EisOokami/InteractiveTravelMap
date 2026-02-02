@@ -57,11 +57,11 @@ const animationSettings = {
     },
 };
 
-export default function MapPage({
-    positionsData,
-}: {
-    positionsData: IPosition[];
-}) {
+interface MapPageProps {
+    positionsData: IPlace[];
+}
+
+export default function MapPage({ positionsData }: Readonly<MapPageProps>) {
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const searchParams = useSearchParams();
     const search = searchParams.get("placeCard");

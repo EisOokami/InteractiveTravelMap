@@ -24,7 +24,7 @@ interface PlaceCardTripProps {
     convertTime: (totalSeconds: number) => string;
 }
 
-export default function PlaceCardTrip({ place }: PlaceCardTripProps) {
+export default function PlaceCardTrip({ place }: Readonly<PlaceCardTripProps>) {
     const {
         attributes,
         listeners,

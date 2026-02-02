@@ -32,7 +32,7 @@ interface PlaceCardProps {
     position: IPosition;
 }
 
-export default function PlaceCard({ position }: PlaceCardProps) {
+export default function PlaceCard({ position }: Readonly<PlaceCardProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );

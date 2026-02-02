@@ -5,7 +5,9 @@ interface WorkingHoursProps {
     workingHours: IPosition["working_hours"];
 }
 
-export default function WorkingHours({ workingHours }: WorkingHoursProps) {
+export default function WorkingHours({
+    workingHours,
+}: Readonly<WorkingHoursProps>) {
     const getDayName = (key: WeekDays) => {
         const days: Record<WeekDays, string> = {
             mon: "Monday",

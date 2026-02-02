@@ -22,7 +22,7 @@ export default function DarkModeBtn({
     variant,
     size,
     className,
-}: DarkModeBtnProps) {
+}: Readonly<DarkModeBtnProps>) {
     const { theme, setTheme } = useTheme();
 
     const toggleDarkMode = () => {

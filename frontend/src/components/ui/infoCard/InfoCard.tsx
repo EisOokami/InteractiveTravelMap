@@ -6,7 +6,11 @@ interface InfoCardProps {
     info: string;
 }
 
-export default function InfoCard({ icon: Icon, title, info }: InfoCardProps) {
+export default function InfoCard({
+    icon: Icon,
+    title,
+    info,
+}: Readonly<InfoCardProps>) {
     return (
         <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
             <Icon className="w-6 h-6 text-bright-blue" />
