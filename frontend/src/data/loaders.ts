@@ -1,6 +1,6 @@
 "use server";
 
-import { IPosition } from "@/interfaces/interfaces";
+import { IPlace } from "@/interfaces/interfaces";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 

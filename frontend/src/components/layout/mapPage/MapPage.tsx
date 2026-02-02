@@ -15,7 +15,7 @@ import { RootState } from "@/libs/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setFavorites } from "@/libs/redux/features/favorites/favoritesSlice";
 import {
-    setSelectedPosition,
+    setSelectedPlace,
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
