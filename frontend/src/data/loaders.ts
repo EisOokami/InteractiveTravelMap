@@ -39,3 +39,21 @@ export async function getPlacesData(): Promise<IPlace[]> {
 
     return fetchedData;
 }
+
+export async function getPlaceData(placeId: number | string): Promise<IPlace> {
+    const url = new URL(`/places/${placeId}`, baseUrl);
+
+    const fetchedData = await fetchData(url.href);
+
+    if (fetchedData.error) {
+        throw new Error(
+            JSON.stringify({
+                error: fetchedData.error,
+                status: fetchedData.status,
+                description: fetchedData.message,
+            }),
+        );
+    }
+
+    return fetchedData;
+}

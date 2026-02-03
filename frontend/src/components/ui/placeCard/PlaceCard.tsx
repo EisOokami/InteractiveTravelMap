@@ -1,7 +1,7 @@
 import { IPlace } from "@/interfaces/interfaces";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Badge } from "../shadcn/badge";
-import { Button } from "../shadcn/button";
+import { useDispatch, useSelector } from "react-redux";
 import {
     Accessibility,
     Banknote,
@@ -15,18 +15,20 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 import {
+    setOpenFavorite,
     setOpenPlaceDetails,
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
 import {
-    setSelectedPlace,
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
 import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
+
+import { Badge } from "../shadcn/badge";
+import { Button } from "../shadcn/button";
 
 interface PlaceCardProps {
     place: IPlace;
@@ -37,13 +39,16 @@ export default function PlaceCard({ place }: Readonly<PlaceCardProps>) {
         (state: RootState) => state.favorites.favorites,
     );
     const dispatch = useDispatch();
+    const pathname = usePathname();
+    const router = useRouter();
 
     const handleZoomLocation = (x: number, y: number, placeId: number) => {
         dispatch(setZoomLocationX(x));
         dispatch(setZoomLocationY(y));
-        dispatch(setSelectedPlace(placeId));
         dispatch(setOpenPlaceDetails(true));
         dispatch(setOpenSearch(true));
+        dispatch(setOpenFavorite(false));
+        router.push(`${pathname}?placeId=${placeId}`);
     };
 
     const isFavorite = favorites.includes(place.id);

@@ -20,16 +20,17 @@ import { Button } from "@/components/ui/shadcn/button";
 import { MapPin, Star } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+    setIsPlaceDetailsLoading,
     setOpenPlaceDetails,
     setOpenSearch,
     setOpenTrip,
 } from "@/libs/redux/features/ui/uiSlice";
 import { RootState } from "@/libs/redux/store";
 import {
-    setSelectedPosition,
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
+import { usePathname, useRouter } from "next/navigation";
 
 interface MapProps {
     places: IPlace[];
@@ -57,6 +58,8 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
         (state: RootState) => state.map.zoomLocationY,
     );
     const dispatch = useDispatch();
+    const pathname = usePathname();
+    const router = useRouter();
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -83,8 +86,9 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
         dispatch(setZoomLocationY(y));
     };
 
-    const handleButtonClick = (id: number) => {
-        dispatch(setSelectedPosition(id));
+    const handleButtonClick = (placeId: number) => {
+        router.push(`${pathname}?placeId=${placeId}`);
+        dispatch(setIsPlaceDetailsLoading(true));
         dispatch(setOpenSearch(true));
         dispatch(setOpenPlaceDetails(true));
         dispatch(setOpenTrip(false));

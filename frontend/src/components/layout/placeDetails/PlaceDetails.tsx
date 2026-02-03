@@ -1,14 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
-import { IPosition } from "@/interfaces/interfaces";
+import { useEffect, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import InfoCard from "@/components/ui/infoCard/InfoCard";
-import WorkingHours from "@/components/ui/workingHours/WorkingHours";
-import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
-import DateButton from "@/components/ui/dateButton/DateButton";
-import { Button } from "@/components/ui/shadcn/button";
-import { Badge } from "@/components/ui/shadcn/badge";
+import { useDispatch, useSelector } from "react-redux";
 import {
     Accessibility,
     ArrowLeft,
@@ -22,11 +17,11 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import { formatPrice } from "@/libs/formatPrice";
-import { formatDuration } from "@/libs/formatDuration";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
-import { setOpenPlaceDetails } from "@/libs/redux/features/ui/uiSlice";
+import {
+    setIsPlaceDetailsLoading,
+    setOpenPlaceDetails,
+} from "@/libs/redux/features/ui/uiSlice";
 import {
     setZoomLocationX,
     setZoomLocationY,
@@ -37,7 +32,16 @@ import {
     updateDatesStorage,
 } from "@/libs/redux/features/dates/datesSlice";
 import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
+import { formatPrice } from "@/libs/formatPrice";
+import { formatDuration } from "@/libs/formatDuration";
 import { IPlace } from "@/interfaces/interfaces";
+
+import InfoCard from "@/components/ui/infoCard/InfoCard";
+import WorkingHours from "@/components/ui/workingHours/WorkingHours";
+import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
+import DateButton from "@/components/ui/dateButton/DateButton";
+import { Button } from "@/components/ui/shadcn/button";
+import { Badge } from "@/components/ui/shadcn/badge";
 
 interface PlaceDetailsProps {
     placeDetailsData: IPlace;
@@ -49,9 +53,6 @@ export default function PlaceDetails({
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
     );
-    const selectedPosition = useSelector(
-        (state: RootState) => state.map.selectedPosition,
-    );
     const datesStorage = useSelector(
         (state: RootState) => state.dates.datesStorage,
     );
@@ -60,6 +61,9 @@ export default function PlaceDetails({
     );
     const dates = useSelector((state: RootState) => state.dates.dates);
     const dispatch = useDispatch();
+    const pathname = usePathname();
+    const router = useRouter();
+
     const todayDate = useMemo(() => new Date(), []);
     const formattedTodayDate = `${
         todayDate.getDate() < 10
@@ -70,12 +74,10 @@ export default function PlaceDetails({
             ? "0" + (todayDate.getMonth() + 1)
             : todayDate.getMonth() + 1
     }`;
-    const placeId = selectedPosition !== null ? selectedPosition - 1 : 0;
-    const isFavorite = favorites.includes(placeDetailsData[placeId].id);
 
     useEffect(() => {
-        dispatch(setDates(datesStorage[placeId] || []));
-    }, [dispatch, datesStorage, placeId]);
+        dispatch(setDates(datesStorage[placeDetailsData.id] || []));
+    }, [dispatch, datesStorage, placeDetailsData]);
 
     useEffect(() => {
         if (!dates.some((dateObj) => dateObj.date === formattedTodayDate)) {
@@ -91,12 +93,12 @@ export default function PlaceDetails({
             dispatch(setDates(newDates));
             dispatch(
                 updateDatesStorage({
-                    markerId: placeId,
+                    markerId: placeDetailsData.id,
                     dates: newDates,
                 }),
             );
         }
-    }, [dispatch, formattedTodayDate, dates, placeId]);
+    }, [dispatch, formattedTodayDate, dates, placeDetailsData]);
 
     useEffect(() => {
         const isAnyDateActive = dates.some((d) => d.active);
@@ -126,13 +128,15 @@ export default function PlaceDetails({
         dispatch(setDates(newDates));
         dispatch(
             updateDatesStorage({
-                markerId: placeId,
+                markerId: placeDetailsData.id,
                 dates: newDates,
             }),
         );
     };
 
     const handleOpenPlaceDetails = () => {
+        router.push(pathname);
+        dispatch(setIsPlaceDetailsLoading(true));
         dispatch(setOpenPlaceDetails(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
@@ -154,14 +158,16 @@ export default function PlaceDetails({
                         size="icon"
                         variant="secondary"
                         onClick={() =>
-                            placeDetailsData[placeId] &&
-                            dispatch(
-                                toggleFavorite(placeDetailsData[placeId].id),
-                            )
+                            placeDetailsData &&
+                            dispatch(toggleFavorite(placeDetailsData.id))
                         }
                     >
                         <Heart
-                            fill={isFavorite ? "#ef4444" : "transparent"}
+                            fill={
+                                favorites.includes(placeDetailsData.id)
+                                    ? "#ef4444"
+                                    : "transparent"
+                            }
                             className="w-6 h-6"
                         />
                     </Button>
@@ -170,8 +176,8 @@ export default function PlaceDetails({
                     <div className="relative w-full h-full">
                         <Image
                             className="w-full h-full object-cover"
-                            src={placeDetailsData[placeId].img}
-                            alt={placeDetailsData[placeId].name}
+                            src={placeDetailsData.img}
+                            alt={placeDetailsData.name}
                             width={600}
                             height={320}
                         />
@@ -181,39 +187,38 @@ export default function PlaceDetails({
                         <div className="flex items-center gap-2 mb-2">
                             <Badge className="gap-1 text-sm font-semibold bg-yellow-500 text-white rounded-full">
                                 <Star className="w-4 h-4" fill="#fff" />
-                                {placeDetailsData[placeId].rating}
+                                {placeDetailsData.rating}
                             </Badge>
                             <Badge className="text-sm text-white font-semibold bg-bright-blue rounded-full">
-                                {placeDetailsData[placeId].category}
+                                {placeDetailsData.category}
                             </Badge>
                         </div>
                     </div>
                 </div>
                 <div className="px-6 py-6">
                     <h1 className="mb-2 text-3xl font-bold text-black dark:text-white transition-colors">
-                        {placeDetailsData[placeId].name}
+                        {placeDetailsData.name}
                     </h1>
                     <div className="flex items-center gap-2 mb-4 text-gray-600 dark:text-gray-300">
                         <MapPin className="w-5 h-5 text-bright-blue" />
                         <span className="text-sm">
-                            {placeDetailsData[placeId].address}
+                            {placeDetailsData.address}
                         </span>
                     </div>
                     <p className="mb-6 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {placeDetailsData[placeId].description_full}
+                        {placeDetailsData.description_full}
                     </p>
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <InfoCard
                             icon={Banknote}
                             title="Price"
-                            info={formatPrice(placeDetailsData[placeId].price)}
+                            info={formatPrice(placeDetailsData.price)}
                         />
                         <InfoCard
                             icon={Clock}
                             title="Duration"
                             info={formatDuration(
-                                placeDetailsData[placeId]
-                                    .average_visit_duration,
+                                placeDetailsData.average_visit_duration,
                             )}
                         />
                     </div>
@@ -223,9 +228,7 @@ export default function PlaceDetails({
                             Working Hours
                         </h2>
                         <WorkingHours
-                            workingHours={
-                                placeDetailsData[placeId].working_hours
-                            }
+                            workingHours={placeDetailsData.working_hours}
                         />
                     </div>
                     <div className="mb-6">
@@ -233,35 +236,32 @@ export default function PlaceDetails({
                             Facilities
                         </h2>
                         <div className="flex flex-wrap gap-3">
-                            {placeDetailsData[placeId].facilities.parking && (
+                            {placeDetailsData.facilities.parking && (
                                 <FacilityBadge
                                     icon={ParkingSquare}
                                     name="Parking"
                                 />
                             )}
-                            {placeDetailsData[placeId].facilities
-                                .pet_friendly && (
+                            {placeDetailsData.facilities.pet_friendly && (
                                 <FacilityBadge
                                     icon={PawPrint}
                                     name="Pet Friendly"
                                 />
                             )}
-                            {placeDetailsData[placeId].facilities
-                                .wheelchair_access && (
+                            {placeDetailsData.facilities.wheelchair_access && (
                                 <FacilityBadge
                                     icon={Accessibility}
                                     name="Wheelchair Access"
                                 />
                             )}
-                            {placeDetailsData[placeId].facilities.wifi && (
+                            {placeDetailsData.facilities.wifi && (
                                 <FacilityBadge icon={Wifi} name="WiFi" />
                             )}
-                            {!placeDetailsData[placeId].facilities.parking &&
-                                !placeDetailsData[placeId].facilities
-                                    .pet_friendly &&
-                                !placeDetailsData[placeId].facilities
+                            {!placeDetailsData.facilities.parking &&
+                                !placeDetailsData.facilities.pet_friendly &&
+                                !placeDetailsData.facilities
                                     .wheelchair_access &&
-                                !placeDetailsData[placeId].facilities.wifi && (
+                                !placeDetailsData.facilities.wifi && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                         No facilities information available
                                     </p>
@@ -280,7 +280,7 @@ export default function PlaceDetails({
                                     active={date.active}
                                     date={date.date}
                                     dates={dates}
-                                    placeId={placeId}
+                                    placeId={placeDetailsData.id}
                                     setDates={(value) =>
                                         dispatch(setDates(value))
                                     }

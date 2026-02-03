@@ -64,7 +64,7 @@ const features = [
                                     asChild
                                 >
                                     <Link
-                                        href={`/map?placeCard=${placesData[0].id}&x=${placesData[0].x}&y=${placesData[0].y}`}
+                                        href={`/map?placeId=${placesData[0].id}&x=${placesData[0].x}&y=${placesData[0].y}`}
                                     >
                                         More Details
                                     </Link>

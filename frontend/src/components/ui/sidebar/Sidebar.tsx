@@ -5,6 +5,7 @@ import styles from "./Sidebar.module.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 import {
+    setIsPlaceDetailsLoading,
     setOpenFavorite,
     setOpenPlaceDetails,
     setOpenSearch,
@@ -14,6 +15,7 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Sidebar() {
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
@@ -25,6 +27,8 @@ export default function Sidebar() {
         (state: RootState) => state.ui.openPlaceDetails,
     );
     const dispatch = useDispatch();
+    const pathname = usePathname();
+    const router = useRouter();
 
     const handleOpenMap = () => {
         dispatch(setOpenSearch(false));
@@ -33,6 +37,8 @@ export default function Sidebar() {
         dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
+        dispatch(setIsPlaceDetailsLoading(true));
+        router.push(pathname);
     };
 
     const handleOpenSearch = () => {
@@ -40,6 +46,8 @@ export default function Sidebar() {
             dispatch(setOpenPlaceDetails(false));
             dispatch(setZoomLocationX(52.083));
             dispatch(setZoomLocationY(19.375));
+            dispatch(setIsPlaceDetailsLoading(true));
+            router.push(pathname);
 
             return;
         }
@@ -50,6 +58,8 @@ export default function Sidebar() {
         dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
+        dispatch(setIsPlaceDetailsLoading(true));
+        router.push(pathname);
     };
 
     const handleOpenTrip = () => {
@@ -59,6 +69,8 @@ export default function Sidebar() {
         dispatch(setOpenFavorite(false));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
+        dispatch(setIsPlaceDetailsLoading(true));
+        router.push(pathname);
     };
 
     const handleOpenFavorite = () => {
@@ -66,6 +78,8 @@ export default function Sidebar() {
             dispatch(setOpenPlaceDetails(false));
             dispatch(setZoomLocationX(52.083));
             dispatch(setZoomLocationY(19.375));
+            dispatch(setIsPlaceDetailsLoading(true));
+            router.push(pathname);
 
             return;
         }
@@ -76,6 +90,8 @@ export default function Sidebar() {
         dispatch(setOpenFavorite(!openFavorite));
         dispatch(setZoomLocationX(52.083));
         dispatch(setZoomLocationY(19.375));
+        dispatch(setIsPlaceDetailsLoading(true));
+        router.push(pathname);
     };
 
     const styleIsActiveMap =

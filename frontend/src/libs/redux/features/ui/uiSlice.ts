@@ -5,6 +5,7 @@ interface UIState {
     openTrip: boolean;
     openFavorite: boolean;
     openPlaceDetails: boolean;
+    isPlaceDetailsLoading: boolean;
 }
 
 const initialState: UIState = {
@@ -12,6 +13,7 @@ const initialState: UIState = {
     openTrip: false,
     openFavorite: false,
     openPlaceDetails: false,
+    isPlaceDetailsLoading: true,
 };
 
 const uiSlice = createSlice({
@@ -30,6 +32,9 @@ const uiSlice = createSlice({
         setOpenPlaceDetails: (state, action) => {
             state.openPlaceDetails = action.payload;
         },
+        setIsPlaceDetailsLoading: (state, action) => {
+            state.isPlaceDetailsLoading = action.payload;
+        },
     },
 });
 
@@ -38,6 +43,7 @@ export const {
     setOpenTrip,
     setOpenFavorite,
     setOpenPlaceDetails,
+    setIsPlaceDetailsLoading,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

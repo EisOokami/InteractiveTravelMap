@@ -1,11 +1,10 @@
 "use client";
 
-import { Suspense, useRef, useEffect, useState } from "react";
-import { IPosition } from "@/interfaces/interfaces";
-import { AnimatePresence, motion } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { IPlace } from "@/interfaces/interfaces";
+import { AnimatePresence, motion } from "framer-motion";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import Search from "@/components/layout/search/Search";
@@ -15,15 +14,16 @@ import { RootState } from "@/libs/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setFavorites } from "@/libs/redux/features/favorites/favoritesSlice";
 import {
-    setSelectedPlace,
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
 import {
+    setIsPlaceDetailsLoading,
     setOpenPlaceDetails,
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
+import { getPlaceData } from "@/data/loaders";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -37,6 +37,10 @@ const Trip = dynamic(() => import("@/components/layout/trip/Trip"), {
 });
 const PlaceDetails = dynamic(
     () => import("@/components/layout/placeDetails/PlaceDetails"),
+    {
+        loading: () => <PlaceDetailsSkeleton />,
+        ssr: false,
+    },
 );
 
 const animationSettings = {
@@ -63,9 +67,12 @@ interface MapPageProps {
 }
 
 export default function MapPage({ placesData }: Readonly<MapPageProps>) {
+    const [placeDetailsData, setPlaceDetailsData] = useState<IPlace | null>(
+        null,
+    );
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const searchParams = useSearchParams();
-    const search = searchParams.get("placeCard");
+    const placeId = searchParams.get("placeId");
     const x = searchParams.get("x");
     const y = searchParams.get("y");
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
@@ -75,6 +82,9 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
     );
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
+    );
+    const isPlaceDetailsLoading = useSelector(
+        (state: RootState) => state.ui.isPlaceDetailsLoading,
     );
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
@@ -116,10 +126,6 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
             setOpenPlaceDetails(placeId && Number.isInteger(Number(placeId))),
         );
 
-        if (Number.isInteger(Number(placeId))) {
-            dispatch(setSelectedPlace(Number(placeId)));
-        }
-
         if (x) {
             dispatch(setZoomLocationX(+x));
         }
@@ -128,6 +134,19 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
             dispatch(setZoomLocationY(+y));
         }
     }, [dispatch, placeId, x, y]);
+
+    useEffect(() => {
+        (async () => {
+            if (!placeId) {
+                return;
+            }
+
+            const placeData = await getPlaceData(placeId);
+
+            setPlaceDetailsData(placeData);
+            dispatch(setIsPlaceDetailsLoading(false));
+        })();
+    }, [placeId, dispatch]);
 
     return (
         <section className="flex flex-col h-svh">
@@ -146,11 +165,16 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
                             exit="exit"
                         >
                             <Search places={placesData} />
-                            {openPlaceDetails && openSearch && (
-                                <Suspense fallback={<PlaceDetailsSkeleton />}>
-                                    <PlaceDetails placeDetailsData={placeDetailsData} />
-                                </Suspense>
-                            )}
+                            {openPlaceDetails &&
+                                openSearch &&
+                                placeDetailsData &&
+                                (isPlaceDetailsLoading ? (
+                                    <PlaceDetailsSkeleton />
+                                ) : (
+                                    <PlaceDetails
+                                        placeDetailsData={placeDetailsData}
+                                    />
+                                ))}
                         </motion.div>
                     )}
                     {openTrip && (
@@ -175,11 +199,16 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
                             exit="exit"
                         >
                             <Favorite places={placesData} />
-                            {openPlaceDetails && openFavorite && (
-                                <Suspense fallback={<PlaceDetailsSkeleton />}>
-                                    <PlaceDetails placeDetailsData={placeDetailsData} />
-                                </Suspense>
-                            )}
+                            {openPlaceDetails &&
+                                openFavorite &&
+                                placeDetailsData &&
+                                (isPlaceDetailsLoading ? (
+                                    <PlaceDetailsSkeleton />
+                                ) : (
+                                    <PlaceDetails
+                                        placeDetailsData={placeDetailsData}
+                                    />
+                                ))}
                         </motion.div>
                     )}
                 </AnimatePresence>

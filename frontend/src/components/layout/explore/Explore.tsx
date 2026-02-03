@@ -118,7 +118,7 @@ export default async function Explore() {
                 size="lg"
                 asChild
             >
-                <Link href="/map?placeCard=all">Explore All Places</Link>
+                <Link href="/map?placeId=all">Explore All Places</Link>
             </Button>
         </section>
     );
