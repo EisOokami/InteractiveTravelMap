@@ -1,6 +1,5 @@
 "use client";
 
-import { memo } from "react";
 import { Bookmark, Map, Route, Search } from "lucide-react";
 import styles from "./Sidebar.module.scss";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,7 +15,7 @@ import {
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
 
-const Navbar = memo(function Navbar() {
+export default function Sidebar() {
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
     const openTrip = useSelector((state: RootState) => state.ui.openTrip);
     const openFavorite = useSelector(
@@ -135,6 +134,4 @@ const Navbar = memo(function Navbar() {
             </ul>
         </nav>
     );
-});
-
-export default Navbar;
+}
