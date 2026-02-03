@@ -27,5 +27,15 @@ export async function getPlacesData(): Promise<IPlace[]> {
 
     const fetchedData = await fetchData(url.href);
 
+    if (fetchedData.error) {
+        throw new Error(
+            JSON.stringify({
+                error: fetchedData.error,
+                status: fetchedData.status,
+                description: fetchedData.message,
+            }),
+        );
+    }
+
     return fetchedData;
 }
