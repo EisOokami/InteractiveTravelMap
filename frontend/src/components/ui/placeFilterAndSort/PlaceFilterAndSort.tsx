@@ -218,7 +218,7 @@ export default function PlaceFilterAndSort({
                         Adjust your preferences to find the best spots.
                     </SheetDescription>
                 </SheetHeader>
-                <ScrollArea className="h-[calc(100vh-180px)] mt-6 pr-4">
+                <ScrollArea className="h-[calc(100vh-180px)] mt-6">
                     <div className="grid gap-6 px-1">
                         <div className="grid gap-2">
                             <Label>Search by name</Label>
