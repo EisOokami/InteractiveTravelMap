@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/shadcn/button";
-import { getPlacesData } from "@/data/loaders";
-import { formatDuration } from "@/libs/formatDuration";
-import { formatPrice } from "@/libs/formatPrice";
+import Image from "next/image";
+import Link from "next/link";
 import {
     Accessibility,
     Banknote,
@@ -12,8 +10,11 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { getPlacesData } from "@/data/loaders";
+import { formatDuration } from "@/libs/formatDuration";
+import { formatPrice } from "@/libs/formatPrice";
+
+import { Button } from "@/components/ui/shadcn/button";
 
 export default async function Explore() {
     const placesData = await getPlacesData();

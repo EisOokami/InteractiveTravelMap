@@ -2,6 +2,10 @@
 
 import { RefObject, useEffect } from "react";
 import { renderToString } from "react-dom/server";
+import { useDispatch, useSelector } from "react-redux";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import L, { divIcon } from "leaflet";
 import {
     LayersControl,
     MapContainer,
@@ -11,14 +15,7 @@ import {
     LayerGroup,
     Popup,
 } from "react-leaflet";
-import { IPlace } from "@/interfaces/interfaces";
-import "leaflet/dist/leaflet.css";
-import "./Map.scss";
-import Image from "next/image";
-import L, { divIcon } from "leaflet";
-import { Button } from "@/components/ui/shadcn/button";
 import { MapPin, Star } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import {
     setIsPlaceDetailsLoading,
     setOpenPlaceDetails,
@@ -30,7 +27,11 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
-import { usePathname, useRouter } from "next/navigation";
+import { IPlace } from "@/interfaces/interfaces";
+import "leaflet/dist/leaflet.css";
+import "./Map.scss";
+
+import { Button } from "@/components/ui/shadcn/button";
 
 interface MapProps {
     places: IPlace[];

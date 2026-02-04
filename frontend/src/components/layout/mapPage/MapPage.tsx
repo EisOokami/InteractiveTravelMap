@@ -1,17 +1,11 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { IPlace } from "@/interfaces/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-
-import Sidebar from "@/components/ui/sidebar/Sidebar";
-import Search from "@/components/layout/search/Search";
-import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
-import Favorite from "../favorite/Favorite";
 import { RootState } from "@/libs/redux/store";
-import { useDispatch, useSelector } from "react-redux";
 import { setFavorites } from "@/libs/redux/features/favorites/favoritesSlice";
 import {
     setZoomLocationX,
@@ -22,8 +16,14 @@ import {
     setOpenPlaceDetails,
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
-import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 import { getPlaceData } from "@/data/loaders";
+import { IPlace } from "@/interfaces/interfaces";
+
+import Sidebar from "@/components/ui/sidebar/Sidebar";
+import Search from "@/components/layout/search/Search";
+import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
+import Favorite from "../favorite/Favorite";
+import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (

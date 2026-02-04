@@ -1,11 +1,8 @@
 import Image from "next/image";
-import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    navigationMenuTriggerStyle,
-} from "../../ui/shadcn/navigation-menu";
+import Link from "next/link";
+import { Menu } from "lucide-react";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+
 import {
     Sheet,
     SheetClose,
@@ -14,11 +11,15 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "../../ui/shadcn/sheet";
-import Link from "next/link";
 import { Button } from "../../ui/shadcn/button";
-import { Menu } from "lucide-react";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
+import {
+    NavigationMenu,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    navigationMenuTriggerStyle,
+} from "../../ui/shadcn/navigation-menu";
 
 export default function Header() {
     return (

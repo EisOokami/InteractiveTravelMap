@@ -1,8 +1,8 @@
 "use client";
 
 import { Bookmark, Map, Route, Search } from "lucide-react";
-import styles from "./Sidebar.module.scss";
 import { useDispatch, useSelector } from "react-redux";
+import { usePathname, useRouter } from "next/navigation";
 import { RootState } from "@/libs/redux/store";
 import {
     setIsPlaceDetailsLoading,
@@ -15,7 +15,7 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
-import { usePathname, useRouter } from "next/navigation";
+import styles from "./Sidebar.module.scss";
 
 export default function Sidebar() {
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);

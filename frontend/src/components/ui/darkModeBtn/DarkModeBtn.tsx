@@ -1,9 +1,10 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Button } from "../shadcn/button";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/libs/utils";
+
+import { Button } from "../shadcn/button";
 
 interface DarkModeBtnProps {
     variant?:

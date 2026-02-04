@@ -13,11 +13,12 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import { IPlace } from "@/interfaces/interfaces";
-import { Badge } from "../shadcn/badge";
-import { Button } from "../shadcn/button";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
+import { IPlace } from "@/interfaces/interfaces";
+
+import { Badge } from "../shadcn/badge";
+import { Button } from "../shadcn/button";
 
 interface PlaceCardTripProps {
     place: IPlace;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, RefObject } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import L from "leaflet";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
@@ -18,9 +19,7 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { IDateMap, IPlace } from "@/interfaces/interfaces";
 import { Bike, Car, CircleCheck, Footprints, Info, Trash2 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/libs/redux/store";
 import {
     setRouteSegments,
@@ -29,6 +28,7 @@ import {
     setTransportMode,
 } from "@/libs/redux/features/routes/routesSlice";
 import { setSortedDates } from "@/libs/redux/features/dates/datesSlice";
+import { IDateMap, IPlace } from "@/interfaces/interfaces";
 
 import PlaceCardTrip from "../../ui/placeCardTrip/PlaceCardTrip";
 import TransportButton from "@/components/ui/transportButton/TransportButton";

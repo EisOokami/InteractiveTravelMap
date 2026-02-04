@@ -1,9 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/shadcn/button";
-import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "next-themes";
+
+import { Button } from "@/components/ui/shadcn/button";
 
 export default function Hero() {
     const { theme } = useTheme();

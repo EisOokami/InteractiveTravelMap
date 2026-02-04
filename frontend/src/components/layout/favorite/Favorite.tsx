@@ -1,8 +1,9 @@
-import { Bookmark } from "lucide-react";
-import { IPlace } from "@/interfaces/interfaces";
-import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 import { useSelector } from "react-redux";
+import { Bookmark } from "lucide-react";
 import { RootState } from "@/libs/redux/store";
+import { IPlace } from "@/interfaces/interfaces";
+
+import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 
 interface FavoriteProps {
     places: IPlace[];

@@ -7,6 +7,7 @@ import {
     SetStateAction,
     useCallback,
 } from "react";
+import { z } from "zod";
 import {
     ArrowUpDown,
     DollarSign,
@@ -15,8 +16,9 @@ import {
     Star,
     TextQuote,
 } from "lucide-react";
-import { Label } from "../shadcn/label";
-import { Input } from "../shadcn/input";
+import { IPlace } from "@/interfaces/interfaces";
+import { FacilityKeys, SortOption } from "@/types/types";
+
 import {
     Select,
     SelectContent,
@@ -28,7 +30,6 @@ import { Separator } from "../shadcn/separator";
 import { Slider } from "../shadcn/slider";
 import { Checkbox } from "../shadcn/checkbox";
 import { Button } from "../shadcn/button";
-import { IPlace } from "@/interfaces/interfaces";
 import {
     Sheet,
     SheetContent,
@@ -38,10 +39,11 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "../shadcn/sheet";
+import { Label } from "../shadcn/label";
+import { Input } from "../shadcn/input";
 import { ScrollArea } from "../shadcn/scroll-area";
-import { z } from "zod";
-import { FacilityKeys, SortOption } from "@/types/types";
 import { ZodErrors } from "../zodErrors/ZodErrors";
+import { getPlacesData } from "@/data/loaders";
 
 const schema = z.object({
     name: z.string().max(255, "Name must be less than 255 characters long"),

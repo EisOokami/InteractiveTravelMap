@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+
 import { Badge } from "../shadcn/badge";
 
 interface FacilityBadgeProps {

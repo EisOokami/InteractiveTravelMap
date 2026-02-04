@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getPlacesData } from "@/data/loaders";
 import { MapPin, Star } from "lucide-react";
+import { getPlacesData } from "@/data/loaders";
 import { IPlace } from "@/interfaces/interfaces";
+
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 import { Button } from "@/components/ui/shadcn/button";
 
