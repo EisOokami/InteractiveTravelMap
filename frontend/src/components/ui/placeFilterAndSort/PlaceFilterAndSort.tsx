@@ -58,7 +58,7 @@ export default function PlaceFilterAndSort({
     placesData,
     setFilteredPlaces,
 }: Readonly<PlaceFilterAndSortProps>) {
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState<string>("");
     const [selectedSort, setSelectedSort] = useState<SortOption>("default");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [selectedLocation, setSelectedLocation] = useState<string>("all");
