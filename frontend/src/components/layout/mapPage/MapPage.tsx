@@ -24,6 +24,7 @@ import Search from "@/components/layout/search/Search";
 import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsSkeleton";
 import Favorite from "../favorite/Favorite";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
+import TripSkeleton from "../trip/TripSkeleton";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -32,7 +33,7 @@ const Map = dynamic(() => import("@/components/layout/map/Map"), {
     ssr: false,
 });
 const Trip = dynamic(() => import("@/components/layout/trip/Trip"), {
-    loading: () => <div></div>,
+    loading: () => <TripSkeleton />,
     ssr: false,
 });
 const PlaceDetails = dynamic(
