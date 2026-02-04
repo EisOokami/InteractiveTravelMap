@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
     const cspHeader = `
             default-src 'self';
             script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
             style-src 'self' 'nonce-${nonce}';
             style-src-attr 'self' 'unsafe-inline';
-            img-src 'self' http://127.0.0.1:1337 https://*.tile.openstreetmap.org https://www.google.com https://tile.thunderforest.com blob:;
+            img-src 'self' http://127.0.0.1:1337 https://*.tile.openstreetmap.org https://www.google.com https://tile.thunderforest.com blob: data:;
             connect-src 'self' http://127.0.0.1:1337;
             font-src 'self';
             object-src 'none';
