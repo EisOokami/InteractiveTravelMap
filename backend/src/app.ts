@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import { xss } from "express-xss-sanitizer";
+import hostValidation from "host-validation";
 import placesRoutes from "./routes/places.routes";
 
 dotenv.config();
@@ -23,7 +24,10 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
+const hosts = process.env.HOSTS?.split(",");
 const corsUrls = process.env.CORS_URLS?.split(",");
+
+app.use(hostValidation({ hosts: hosts }));
 app.use(
     cors({
         origin: corsUrls,
