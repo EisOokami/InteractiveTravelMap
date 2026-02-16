@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
+import { xss } from "express-xss-sanitizer";
 import placesRoutes from "./routes/places.routes";
 
 dotenv.config();
@@ -27,6 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(limiter);
+app.use(xss());
 
 app.use("/places", placesRoutes);
 
