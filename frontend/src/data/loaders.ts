@@ -22,8 +22,16 @@ async function fetchData(url: string) {
     }
 }
 
-export async function getPlacesData(): Promise<IPlace[]> {
+export async function getPlacesData(
+    queryParams?: Record<string, string | number | boolean>,
+): Promise<IPlace[]> {
     const url = new URL("/places", baseUrl);
+
+    if (queryParams) {
+        Object.entries(queryParams).forEach(([key, value]) => {
+            url.searchParams.set(key, String(value));
+        });
+    }
 
     const fetchedData = await fetchData(url.href);
 

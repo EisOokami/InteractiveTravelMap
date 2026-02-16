@@ -102,75 +102,50 @@ export default function PlaceFilterAndSort({
         [placesData],
     );
 
-    const handleFilterPlaces = useCallback(() => {
+    const handleFilterPlaces = useCallback(async () => {
         if (!setFilteredPlaces) {
             return;
         }
 
-        const filteredResult = placesData.filter((place) => {
-            const validatedFields = schema.safeParse({
-                name: place.name.toLowerCase().trim(),
-            });
+        const validated = schema.safeParse({ name: searchQuery });
 
-            if (!validatedFields.success) {
-                setNameError(
-                    z.flattenError(validatedFields.error).fieldErrors.name,
-                );
+        if (!validated.success) {
+            setNameError(z.flattenError(validated.error).fieldErrors.name);
+            return;
+        }
 
-                console.error(validatedFields.error.message);
-                throw new Error("Value must contain only numbers");
-            }
+        setNameError(undefined);
 
-            setNameError(undefined);
+        const params: Record<string, string | number | boolean> = {};
 
-            const matchesSearch = place.name
-                .toLowerCase()
-                .includes(searchQuery.toLowerCase());
+        if (searchQuery) {
+            params.name = searchQuery;
+        }
 
-            const matchesCategory =
-                selectedCategory === "all" ||
-                place.category === selectedCategory;
+        if (selectedCategory && selectedCategory !== "all") {
+            params.category = selectedCategory;
+        }
 
-            const matchesLocation =
-                selectedLocation === "all" ||
-                place.location === selectedLocation;
+        if (selectedLocation && selectedLocation !== "all") {
+            params.location = selectedLocation;
+        }
 
-            const matchesPrice =
-                place.price >= priceRange[0] && place.price <= priceRange[1];
+        params.minPrice = priceRange[0];
+        params.maxPrice = priceRange[1];
 
-            const matchesFacilities = (
-                Object.keys(facilities) as FacilityKeys[]
-            ).every((key) => {
-                return !facilities[key] || place.facilities[key];
-            });
-
-            return (
-                matchesSearch &&
-                matchesCategory &&
-                matchesLocation &&
-                matchesPrice &&
-                matchesFacilities
-            );
-        });
-
-        filteredResult.sort((a, b) => {
-            switch (selectedSort) {
-                case "price_asc":
-                    return a.price - b.price;
-                case "price_desc":
-                    return b.price - a.price;
-                case "rating_desc":
-                    return b.rating - a.rating;
-                case "name_asc":
-                    return a.name.localeCompare(b.name);
-                case "name_desc":
-                    return b.name.localeCompare(a.name);
-                default:
-                    return 0;
+        (Object.keys(facilities) as FacilityKeys[]).forEach((key) => {
+            if (facilities[key]) {
+                params[key] = true;
             }
         });
 
-        setFilteredPlaces(filteredResult);
+        if (selectedSort && selectedSort !== "default") {
+            params.sort = selectedSort;
+        }
+
+        const data = await getPlacesData(params);
+
+        setFilteredPlaces(data);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         searchQuery,
@@ -187,13 +162,17 @@ export default function PlaceFilterAndSort({
         setSelectedSort("default");
         setSelectedCategory("all");
         setSelectedLocation("all");
-        setPriceRange([0, 500]);
+        setPriceRange([0, maxPrice]);
         setFacilities({
             parking: false,
             pet_friendly: false,
             wheelchair_access: false,
             wifi: false,
         });
+
+        if (setFilteredPlaces) {
+            setFilteredPlaces(placesData);
+        }
     };
 
     return (
