@@ -23,7 +23,13 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
-app.use(cors());
+const corsUrls = process.env.CORS_URLS?.split(",");
+app.use(
+    cors({
+        origin: corsUrls,
+        credentials: true,
+    }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
