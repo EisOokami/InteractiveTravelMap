@@ -94,6 +94,47 @@ export const getPlacesSchema = z.object({
     ),
 });
 
+export const updateProfileSchema = z.object({
+    email: z
+        .email("Invalid email format")
+        .trim()
+        .toLowerCase()
+        .min(1, "Email is required")
+        .max(100, "Email must be less than 100 characters long"),
+    username: z
+        .string()
+        .trim()
+        .min(2, "Username must be at least 2 characters")
+        .max(50, "Username must be less than 50 characters"),
+});
+
+export const changePasswordSchema = z
+    .object({
+        currentPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters long")
+            .max(50, "Password must be less than 50 characters long")
+            .regex(
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+                "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+            ),
+        newPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters long")
+            .max(50, "Password must be less than 50 characters long")
+            .regex(
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+                "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+            ),
+    })
+    .refine((data) => data.currentPassword !== data.newPassword, {
+        message: "Passwords are the same",
+        path: ["confirmPassword"],
+    });
+
+export const validateIdSchema = z.object({
+    id: z.number().int().positive(),
+});
 
 export const forgotPasswordSchema = z.object({
     email: z
