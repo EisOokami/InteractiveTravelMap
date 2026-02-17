@@ -5,7 +5,9 @@ import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import { xss } from "express-xss-sanitizer";
 import hostValidation from "host-validation";
+import cookieParser from "cookie-parser";
 import placesRoutes from "./routes/places.routes";
+import authRoutes from "./routes/auth.routes";
 
 dotenv.config();
 
@@ -39,8 +41,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(limiter);
 app.use(xss());
+app.use(cookieParser());
 
 app.use("/places", placesRoutes);
+app.use("/auth", authRoutes);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
