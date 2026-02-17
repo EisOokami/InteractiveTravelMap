@@ -28,6 +28,11 @@ export interface IPlace extends RowDataPacket {
     working_hours: string;
 }
 
+export interface IFavorite extends RowDataPacket {
+    user: IUser;
+    place: IPlace;
+}
+
 export interface IGetUserRequest extends Request {
     user?: any;
 }

@@ -7,6 +7,7 @@ import { xss } from "express-xss-sanitizer";
 import hostValidation from "host-validation";
 import cookieParser from "cookie-parser";
 import placesRoutes from "./routes/places.routes";
+import favoritesRoutes from "./routes/favorites.routes";
 import authRoutes from "./routes/auth.routes";
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use(xss());
 app.use(cookieParser());
 
 app.use("/places", placesRoutes);
+app.use("/favorites", favoritesRoutes);
 app.use("/auth", authRoutes);
 
 app.listen(port, () => {
