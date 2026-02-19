@@ -53,3 +53,20 @@ export interface IRouteSegment {
 export interface IDateMap {
     [key: string]: IPlace[];
 }
+
+export interface IUserData {
+    id: number;
+    username: string;
+    email: string;
+}
+
+export interface IUser {
+    status: "success" | "error";
+    message: string;
+    data: IUserData | null;
+}
+
+export interface ILogin {
+    email: string;
+    password: string;
+}

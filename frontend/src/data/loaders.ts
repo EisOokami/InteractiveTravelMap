@@ -1,6 +1,6 @@
 "use server";
 
-import { IPlace } from "@/interfaces/interfaces";
+import { IPlace, IUser } from "@/interfaces/interfaces";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
@@ -64,4 +64,28 @@ export async function getPlaceData(placeId: number | string): Promise<IPlace> {
     }
 
     return fetchedData;
+}
+
+export async function getUserData(): Promise<IUser> {
+    const url = new URL("/users/me", baseUrl);
+
+    const fetchedData = await fetchData(url.href);
+
+    if (fetchedData.status === "error") {
+        return {
+            status: fetchedData.status,
+            message: fetchedData.message,
+            data: null,
+        };
+    }
+
+    return {
+        status: fetchedData.status,
+        message: fetchedData.message,
+        data: {
+            id: fetchedData.id,
+            username: fetchedData.username,
+            email: fetchedData.email,
+        },
+    };
 }

@@ -1,0 +1,44 @@
+"use server";
+
+import { ILogin } from "@/interfaces/interfaces";
+
+const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+
+export async function loginService(userData: ILogin): Promise<
+    | {
+          accessToken: string;
+          refreshToken: string;
+          status: "success";
+          message: string;
+      }
+    | { status: "error" | "message" | "success"; message: string }
+    | {
+          error: string;
+          details: {
+              field: string;
+              message: string;
+          }[];
+      }
+    | undefined
+> {
+    const url = new URL("/auth/login", baseUrl);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...userData }),
+            credentials: "include",
+            cache: "no-cache",
+        });
+
+        console.log(response);
+
+        return response.json();
+    } catch (error) {
+        console.error("Login Service Error:", error);
+        throw error;
+    }
+}

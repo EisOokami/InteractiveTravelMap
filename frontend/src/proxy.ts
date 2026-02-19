@@ -1,7 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getUserData } from "./data/loaders";
+
+const protectedAuthRoutes = ["/signIn", "/signUp"];
+
+function isProtectedAuthRoute(path: string): boolean {
+    return protectedAuthRoutes.some((route) => path.startsWith(route));
+}
 
 export async function proxy(request: NextRequest) {
+    const user = await getUserData();
+    const currentPath = request.nextUrl.pathname;
+
+    if (
+        isProtectedAuthRoute(currentPath) &&
+        user.status === "success" &&
+        user.data
+    ) {
+        return NextResponse.redirect(new URL("/map", request.url));
+    }
+
     const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
     const cspHeader = `
             default-src 'self';
