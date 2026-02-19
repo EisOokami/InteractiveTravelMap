@@ -66,6 +66,12 @@ export interface IUser {
     data: IUserData | null;
 }
 
+export interface IRegister {
+    username: string;
+    password: string;
+    email: string;
+}
+
 export interface ILogin {
     email: string;
     password: string;

@@ -1,8 +1,43 @@
 "use server";
 
-import { ILogin } from "@/interfaces/interfaces";
+import { ILogin, IRegister } from "@/interfaces/interfaces";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
+
+export async function registerService(userData: IRegister): Promise<
+    | {
+          accessToken: string;
+          refreshToken: string;
+          status: "success";
+          message: string;
+      }
+    | { status: "error" | "message" | "success"; message: string }
+    | {
+          error: string;
+          details: {
+              field: string;
+              message: string;
+          }[];
+      }
+    | undefined
+> {
+    const url = new URL("/auth/register", baseUrl);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...userData }),
+            cache: "no-cache",
+        });
+
+        return response.json();
+    } catch (error) {
+        console.error("Registration Service Error:", error);
+    }
+}
 
 export async function loginService(userData: ILogin): Promise<
     | {

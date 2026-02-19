@@ -21,6 +21,16 @@ export interface ILoginZodErrors extends IBaseZodErrors {
     password?: string[];
 }
 
+export interface IRegisterZodErrors extends IBaseZodErrors {
+    username?: string[];
+    email?: string[];
+    password?: string[];
+}
+
 export interface ILoginAction extends IBaseAction {
     zodErrors: ILoginZodErrors | null;
+}
+
+export interface IRegisterAction extends IBaseAction {
+    zodErrors: IRegisterZodErrors | null;
 }
