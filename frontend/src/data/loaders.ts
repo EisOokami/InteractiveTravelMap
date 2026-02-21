@@ -1,19 +1,24 @@
 "use server";
 
 import { IPlace, IUser } from "@/interfaces/interfaces";
+import { getAccessToken } from "./getToken";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
 async function fetchData(url: string) {
+    const accessToken = await getAccessToken();
+
     const headers = {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
         },
     };
 
     try {
-        const response = await fetch(url, headers);
+        const response = await fetch(url, accessToken ? headers : {});
+
         const data = await response.json();
         return data;
     } catch (error) {
