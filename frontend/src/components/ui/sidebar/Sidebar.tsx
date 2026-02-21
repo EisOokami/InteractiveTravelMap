@@ -3,6 +3,7 @@
 import { Bookmark, Map, Route, Search } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { RootState } from "@/libs/redux/store";
 import {
     setIsPlaceDetailsLoading,
@@ -15,9 +16,21 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
+import { IUser } from "@/interfaces/interfaces";
 import styles from "./Sidebar.module.scss";
 
-export default function Sidebar() {
+const Profile = dynamic(() => import("@/components/ui/profile/Profile"), {
+    loading: () => (
+        <div className="w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full z-50 animate-pulse"></div>
+    ),
+    ssr: false,
+});
+
+interface SidebarProps {
+    userData?: IUser;
+}
+
+export default function Sidebar({ userData }: Readonly<SidebarProps>) {
     const openSearch = useSelector((state: RootState) => state.ui.openSearch);
     const openTrip = useSelector((state: RootState) => state.ui.openTrip);
     const openFavorite = useSelector(
@@ -148,6 +161,9 @@ export default function Sidebar() {
                     ></div>
                 </li>
             </ul>
+            <div className="hidden md:block">
+                <Profile userData={userData} />
+            </div>
         </nav>
     );
 }

@@ -5,6 +5,7 @@ import { loginService, registerService } from "./services";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ILoginAction, IRegisterAction } from "@/interfaces/actions";
+import { mutateData } from "./mutateData";
 
 const accessTokenConfig = {
     maxAge: 15 * 60 * 1000,
@@ -222,4 +223,26 @@ export async function registerAction(
 
         redirect("/map");
     }
+}
+
+export async function logoutAction() {
+    const responseData = await mutateData("POST", "/auth/logout");
+
+    if (!responseData) {
+        throw new Error("Unauthorized or invalid token");
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status !== "success"
+    ) {
+        throw new Error(responseData.message);
+    }
+
+    const cookieStore = await cookies();
+
+    cookieStore.set("refreshToken", "", { ...refreshTokenConfig, maxAge: 0 });
+    cookieStore.set("accessToken", "", { ...accessTokenConfig, maxAge: 0 });
 }

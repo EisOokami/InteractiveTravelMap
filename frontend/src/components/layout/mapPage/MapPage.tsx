@@ -17,7 +17,7 @@ import {
     setOpenSearch,
 } from "@/libs/redux/features/ui/uiSlice";
 import { getPlaceData } from "@/data/loaders";
-import { IPlace } from "@/interfaces/interfaces";
+import { IPlace, IUser } from "@/interfaces/interfaces";
 
 import Sidebar from "@/components/ui/sidebar/Sidebar";
 import Search from "@/components/layout/search/Search";
@@ -25,6 +25,7 @@ import PlaceDetailsSkeleton from "@/components/layout/placeDetails/PlaceDetailsS
 import Favorite from "../favorite/Favorite";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 import TripSkeleton from "../trip/TripSkeleton";
+import NotLoggedInMsg from "@/components/ui/notLoggedInMsg/NotLoggedInMsg";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -43,6 +44,12 @@ const PlaceDetails = dynamic(
         ssr: false,
     },
 );
+const Profile = dynamic(() => import("@/components/ui/profile/Profile"), {
+    loading: () => (
+        <div className="w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-full z-50 animate-pulse"></div>
+    ),
+    ssr: false,
+});
 
 const animationSettings = {
     initial: {
@@ -65,9 +72,13 @@ const animationSettings = {
 
 interface MapPageProps {
     placesData: IPlace[];
+    userData: IUser;
 }
 
-export default function MapPage({ placesData }: Readonly<MapPageProps>) {
+export default function MapPage({
+    placesData,
+    userData,
+}: Readonly<MapPageProps>) {
     const [placeDetailsData, setPlaceDetailsData] = useState<IPlace | null>(
         null,
     );
@@ -153,7 +164,7 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
         <section className="flex flex-col h-svh">
             <div className="grow flex">
                 <div className="hidden md:flex">
-                    <Sidebar />
+                    <Sidebar userData={userData} />
                 </div>
                 <AnimatePresence>
                     {openSearch && (
@@ -178,40 +189,64 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
                                 ))}
                         </motion.div>
                     )}
-                    {openTrip && (
-                        <motion.div
-                            key="trip"
-                            className="relative h-full md:h-screen z-1001 md:z-0"
-                            variants={animationSettings}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
-                        >
-                            <Trip places={placesData} mapRef={mapRef} />
-                        </motion.div>
-                    )}
-                    {openFavorite && (
-                        <motion.div
-                            key="favorite"
-                            className="relative h-full md:h-screen z-1001 md:z-0"
-                            variants={animationSettings}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
-                        >
-                            <Favorite places={placesData} />
-                            {openPlaceDetails &&
-                                openFavorite &&
-                                placeDetailsData &&
-                                (isPlaceDetailsLoading ? (
-                                    <PlaceDetailsSkeleton />
-                                ) : (
-                                    <PlaceDetails
-                                        placeDetailsData={placeDetailsData}
-                                    />
-                                ))}
-                        </motion.div>
-                    )}
+                    {openTrip &&
+                        (userData.status === "error" || !userData.data ? (
+                            <motion.div
+                                key="trip"
+                                className="relative h-full md:h-screen z-1001 md:z-0"
+                                variants={animationSettings}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                <NotLoggedInMsg message="Sign in to your account to plan your trips." />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="trip"
+                                className="relative h-full md:h-screen z-1001 md:z-0"
+                                variants={animationSettings}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                <Trip places={placesData} mapRef={mapRef} />
+                            </motion.div>
+                        ))}
+                    {openFavorite &&
+                        (userData.status === "error" || !userData.data ? (
+                            <motion.div
+                                key="favorite"
+                                className="relative h-full md:h-screen z-1001 md:z-0"
+                                variants={animationSettings}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                <NotLoggedInMsg message="Sign in to your account to see your favorite places." />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="favorite"
+                                className="relative h-full md:h-screen z-1001 md:z-0"
+                                variants={animationSettings}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                            >
+                                <Favorite />
+                                {openPlaceDetails &&
+                                    openFavorite &&
+                                    placeDetailsData &&
+                                    (isPlaceDetailsLoading ? (
+                                        <PlaceDetailsSkeleton />
+                                    ) : (
+                                        <PlaceDetails
+                                            placeDetailsData={placeDetailsData}
+                                        />
+                                    ))}
+                            </motion.div>
+                        ))}
                 </AnimatePresence>
                 <main className="md:relative grow h-full">
                     <Map places={placesData} mapRef={mapRef} />
@@ -219,6 +254,9 @@ export default function MapPage({ placesData }: Readonly<MapPageProps>) {
                         variant="secondary"
                         className="absolute top-20 left-2.5 p-2"
                     />
+                    <div className="absolute top-16 right-3.5 block md:hidden z-[600]">
+                        <Profile userData={userData} />
+                    </div>
                 </main>
             </div>
             <div className="md:hidden">
