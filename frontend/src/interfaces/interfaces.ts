@@ -80,3 +80,9 @@ export interface ILogin {
 export interface IForgotPassword {
     email: string;
 }
+
+export interface IResetPassword {
+    token: string;
+    password: string;
+    id: number;
+}

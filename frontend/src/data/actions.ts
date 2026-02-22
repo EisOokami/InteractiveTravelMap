@@ -5,6 +5,7 @@ import {
     forgotPasswordService,
     loginService,
     registerService,
+    resetPasswordService,
 } from "./services";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,6 +13,7 @@ import {
     IForgotPasswordAction,
     ILoginAction,
     IRegisterAction,
+    IResetPasswordAction,
 } from "@/interfaces/actions";
 import { mutateData } from "./mutateData";
 
@@ -321,5 +323,137 @@ export async function forgotPasswordAction(
             details: responseData.details,
             message: null,
         };
+    }
+}
+
+const resetPasswordSchema = z
+    .object({
+        newPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .max(50, "Password must be less than 50 characters")
+            .regex(
+                /[A-Z]/,
+                "Password must contain at least one uppercase letter",
+            )
+            .regex(
+                /[a-z]/,
+                "Password must contain at least one lowercase letter",
+            )
+            .regex(/\d/, "Password must contain at least one number")
+            .regex(
+                /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+                "Password must contain at least one special character",
+            ),
+        confirmPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .max(50, "Password must be less than 50 characters")
+            .regex(
+                /[A-Z]/,
+                "Password must contain at least one uppercase letter",
+            )
+            .regex(
+                /[a-z]/,
+                "Password must contain at least one lowercase letter",
+            )
+            .regex(/\d/, "Password must contain at least one number")
+            .regex(
+                /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+                "Password must contain at least one special character",
+            ),
+        id: z.string("Invalid data"),
+        token: z
+            .string("Invalid data")
+            .trim()
+            .min(60, "Invalid data")
+            .max(70, "Invalid data"),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: "Confirm New Password must be the same as New Password",
+        path: ["confirmPassword"],
+    });
+
+export async function resetPasswordAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IResetPasswordAction | undefined> {
+    const validatedFields = resetPasswordSchema.safeParse({
+        newPassword: formData.get("newPassword"),
+        confirmPassword: formData.get("confirmPassword"),
+        id: formData.get("id"),
+        token: formData.get("token"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await resetPasswordService({
+        token: validatedFields.data.token,
+        password: validatedFields.data.newPassword,
+        id: +validatedFields.data.id,
+    });
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: null,
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status !== "success"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("refreshToken" in responseData && "accessToken" in responseData) {
+        const cookieStore = await cookies();
+        cookieStore.set(
+            "refreshToken",
+            responseData.refreshToken,
+            refreshTokenConfig,
+        );
+        cookieStore.set(
+            "accessToken",
+            responseData.accessToken,
+            accessTokenConfig,
+        );
+
+        redirect("/map");
     }
 }

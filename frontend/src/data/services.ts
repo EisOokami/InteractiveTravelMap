@@ -4,6 +4,7 @@ import {
     IForgotPassword,
     ILogin,
     IRegister,
+    IResetPassword,
 } from "@/interfaces/interfaces";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
@@ -108,6 +109,42 @@ export async function forgotPasswordService(userData: IForgotPassword): Promise<
         return response.json();
     } catch (error) {
         console.error("Forgot Password Service Error:", error);
+        throw error;
+    }
+}
+
+export async function resetPasswordService(userData: IResetPassword): Promise<
+    | {
+          accessToken: string;
+          refreshToken: string;
+          status: "success";
+          message: string;
+      }
+    | { status: "error" | "message" | "success"; message: string }
+    | {
+          error: string;
+          details: {
+              field: string;
+              message: string;
+          }[];
+      }
+    | undefined
+> {
+    const url = new URL("/auth/reset-password", baseUrl);
+
+    try {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...userData }),
+            cache: "no-cache",
+        });
+
+        return response.json();
+    } catch (error) {
+        console.error("Login Service Error:", error);
         throw error;
     }
 }
