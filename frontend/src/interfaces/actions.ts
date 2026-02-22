@@ -27,10 +27,17 @@ export interface IRegisterZodErrors extends IBaseZodErrors {
     password?: string[];
 }
 
+export interface IForgotPasswordZodErrors extends IBaseZodErrors {
+    email?: string[];
+}
+
 export interface ILoginAction extends IBaseAction {
     zodErrors: ILoginZodErrors | null;
 }
 
 export interface IRegisterAction extends IBaseAction {
     zodErrors: IRegisterZodErrors | null;
+}
+export interface IForgotPasswordAction extends IBaseAction {
+    zodErrors: IForgotPasswordZodErrors | null;
 }

@@ -1,10 +1,18 @@
 "use server";
 
 import { z } from "zod";
-import { loginService, registerService } from "./services";
+import {
+    forgotPasswordService,
+    loginService,
+    registerService,
+} from "./services";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ILoginAction, IRegisterAction } from "@/interfaces/actions";
+import {
+    IForgotPasswordAction,
+    ILoginAction,
+    IRegisterAction,
+} from "@/interfaces/actions";
 import { mutateData } from "./mutateData";
 
 const accessTokenConfig = {
@@ -245,4 +253,73 @@ export async function logoutAction() {
 
     cookieStore.set("refreshToken", "", { ...refreshTokenConfig, maxAge: 0 });
     cookieStore.set("accessToken", "", { ...accessTokenConfig, maxAge: 0 });
+}
+
+const forgotPasswordSchema = z.object({
+    email: z
+        .email("Incorrect email address")
+        .trim()
+        .min(1, "Email is required")
+        .max(100, "Email must be less than 100 characters long"),
+});
+
+export async function forgotPasswordAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IForgotPasswordAction | undefined> {
+    const validatedFields = forgotPasswordSchema.safeParse({
+        email: formData.get("email"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await forgotPasswordService(validatedFields.data);
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: null,
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
 }
