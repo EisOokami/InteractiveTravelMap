@@ -2,16 +2,17 @@
 
 import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { IPlace } from "@/interfaces/interfaces";
+import { IPlace, IUser } from "@/interfaces/interfaces";
 
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 import PlaceFilterAndSort from "@/components/ui/placeFilterAndSort/PlaceFilterAndSort";
 
 interface SearchProps {
     places: IPlace[];
+    userData: IUser;
 }
 
-export default function Search({ places }: Readonly<SearchProps>) {
+export default function Search({ places, userData }: Readonly<SearchProps>) {
     const [filteredPlaces, setFilteredPlaces] = useState<IPlace[]>(places);
 
     return (
@@ -30,7 +31,11 @@ export default function Search({ places }: Readonly<SearchProps>) {
             <div className="custom-scroll grid sm:grid-cols-2 place-content-start justify-center gap-5 h-full p-4 overflow-y-auto">
                 {filteredPlaces.length ? (
                     filteredPlaces.map((place) => (
-                        <PlaceCard key={place.id} place={place} />
+                        <PlaceCard
+                            key={place.id}
+                            place={place}
+                            userData={userData}
+                        />
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">

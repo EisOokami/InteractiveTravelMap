@@ -16,6 +16,7 @@ import {
     IResetPasswordAction,
 } from "@/interfaces/actions";
 import { mutateData } from "./mutateData";
+import { getUserData } from "./loaders";
 
 const accessTokenConfig = {
     maxAge: 15 * 60 * 1000,
@@ -255,6 +256,108 @@ export async function logoutAction() {
 
     cookieStore.set("refreshToken", "", { ...refreshTokenConfig, maxAge: 0 });
     cookieStore.set("accessToken", "", { ...accessTokenConfig, maxAge: 0 });
+}
+
+export async function addItemToFavoriteAction(
+    placeId: number,
+): Promise<{ ok: boolean; message: string } | undefined> {
+    const user = await getUserData();
+
+    if (user.status === "error" || !user.data) {
+        return {
+            ok: false,
+            message: "You are not logged in",
+        };
+    }
+
+    const responseData = await mutateData("POST", "/favorites", {
+        id: placeId,
+    });
+
+    if (!responseData) {
+        console.error("Ops! Something went wrong. Please try again.");
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again or later",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status
+    ) {
+        return {
+            ok: responseData.status === "error" ? false : true,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        console.error(responseData.error);
+
+        return {
+            ok: false,
+            message: "Failed to Add Place to Favorites",
+        };
+    }
+
+    return {
+        ok: true,
+        message: "Place add to favorites",
+    };
+}
+
+export async function removeItemFromFavoriteAction(
+    placeId: number,
+): Promise<{ ok: boolean; message: string } | undefined> {
+    const user = await getUserData();
+
+    if (user.status === "error" || !user.data) {
+        return {
+            ok: false,
+            message: "You are not logged in",
+        };
+    }
+
+    const responseData = await mutateData("DELETE", `/favorites/${placeId}`);
+
+    if (!responseData) {
+        console.error("Ops! Something went wrong. Please try again.");
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again or later",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status
+    ) {
+        return {
+            ok: responseData.status === "error" ? false : true,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        console.error(responseData.error);
+
+        return {
+            ok: false,
+            message: "Failed to Delete Place from Favorites",
+        };
+    }
+
+    return {
+        ok: true,
+        message: "Place delete from Favorites",
+    };
 }
 
 const forgotPasswordSchema = z.object({

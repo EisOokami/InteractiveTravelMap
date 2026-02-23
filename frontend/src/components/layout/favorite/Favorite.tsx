@@ -1,20 +1,17 @@
 import { useSelector } from "react-redux";
 import { Bookmark } from "lucide-react";
 import { RootState } from "@/libs/redux/store";
-import { IPlace } from "@/interfaces/interfaces";
+import { IUser } from "@/interfaces/interfaces";
 
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
 
 interface FavoriteProps {
-    places: IPlace[];
+    userData: IUser;
 }
 
-export default function Favorite({ places }: Readonly<FavoriteProps>) {
+export default function Favorite({ userData }: Readonly<FavoriteProps>) {
     const favorites = useSelector(
         (state: RootState) => state.favorites.favorites,
-    );
-    const favoritePlaces = places.filter((place) =>
-        favorites.includes(place.id),
     );
 
     return (
@@ -25,9 +22,13 @@ export default function Favorite({ places }: Readonly<FavoriteProps>) {
                 </h1>
             </div>
             <div className="custom-scroll grid sm:grid-cols-2 gap-8 p-3 md:p-6 overflow-x-hidden overflow-y-auto">
-                {favoritePlaces.length ? (
-                    favoritePlaces.map((place) => (
-                        <PlaceCard key={place.id} place={place} />
+                {favorites.length ? (
+                    favorites.map((favorite) => (
+                        <PlaceCard
+                            key={favorite.id}
+                            place={favorite}
+                            userData={userData}
+                        />
                     ))
                 ) : (
                     <div className="md:col-span-2 grid justify-items-center py-16 text-center">

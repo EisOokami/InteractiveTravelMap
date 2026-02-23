@@ -1,4 +1,4 @@
-import { IPlace } from "@/interfaces/interfaces";
+import { IPlace, IUser } from "@/interfaces/interfaces";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
-import { RootState } from "@/libs/redux/store";
+import { RootState, AppDispatch } from "@/libs/redux/store";
 import {
     setOpenFavorite,
     setOpenPlaceDetails,
@@ -25,20 +25,24 @@ import {
     setZoomLocationX,
     setZoomLocationY,
 } from "@/libs/redux/features/map/mapSlice";
-import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
+import { toggleFavoriteAsync } from "@/libs/redux/features/favorites/favoritesSlice";
 
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
 
 interface PlaceCardProps {
     place: IPlace;
+    userData: IUser;
 }
 
-export default function PlaceCard({ place }: Readonly<PlaceCardProps>) {
-    const favorites = useSelector(
-        (state: RootState) => state.favorites.favorites,
+export default function PlaceCard({
+    place,
+    userData,
+}: Readonly<PlaceCardProps>) {
+    const { favorites, loading } = useSelector(
+        (state: RootState) => state.favorites,
     );
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -51,7 +55,10 @@ export default function PlaceCard({ place }: Readonly<PlaceCardProps>) {
         router.push(`${pathname}?placeId=${placeId}`);
     };
 
-    const isFavorite = favorites.includes(place.id);
+    const isFavorite =
+        userData.status === "success" && userData.data
+            ? favorites.find((favorite) => favorite.id === place.id)
+            : false;
 
     return (
         <div
@@ -59,26 +66,29 @@ export default function PlaceCard({ place }: Readonly<PlaceCardProps>) {
             className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
-                <Button
-                    onClick={(e) => {
-                        e.stopPropagation();
+                {userData.status === "success" && userData.data && (
+                    <Button
+                        onClick={(e) => {
+                            e.stopPropagation();
 
-                        dispatch(toggleFavorite(place.id));
-                    }}
-                    aria-label={
-                        isFavorite
-                            ? "Remove from favorites"
-                            : "Add to favorites"
-                    }
-                    className="absolute top-3 left-3 text-red-500 bg-white/90 hover:bg-gray-100 dark:bg-dark-mode-black/90 rounded-full hover:scale-110 transition-transform z-30"
-                    size="icon"
-                    variant="secondary"
-                >
-                    <Heart
-                        fill={isFavorite ? "#ef4444" : "transparent"}
-                        className="w-4 h-4"
-                    />
-                </Button>
+                            dispatch(toggleFavoriteAsync(place));
+                        }}
+                        aria-label={
+                            isFavorite
+                                ? "Remove from favorites"
+                                : "Add to favorites"
+                        }
+                        className="absolute top-3 left-3 text-red-500 bg-white/90 hover:bg-gray-100 dark:bg-dark-mode-black/90 rounded-full hover:scale-110 transition-transform z-30"
+                        size="icon"
+                        variant="secondary"
+                        disabled={loading}
+                    >
+                        <Heart
+                            fill={isFavorite ? "#ef4444" : "transparent"}
+                            className="w-4 h-4"
+                        />
+                    </Button>
+                )}
                 <div className="relative w-full h-full max-h-52 rounded-t-xl pointer-events-none select-none">
                     <Image
                         src={place.img}

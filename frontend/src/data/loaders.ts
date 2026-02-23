@@ -94,3 +94,27 @@ export async function getUserData(): Promise<IUser> {
         },
     };
 }
+
+export async function getFavoritesData(): Promise<IPlace[]> {
+    const user = await getUserData();
+
+    if (user.status === "error") {
+        return [];
+    }
+
+    const url = new URL("/favorites", baseUrl);
+
+    const fetchedData = await fetchData(url.href);
+
+    if (fetchedData.error) {
+        throw new Error(
+            JSON.stringify({
+                error: fetchedData.error,
+                status: fetchedData.status,
+                description: fetchedData.message,
+            }),
+        );
+    }
+
+    return fetchedData;
+}

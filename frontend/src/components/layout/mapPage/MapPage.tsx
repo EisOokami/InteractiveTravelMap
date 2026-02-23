@@ -73,16 +73,17 @@ const animationSettings = {
 interface MapPageProps {
     placesData: IPlace[];
     userData: IUser;
+    favoritesData: IPlace[];
 }
 
 export default function MapPage({
     placesData,
     userData,
+    favoritesData,
 }: Readonly<MapPageProps>) {
     const [placeDetailsData, setPlaceDetailsData] = useState<IPlace | null>(
         null,
     );
-    const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const searchParams = useSearchParams();
     const placeId = searchParams.get("placeId");
     const x = searchParams.get("x");
@@ -98,34 +99,12 @@ export default function MapPage({
     const isPlaceDetailsLoading = useSelector(
         (state: RootState) => state.ui.isPlaceDetailsLoading,
     );
-    const favorites = useSelector(
-        (state: RootState) => state.favorites.favorites,
-    );
     const dispatch = useDispatch();
     const mapRef = useRef<L.Map | null>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined") {
-            return;
-        }
-
-        const raw = localStorage.getItem("favorites");
-
-        if (raw) {
-            dispatch(setFavorites(JSON.parse(raw)));
-        }
-
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setIsInitialized(true);
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (!isInitialized) {
-            return;
-        }
-
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-    }, [favorites, isInitialized]);
+        dispatch(setFavorites(favoritesData));
+    }, [dispatch, favoritesData]);
 
     useEffect(() => {
         if (!placeId) {
@@ -176,7 +155,7 @@ export default function MapPage({
                             animate="animate"
                             exit="exit"
                         >
-                            <Search places={placesData} />
+                            <Search places={placesData} userData={userData} />
                             {openPlaceDetails &&
                                 openSearch &&
                                 placeDetailsData &&
@@ -185,6 +164,7 @@ export default function MapPage({
                                 ) : (
                                     <PlaceDetails
                                         placeDetailsData={placeDetailsData}
+                                        userData={userData}
                                     />
                                 ))}
                         </motion.div>
@@ -234,7 +214,7 @@ export default function MapPage({
                                 animate="animate"
                                 exit="exit"
                             >
-                                <Favorite />
+                                <Favorite userData={userData} />
                                 {openPlaceDetails &&
                                     openFavorite &&
                                     placeDetailsData &&
@@ -243,6 +223,7 @@ export default function MapPage({
                                     ) : (
                                         <PlaceDetails
                                             placeDetailsData={placeDetailsData}
+                                            userData={userData}
                                         />
                                     ))}
                             </motion.div>

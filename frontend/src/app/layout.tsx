@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import { Toaster } from "@/components/ui/shadcn/sonner";
+import "sonner/dist/styles.css";
 import "./globals.scss";
 
 const poppins = Poppins({
@@ -33,6 +35,7 @@ export default function RootLayout({
                 >
                     {children}
                 </ThemeProvider>
+                <Toaster />
             </body>
         </html>
     );

@@ -17,7 +17,7 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import { RootState } from "@/libs/redux/store";
+import { AppDispatch, RootState } from "@/libs/redux/store";
 import {
     setIsPlaceDetailsLoading,
     setOpenPlaceDetails,
@@ -31,10 +31,10 @@ import {
     setDates,
     updateDatesStorage,
 } from "@/libs/redux/features/dates/datesSlice";
-import { toggleFavorite } from "@/libs/redux/features/favorites/favoritesSlice";
 import { formatPrice } from "@/libs/formatPrice";
 import { formatDuration } from "@/libs/formatDuration";
-import { IPlace } from "@/interfaces/interfaces";
+import { IPlace, IUser } from "@/interfaces/interfaces";
+import { toggleFavoriteAsync } from "@/libs/redux/features/favorites/favoritesSlice";
 
 import InfoCard from "@/components/ui/infoCard/InfoCard";
 import WorkingHours from "@/components/ui/workingHours/WorkingHours";
@@ -45,13 +45,15 @@ import { Badge } from "@/components/ui/shadcn/badge";
 
 interface PlaceDetailsProps {
     placeDetailsData: IPlace;
+    userData: IUser;
 }
 
 export default function PlaceDetails({
     placeDetailsData,
+    userData,
 }: Readonly<PlaceDetailsProps>) {
-    const favorites = useSelector(
-        (state: RootState) => state.favorites.favorites,
+    const { favorites, loading } = useSelector(
+        (state: RootState) => state.favorites,
     );
     const datesStorage = useSelector(
         (state: RootState) => state.dates.datesStorage,
@@ -60,7 +62,7 @@ export default function PlaceDetails({
         (state: RootState) => state.routes.routingControl,
     );
     const dates = useSelector((state: RootState) => state.dates.dates);
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -153,24 +155,30 @@ export default function PlaceDetails({
                     >
                         <ArrowLeft className="w-10 h-10 text-white" />
                     </Button>
-                    <Button
-                        className="text-red-500 bg-white/90 dark:bg-dark-mode-black/90 rounded-full shadow-lg z-50"
-                        size="icon"
-                        variant="secondary"
-                        onClick={() =>
-                            placeDetailsData &&
-                            dispatch(toggleFavorite(placeDetailsData.id))
-                        }
-                    >
-                        <Heart
-                            fill={
-                                favorites.includes(placeDetailsData.id)
-                                    ? "#ef4444"
-                                    : "transparent"
+                    {userData.status === "success" && userData.data && (
+                        <Button
+                            className="text-red-500 bg-white/90 dark:bg-dark-mode-black/90 rounded-full shadow-lg z-50"
+                            size="icon"
+                            variant="secondary"
+                            onClick={() =>
+                                placeDetailsData &&
+                                dispatch(toggleFavoriteAsync(placeDetailsData))
                             }
-                            className="w-6 h-6"
-                        />
-                    </Button>
+                            disabled={loading}
+                        >
+                            <Heart
+                                fill={
+                                    favorites.find(
+                                        (favorite) =>
+                                            favorite.id === placeDetailsData.id,
+                                    )
+                                        ? "#ef4444"
+                                        : "transparent"
+                                }
+                                className="w-6 h-6"
+                            />
+                        </Button>
+                    )}
                 </div>
                 <div className="relative w-full h-80">
                     <div className="relative w-full h-full">
