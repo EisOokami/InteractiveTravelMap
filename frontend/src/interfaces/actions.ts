@@ -27,6 +27,17 @@ export interface IRegisterZodErrors extends IBaseZodErrors {
     password?: string[];
 }
 
+export interface IUpdateProfileZodErrors extends IBaseZodErrors {
+    username?: string[];
+    email?: string[];
+}
+
+export interface IChangePasswordZodErrors extends IBaseZodErrors {
+    currentPassword?: string[];
+    newPassword?: string[];
+    confirmPassword?: string[];
+}
+
 export interface IForgotPasswordZodErrors extends IBaseZodErrors {
     email?: string[];
 }
@@ -45,6 +56,15 @@ export interface ILoginAction extends IBaseAction {
 export interface IRegisterAction extends IBaseAction {
     zodErrors: IRegisterZodErrors | null;
 }
+
+export interface IUpdateProfileAction extends IBaseAction {
+    zodErrors: IUpdateProfileZodErrors | null;
+}
+
+export interface IChangePasswordAction extends IBaseAction {
+    zodErrors: IChangePasswordZodErrors | null;
+}
+
 export interface IForgotPasswordAction extends IBaseAction {
     zodErrors: IForgotPasswordZodErrors | null;
 }

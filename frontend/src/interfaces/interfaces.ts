@@ -77,6 +77,11 @@ export interface ILogin {
     password: string;
 }
 
+export interface IUpdateProfile {
+    email: string;
+    password: string;
+}
+
 export interface IForgotPassword {
     email: string;
 }

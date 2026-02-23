@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { logoutAction } from "@/data/actions";
 import { CirclePlus, LogIn, UserPlus, Settings, LogOut } from "lucide-react";
@@ -16,6 +17,7 @@ import {
 } from "../shadcn/dropdown-menu";
 import { Button } from "../shadcn/button";
 import { Separator } from "../shadcn/separator";
+import { AccountSettingsModal } from "../accountSettingsModal/AccountSettingsModal";
 
 const listItems = [
     {
@@ -57,6 +59,8 @@ interface ProfileProps {
 }
 
 export default function Profile({ userData }: Readonly<ProfileProps>) {
+    const [openSettings, setOpenSettings] = useState<boolean>(false);
+
     return (
         <>
             <DropdownMenu>
@@ -117,7 +121,12 @@ export default function Profile({ userData }: Readonly<ProfileProps>) {
                                     (userData.status === "success") && (
                                     <DropdownMenuItem asChild key={item.id}>
                                         {item.property === "Settings" ? (
-                                            <button className="w-full">
+                                            <button
+                                                onClick={() =>
+                                                    setOpenSettings(true)
+                                                }
+                                                className="w-full"
+                                            >
                                                 <item.icon />
                                                 <span className="text-popover-foreground">
                                                     {item.property}
@@ -149,6 +158,11 @@ export default function Profile({ userData }: Readonly<ProfileProps>) {
                     </DropdownMenuGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
+            <AccountSettingsModal
+                open={openSettings}
+                onOpenChange={setOpenSettings}
+                userData={userData}
+            />
         </>
     );
 }
