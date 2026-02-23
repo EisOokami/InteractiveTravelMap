@@ -37,7 +37,7 @@ export default function DarkModeBtn({
             size={size}
             className={cn(
                 className,
-                "bg-white hover:bg-gray-100 dark:bg-dark-mode-black dark:hover:bg-dark-mode-gray-2 rounded-lg z-[1001]",
+                "bg-white hover:bg-gray-100 dark:bg-dark-mode-black dark:hover:bg-dark-mode-gray-2 rounded-lg z-[600]",
             )}
             onClick={toggleDarkMode}
         >
