@@ -39,6 +39,12 @@ interface TripProps {
     mapRef: RefObject<L.Map | null>;
 }
 
+const transportModes = [
+    { id: "car", icon: Car, label: "Car" },
+    { id: "bike", icon: Bike, label: "Bike" },
+    { id: "walk", icon: Footprints, label: "Walk" },
+];
+
 export default function Trip({ places, mapRef }: Readonly<TripProps>) {
     const [isRoute, setIsRoute] = useState<string | null>(null);
     const [isNavigationDisabled, setIsNavigationDisabled] =
@@ -199,12 +205,6 @@ export default function Trip({ places, mapRef }: Readonly<TripProps>) {
             dispatch(setSortedDates(newSortedDates));
         }
     };
-
-    const transportModes = [
-        { id: "car", icon: Car, label: "Car" },
-        { id: "bike", icon: Bike, label: "Bike" },
-        { id: "walk", icon: Footprints, label: "Walk" },
-    ];
 
     return (
         <section className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1999] transition-colors">
