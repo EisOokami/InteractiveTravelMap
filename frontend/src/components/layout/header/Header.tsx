@@ -76,6 +76,7 @@ export default function Header() {
                     </Button>
                 </div>
                 <div className="md:hidden flex gap-1">
+                    <DarkModeBtn variant="outline" size="icon" />
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon">
