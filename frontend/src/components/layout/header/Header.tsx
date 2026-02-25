@@ -75,7 +75,7 @@ export default function Header() {
                         <Link href="/map">Get Started</Link>
                     </Button>
                 </div>
-                <div className="md:hidden">
+                <div className="md:hidden flex gap-1">
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon">
@@ -118,7 +118,7 @@ export default function Header() {
                                     </Link>
                                 </SheetClose>
                                 <Button
-                                    className="mt-4 bg-bright-blue hover:bg-blue-600"
+                                    className="mt-4 text-white bg-bright-blue hover:bg-blue-600"
                                     asChild
                                 >
                                     <Link href="/map">Get Started</Link>

@@ -4,9 +4,9 @@ import { Github, Linkedin } from "lucide-react";
 
 export default function Footer() {
     return (
-        <footer className="border-t py-12">
+        <footer className="border-t py-12 z-10">
             <div className="grid place-content-center gap-8 container mx-auto px-4">
-                <div className="grid gap-3">
+                <div className="grid gap-3 z-10">
                     <a
                         href="#hero"
                         className="flex justify-center items-center gap-3 select-none"
@@ -26,7 +26,7 @@ export default function Footer() {
                         unforgettable memories.
                     </p>
                 </div>
-                <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+                <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 z-10">
                     <a
                         href="#features"
                         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -46,7 +46,7 @@ export default function Footer() {
                         Explore
                     </a>
                 </nav>
-                <div className="flex justify-center items-center space-x-4">
+                <div className="flex justify-center items-center space-x-4 z-10">
                     <Link
                         href="https://github.com/EisOokami"
                         className="p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors group"
@@ -62,7 +62,7 @@ export default function Footer() {
                         <Linkedin className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </Link>
                 </div>
-                <div className="text-center text-xs text-muted-foreground">
+                <div className="text-center text-xs text-muted-foreground z-10">
                     © {new Date().getFullYear()} EisOokami. All rights reserved.
                 </div>
             </div>

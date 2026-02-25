@@ -48,16 +48,16 @@ export default function Features() {
     return (
         <section
             id="features"
-            className="grid place-items-center gap-5 container mx-auto scroll-mt-20 px-4 py-16 md:py-28 lg:py-32"
+            className="grid place-items-center gap-5 container mx-auto scroll-mt-20 px-4 pt-32 md:pt-60 lg:pt-72 pb-16 md:pb-28 lg:pb-32"
         >
-            <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold">
+            <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold z-10">
                 Everything You Need to Plan Your Trip
             </h2>
-            <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed">
+            <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed z-10">
                 Powerful features designed to make travel planning effortless
                 and enjoyable
             </p>
-            <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10">
+            <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10 z-10">
                 {features.map((feature) => {
                     const Icon = feature.icon;
 

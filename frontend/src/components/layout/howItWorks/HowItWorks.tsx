@@ -200,15 +200,15 @@ export default async function HowItWorks() {
     return (
         <section
             id="how-it-works"
-            className="grid place-items-center gap-5 container mx-auto scroll-mt-28 px-4 py-16 md:py-28 lg:py-32"
+            className="grid place-items-center gap-5 container mx-auto scroll-mt-28 px-4 pt-5 md:pt-12 lg:pt-20 pb-16 md:pb-28 lg:pb-32"
         >
-            <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold">
+            <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold z-10">
                 How It Works
             </h2>
-            <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed">
+            <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed z-10">
                 Start planning your dream trip in four simple steps
             </p>
-            <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4 mt-10">
+            <div className="grid gap-10 md:grid-cols-2 xl:grid-cols-4 mt-10 z-10">
                 {features.map((feature) => (
                     <div
                         key={feature.id}

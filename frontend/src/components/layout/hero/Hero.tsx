@@ -12,20 +12,20 @@ export default function Hero() {
     return (
         <section
             id="hero"
-            className="mt-12 md:mt-20 scroll-mt-12 md:scroll-mt-20 py-16 md:py-28 lg:py-32"
+            className="relative scroll-pt-12 md:scroll-pt-20 pt-28 md:pt-48 lg:pt-52 overflow-hidden"
         >
             <div className="grid place-items-center gap-7 container mx-auto px-4">
-                <h1 className="max-w-[920px] text-center text-4xl md:text-6xl lg:text-7xl leading-tight font-semibold">
+                <h1 className="max-w-[920px] text-center text-4xl md:text-6xl lg:text-7xl leading-tight font-semibold z-10">
                     Explore The World On Your Map
                 </h1>
-                <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed">
+                <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed z-10">
                     Plan your perfect journey with our interactive travel map.
                     Discover hidden gems, popular attractions, and create
                     unforgettable experiences.
                 </p>
                 <Button
                     size="lg"
-                    className="text-white bg-bright-blue hover:bg-blue-600 font-semibold"
+                    className="text-white bg-bright-blue hover:bg-blue-600 font-semibold z-10"
                     asChild
                 >
                     <Link href="/map">Start Exploring</Link>
@@ -44,7 +44,7 @@ export default function Hero() {
                                 alt="map"
                                 width={1300}
                                 height={200}
-                                className="size-full object-cover object-top pointer-events-none select-none"
+                                className="size-full object-cover object-top pointer-events-none select-none z-10"
                             />
                         </div>
                     </div>
