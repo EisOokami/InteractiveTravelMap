@@ -25,7 +25,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
             <body
-                className={`${poppins.className} antialiased flex flex-col min-h-svh`}
+                className={`${poppins.className} antialiased flex flex-col min-h-svh custom-scroll`}
             >
                 <ThemeProvider
                     attribute="class"
