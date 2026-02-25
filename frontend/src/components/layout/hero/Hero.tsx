@@ -14,6 +14,7 @@ export default function Hero() {
             id="hero"
             className="relative scroll-pt-12 md:scroll-pt-20 pt-28 md:pt-48 lg:pt-52 overflow-hidden"
         >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_center,rgba(0,150,255,0.3),transparent_70%)] dark:bg-[radial-gradient(circle_at_bottom,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.1)_40%,rgba(0,0,0,0)_60%)] bg-no-repeat blur-[80px] dark:blur-none z-0" />
             <div className="grid place-items-center gap-7 container mx-auto px-4">
                 <h1 className="max-w-[920px] text-center text-4xl md:text-6xl lg:text-7xl leading-tight font-semibold z-10">
                     Explore The World On Your Map
