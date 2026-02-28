@@ -48,6 +48,23 @@ function ChangeView({ center }: Readonly<{ center: [number, number] }>) {
     return null;
 }
 
+function ResizeMapObserver() {
+    const map = useMap();
+
+    useEffect(() => {
+        const observer = new ResizeObserver(() => {
+            map.invalidateSize();
+        });
+
+        const mapContainer = map.getContainer();
+        observer.observe(mapContainer);
+
+        return () => observer.disconnect();
+    }, [map]);
+
+    return null;
+}
+
 export default function Map({ places, mapRef }: Readonly<MapProps>) {
     const openPlaceDetails = useSelector(
         (state: RootState) => state.ui.openPlaceDetails,
@@ -103,6 +120,7 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
             scrollWheelZoom={true}
         >
             <ChangeView center={[zoomLocationX, zoomLocationY]} />
+            <ResizeMapObserver />
             <LayersControl>
                 <LayersControl.BaseLayer checked name="OpenStreetMap">
                     <TileLayer
