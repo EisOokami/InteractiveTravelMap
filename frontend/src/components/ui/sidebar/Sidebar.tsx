@@ -122,8 +122,8 @@ export default function Sidebar({ userData }: Readonly<SidebarProps>) {
         : "border-white dark:border-dark-mode-black";
 
     return (
-        <nav className="md:grid font-mono bg-white dark:bg-dark-mode-black border-t-2 border-b-2 md:border-t-0 md:border-b-0 md:border-r-2 dark:border-dark-mode-gray-2 z-1999 transition">
-            <ul className="flex md:flex-col justify-around md:justify-center">
+        <nav className="md:flex flex-col items-center md:py-5 font-mono bg-white dark:bg-dark-mode-black border-t-2 border-b-2 md:border-t-0 md:border-b-0 md:border-r-2 dark:border-dark-mode-gray-2 z-30 transition">
+            <ul className="flex md:flex-col justify-around md:justify-center h-full">
                 <li
                     className={`${styles.sidebar__option} ${styleIsActiveMap}`}
                     onClick={handleOpenMap}
