@@ -276,35 +276,37 @@ export default function PlaceDetails({
                                 )}
                         </div>
                     </div>
-                    <div className="mb-6">
-                        <h2 className="mb-3 text-lg font-bold text-black dark:text-white">
-                            Select Visit Date
-                        </h2>
-                        <div className="grid grid-cols-5 gap-2">
-                            {dates.map((date) => (
-                                <DateButton
-                                    key={date.id}
-                                    id={date.id}
-                                    active={date.active}
-                                    date={date.date}
-                                    dates={dates}
-                                    placeId={placeDetailsData.id}
-                                    setDates={(value) =>
-                                        dispatch(setDates(value))
-                                    }
-                                    updateDatesStorage={(value) =>
-                                        dispatch(updateDatesStorage(value))
-                                    }
-                                />
-                            ))}
-                            <Button
-                                className="w-full h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg [&_svg]:size-6 md:[&_svg]:size-7"
-                                onClick={handleDateStorage}
-                            >
-                                <CirclePlus />
-                            </Button>
+                    {userData.status === "success" && userData.data && (
+                        <div className="mb-6">
+                            <h2 className="mb-3 text-lg font-bold text-black dark:text-white">
+                                Select Visit Date
+                            </h2>
+                            <div className="grid grid-cols-5 gap-2">
+                                {dates.map((date) => (
+                                    <DateButton
+                                        key={date.id}
+                                        id={date.id}
+                                        active={date.active}
+                                        date={date.date}
+                                        dates={dates}
+                                        placeId={placeDetailsData.id}
+                                        setDates={(value) =>
+                                            dispatch(setDates(value))
+                                        }
+                                        updateDatesStorage={(value) =>
+                                            dispatch(updateDatesStorage(value))
+                                        }
+                                    />
+                                ))}
+                                <Button
+                                    className="w-full h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg [&_svg]:size-6 md:[&_svg]:size-7"
+                                    onClick={handleDateStorage}
+                                >
+                                    <CirclePlus />
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </section>
