@@ -32,6 +32,7 @@ const limiter = rateLimit({
 const hosts = process.env.HOSTS?.split(",");
 const corsUrls = process.env.CORS_URLS?.split(",");
 
+app.disable("x-powered-by");
 app.use(hostValidation({ hosts: hosts }));
 app.use(
     cors({
