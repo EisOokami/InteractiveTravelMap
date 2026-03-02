@@ -6,6 +6,7 @@ import { rateLimit } from "express-rate-limit";
 import { xss } from "express-xss-sanitizer";
 import hostValidation from "host-validation";
 import cookieParser from "cookie-parser";
+import hpp from "hpp";
 import placesRoutes from "./routes/places.routes";
 import favoritesRoutes from "./routes/favorites.routes";
 import authRoutes from "./routes/auth.routes";
@@ -40,6 +41,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(hpp());
 app.use(helmet());
 app.use(limiter);
 app.use(xss());
