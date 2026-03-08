@@ -13,7 +13,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
     title: "Interactive Travel Map",
-    description: "",
+    description:
+        "This application is designed to help tourists find points of interest and plan their routes. The interactive map allows users to search for locations, view details about various attractions, and create customized travel itineraries.",
     icons: "/favicon.ico",
 };
 
