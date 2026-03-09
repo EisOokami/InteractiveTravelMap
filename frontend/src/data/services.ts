@@ -74,8 +74,6 @@ export async function loginService(userData: ILogin): Promise<
             cache: "no-cache",
         });
 
-        console.log(response);
-
         return response.json();
     } catch (error) {
         console.error("Login Service Error:", error);
