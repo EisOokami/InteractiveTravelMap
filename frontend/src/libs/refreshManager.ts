@@ -54,8 +54,6 @@ export const handleRefreshToken = async (): Promise<boolean> => {
 
                 const data = await response.json();
 
-                console.log(data);
-
                 if (data.status === "error") {
                     cookieStore.delete("accessToken");
                     cookieStore.delete("refreshToken");
