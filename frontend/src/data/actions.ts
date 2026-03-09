@@ -80,8 +80,6 @@ export async function loginAction(
 
     const responseData = await loginService(validatedFields.data);
 
-    console.log(responseData);
-
     if (!responseData) {
         return {
             formData,
