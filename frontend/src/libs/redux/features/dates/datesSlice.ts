@@ -14,7 +14,7 @@ const initialState: MapState = {
 };
 
 export const datesSlice = createSlice({
-    name: "map",
+    name: "dates",
     initialState,
     reducers: {
         setDatesStorage: (state, action: PayloadAction<IDateStorage>) => {
