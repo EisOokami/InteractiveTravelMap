@@ -9,10 +9,12 @@ export default async function HomePage() {
     return (
         <>
             <Header />
-            <Hero />
-            <Features />
-            <HowItWorks />
-            <Explore />
+            <main>
+                <Hero />
+                <Features />
+                <HowItWorks />
+                <Explore />
+            </main>
             <Footer />
         </>
     );
