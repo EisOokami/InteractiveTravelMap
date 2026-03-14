@@ -20,6 +20,7 @@ import {
 } from "@/interfaces/actions";
 import { mutateData } from "./mutateData";
 import { getUserData } from "./loaders";
+import { validateTokens } from "@/libs/validateTokens";
 
 const accessTokenConfig = {
     maxAge: 15 * 60 * 1000,
@@ -419,6 +420,19 @@ export async function changePasswordAction(
     prevState: any,
     formData: FormData,
 ): Promise<IChangePasswordAction | undefined> {
+    const isValidate = await validateTokens();
+
+    if (!isValidate) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "You are not logged in",
+        };
+    }
+
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -498,6 +512,15 @@ export async function deleteAccountAction(
     prevState: any,
     formData: FormData,
 ): Promise<Pick<IBaseAction, "status" | "message"> | undefined> {
+    const isValidate = await validateTokens();
+
+    if (!isValidate) {
+        return {
+            status: "error",
+            message: "You are not logged in",
+        };
+    }
+
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -526,6 +549,15 @@ export async function deleteAccountAction(
 export async function addItemToFavoriteAction(
     placeId: number,
 ): Promise<{ ok: boolean; message: string } | undefined> {
+    const isValidate = await validateTokens();
+
+    if (!isValidate) {
+        return {
+            ok: false,
+            message: "You are not logged in",
+        };
+    }
+
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -578,6 +610,15 @@ export async function addItemToFavoriteAction(
 export async function removeItemFromFavoriteAction(
     placeId: number,
 ): Promise<{ ok: boolean; message: string } | undefined> {
+    const isValidate = await validateTokens();
+
+    if (!isValidate) {
+        return {
+            ok: false,
+            message: "You are not logged in",
+        };
+    }
+
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
