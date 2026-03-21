@@ -242,7 +242,7 @@ export async function logoutAction() {
     const responseData = await mutateData("POST", "/auth/logout");
 
     if (!responseData) {
-        throw new Error("Unauthorized or invalid token");
+        console.error("Unauthorized or invalid token");
     }
 
     if (
@@ -251,7 +251,7 @@ export async function logoutAction() {
         responseData.message &&
         responseData.status !== "success"
     ) {
-        throw new Error(responseData.message);
+        console.error(responseData.message);
     }
 
     const cookieStore = await cookies();
