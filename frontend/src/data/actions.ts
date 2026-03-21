@@ -246,6 +246,7 @@ export async function logoutAction() {
     }
 
     if (
+        responseData &&
         "message" in responseData &&
         "status" in responseData &&
         responseData.message &&
@@ -256,8 +257,8 @@ export async function logoutAction() {
 
     const cookieStore = await cookies();
 
-    cookieStore.set("refreshToken", "", { ...refreshTokenConfig, maxAge: 0 });
-    cookieStore.set("accessToken", "", { ...accessTokenConfig, maxAge: 0 });
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("accessToken");
 }
 
 const updateProfileSchema = z.object({
