@@ -279,6 +279,19 @@ export async function updateProfileAction(
     prevState: any,
     formData: FormData,
 ): Promise<IUpdateProfileAction | undefined> {
+    const isValidate = await validateTokens();
+
+    if (!isValidate) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "You are not logged in",
+        };
+    }
+
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
