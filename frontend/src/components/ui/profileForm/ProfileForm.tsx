@@ -58,6 +58,7 @@ export default function ProfileForm({ userData }: Readonly<ProfileFormProps>) {
                                     ?.get("username")
                                     ?.toString() ?? userData?.data?.username
                             }
+                            autoComplete="username"
                         />
                         <ZodErrors error={formState?.zodErrors?.username} />
                     </div>
@@ -77,6 +78,7 @@ export default function ProfileForm({ userData }: Readonly<ProfileFormProps>) {
                                 formState?.formData?.get("email")?.toString() ??
                                 userData?.data?.email
                             }
+                            autoComplete="email"
                         />
                         <ZodErrors error={formState?.zodErrors?.email} />
                     </div>

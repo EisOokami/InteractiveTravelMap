@@ -62,6 +62,7 @@ export default function ResetPasswordForm() {
                                     ?.get("newPassword")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="new-password"
                         />
                         <ZodErrors error={formState?.zodErrors?.newPassword} />
                     </div>
@@ -82,6 +83,7 @@ export default function ResetPasswordForm() {
                                     ?.get("confirmPassword")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="new-password"
                         />
                         <ZodErrors
                             error={formState?.zodErrors?.confirmPassword}

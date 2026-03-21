@@ -59,6 +59,7 @@ export default function ForgotPasswordForm() {
                                 formState?.formData?.get("email")?.toString() ??
                                 undefined
                             }
+                            autoComplete="email"
                         />
                         <ZodErrors error={formState?.zodErrors?.email} />
                     </div>

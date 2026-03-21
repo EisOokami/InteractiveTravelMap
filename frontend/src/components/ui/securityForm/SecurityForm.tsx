@@ -54,6 +54,7 @@ export default function SecurityForm() {
                                     ?.get("currentPassword")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="current-password"
                         />
                         <ZodErrors
                             error={formState?.zodErrors?.currentPassword}
@@ -74,6 +75,7 @@ export default function SecurityForm() {
                                     ?.get("newPassword")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="new-password"
                         />
                         <ZodErrors error={formState?.zodErrors?.newPassword} />
                     </div>
@@ -94,6 +96,7 @@ export default function SecurityForm() {
                                     ?.get("confirmPassword")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="new-password"
                         />
                         <ZodErrors
                             error={formState?.zodErrors?.confirmPassword}

@@ -62,6 +62,7 @@ export default function LoginForm() {
                                 formState?.formData?.get("email")?.toString() ??
                                 undefined
                             }
+                            autoComplete="email"
                         />
                         <ZodErrors error={formState?.zodErrors?.email} />
                     </div>
@@ -88,6 +89,7 @@ export default function LoginForm() {
                                     ?.get("password")
                                     ?.toString() ?? undefined
                             }
+                            autoComplete="current-password"
                         />
                         <ZodErrors error={formState?.zodErrors?.password} />
                     </div>
