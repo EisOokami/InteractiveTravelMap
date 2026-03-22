@@ -145,7 +145,7 @@ export default function PlaceDetails({
     };
 
     return (
-        <section className="absolute w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black overflow-y-hidden z-[1099] transition-colors">
+        <aside className="absolute w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black overflow-y-hidden z-[1099] transition-colors">
             <div className="custom-scroll h-full overflow-y-auto">
                 <div className="absolute top-4 left-4 flex gap-2">
                     <Button
@@ -309,6 +309,6 @@ export default function PlaceDetails({
                     )}
                 </div>
             </div>
-        </section>
+        </aside>
     );
 }

@@ -207,7 +207,7 @@ export default function Trip({ places, mapRef }: Readonly<TripProps>) {
     };
 
     return (
-        <section className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1999] transition-colors">
+        <aside className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1999] transition-colors">
             <div className="p-4 md:p-6 border-b dark:border-gray-800">
                 <h1 className="mb-4 md:mb-6 text-2xl md:text-3xl font-bold text-black dark:text-white">
                     Trip Planner
@@ -326,6 +326,6 @@ export default function Trip({ places, mapRef }: Readonly<TripProps>) {
                     </div>
                 )}
             </div>
-        </section>
+        </aside>
     );
 }
