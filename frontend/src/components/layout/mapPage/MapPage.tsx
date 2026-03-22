@@ -140,7 +140,7 @@ export default function MapPage({
     }, [placeId, dispatch]);
 
     return (
-        <section className="flex flex-col h-svh">
+        <div className="flex flex-col h-svh">
             <div className="grow flex">
                 <div className="hidden md:flex">
                     <Sidebar userData={userData} />
@@ -243,6 +243,6 @@ export default function MapPage({
             <div className="md:hidden">
                 <Sidebar />
             </div>
-        </section>
+        </div>
     );
 }
