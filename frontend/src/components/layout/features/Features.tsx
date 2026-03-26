@@ -46,39 +46,42 @@ const features = [
 
 export default function Features() {
     return (
-        <section
-            id="features"
-            className="grid place-items-center gap-5 container mx-auto scroll-mt-20 px-4 pt-32 md:pt-60 lg:pt-72 pb-16 md:pb-28 lg:pb-32"
-        >
-            <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold z-10">
-                Everything You Need to Plan Your Trip
-            </h2>
-            <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed z-10">
-                Powerful features designed to make travel planning effortless
-                and enjoyable
-            </p>
-            <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10 z-10">
-                {features.map((feature) => {
-                    const Icon = feature.icon;
+        <div className="relative w-full min-h-screen grid place-content-center overflow-hidden">
+            <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(0,150,255,0.3)_0%,rgba(0,150,255,0.15)_0%,rgba(0,0,0,0)_40%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.04)_10%,rgba(0,0,0,0)_30%)]" />
+            <section
+                id="features"
+                className="grid place-items-center gap-5 container mx-auto px-4 py-16 md:py-28 lg:py-32"
+            >
+                <h2 className="max-w-[820px] text-center text-4xl md:text-5xl lg:text-6xl leading-tight font-semibold z-10">
+                    Everything You Need to Plan Your Trip
+                </h2>
+                <p className="max-w-[750px] text-center text-base md:text-xl text-muted-foreground leading-relaxed z-10">
+                    Powerful features designed to make travel planning
+                    effortless and enjoyable
+                </p>
+                <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3 mt-10 z-10">
+                    {features.map((feature) => {
+                        const Icon = feature.icon;
 
-                    return (
-                        <div
-                            key={feature.id}
-                            className="group p-8 bg-white dark:bg-dark-mode-black border-2 hover:border-bright-blue rounded-xl hover:shadow-xl transition duration-300"
-                        >
-                            <div className="inline-flex mb-6 p-4 bg-bright-blue rounded-xl group-hover:scale-110 transition duration-300">
-                                <Icon className="w-7 h-7 text-white" />
+                        return (
+                            <div
+                                key={feature.id}
+                                className="group p-8 bg-white dark:bg-dark-mode-black border-2 hover:border-bright-blue rounded-xl hover:shadow-xl transition duration-300"
+                            >
+                                <div className="inline-flex mb-6 p-4 bg-bright-blue rounded-xl group-hover:scale-110 transition duration-300">
+                                    <Icon className="w-7 h-7 text-white" />
+                                </div>
+                                <h3 className="mb-4 text-2xl dark:text-white font-bold">
+                                    {feature.title}
+                                </h3>
+                                <p className="text-muted-foreground leading-relaxed">
+                                    {feature.description}
+                                </p>
                             </div>
-                            <h3 className="mb-4 text-2xl dark:text-white font-bold">
-                                {feature.title}
-                            </h3>
-                            <p className="text-muted-foreground leading-relaxed">
-                                {feature.description}
-                            </p>
-                        </div>
-                    );
-                })}
-            </div>
-        </section>
+                        );
+                    })}
+                </div>
+            </section>
+        </div>
     );
 }
