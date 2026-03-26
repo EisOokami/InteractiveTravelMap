@@ -14,7 +14,7 @@ const features = [
         description:
             "View all places on an interactive map, see photos, ratings, and detailed information.",
         component: (placesData: IPlace[]) => (
-            <div className="relative grid content-center justify-items-center h-40 bg-[url(/map1.png)] bg-center">
+            <div className="relative grid content-center justify-items-center h-40 bg-[url(/map1.webp)] bg-center">
                 <input
                     type="checkbox"
                     id="popup-toggle"
