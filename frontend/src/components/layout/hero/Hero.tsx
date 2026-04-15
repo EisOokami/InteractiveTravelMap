@@ -34,7 +34,7 @@ export default function Hero() {
             </div>
             <div className="overflow-hidden pointer-events-none select-none">
                 <div className="container mx-auto px-4">
-                    <div className="relative w-full mt-12 md:mt-20 pb-[45%] border-t border-x rounded-t-xl md:rounded-t-3xl shadow-xl overflow-hidden">
+                    <div className="relative w-full mt-12 md:mt-20 h-[600px] md:pb-[45%] md:h-auto border-t border-x rounded-t-xl md:rounded-t-3xl shadow-xl overflow-hidden">
                         <div className="absolute inset-0">
                             <Image
                                 src={
@@ -45,8 +45,20 @@ export default function Hero() {
                                 alt="map"
                                 width={1300}
                                 height={200}
-                                className="size-full object-cover object-top pointer-events-none select-none z-10"
+                                className="hidden md:block size-full object-cover object-top pointer-events-none select-none z-10"
                             />
+                            <Image
+                                src={
+                                    theme === "dark"
+                                        ? "/mobile-map-page2.webp"
+                                        : "/mobile-map-page1.webp"
+                                }
+                                alt="map"
+                                width={450}
+                                height={600}
+                                className="md:hidden size-full object-cover object-top pointer-events-none select-none z-10"
+                            />
+                            <div className="md:hidden absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent z-20" />
                         </div>
                     </div>
                 </div>
