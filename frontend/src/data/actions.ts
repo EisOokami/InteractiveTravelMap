@@ -23,7 +23,7 @@ import { getUserData } from "./loaders";
 import { validateTokens } from "@/libs/validateTokens";
 
 const accessTokenConfig = {
-    maxAge: 15 * 60 * 1000,
+    maxAge: 15 * 60,
     path: "/",
     domain: process.env.HOST ?? "localhost",
     httpOnly: true,

@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
 const accessTokenConfig = {
-    maxAge: 15 * 60 * 1000,
+    maxAge: 15 * 60,
     path: "/",
     domain: process.env.HOST ?? "localhost",
     httpOnly: true,
@@ -29,6 +29,7 @@ export const handleRefreshToken = async (): Promise<boolean> => {
             try {
                 const cookieStore = await cookies();
                 const refreshToken = cookieStore.get("refreshToken")?.value;
+
                 if (!refreshToken) {
                     cookieStore.delete("accessToken");
                     cookieStore.delete("refreshToken");
