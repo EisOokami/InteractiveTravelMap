@@ -63,7 +63,7 @@ export async function proxy(request: NextRequest) {
     response.headers.set("X-XSS-Protection", "1; mode=block");
     response.headers.set(
         "Strict-Transport-Security",
-        "max-age=31536000; includeSubDomains; preloa",
+        "max-age=31536000; includeSubDomains; preload",
     );
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
