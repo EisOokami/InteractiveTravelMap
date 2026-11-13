@@ -2,25 +2,45 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { IUser } from "../types/interfaces.js";
+import { ILoginEmailCodes, IUser } from "../types/interfaces.js";
 import { pool } from "../db/pool.js";
 import {
     forgotPasswordSchema,
     loginSchema,
     registerSchema,
+    resendEmailCodeSchema,
+    resendVerificationSchema,
     resetPasswordSchema,
+    verifyEmailCodeSchema,
 } from "../validation/validation.js";
 import { ZodError } from "zod";
-import { ResultSetHeader } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { transporter } from "../utils/email.js";
 import {
     createAccessToken,
     createRefreshToken,
-    revokeAllUserTokens,
+    revokeAllUserSessions,
+    revokeSession,
+    rotateRefreshToken,
+    verifyRefreshToken,
 } from "../utils/jwt.js";
-import { jwtVerify } from "jose";
+import { jwtVerify, errors as joseErrors, type JWTPayload } from "jose";
+import { generateCsrfToken } from "../utils/csrf.js";
+import {
+    exchangeCodeForProfile,
+    findOrCreateGoogleUser,
+    getGoogleAuthUrl,
+} from "../utils/googleAuth.js";
+import { generateRawToken, hashToken } from "../utils/mfa.js";
+import { emailTemplate } from "../utils/emailTemplate.js";
+import { sendLoginNotificationEmail } from "../utils/loginNotificationEmail.js";
+import {
+    generateEmailCode,
+    hashEmailCode,
+    safeEqualHex,
+} from "../utils/codes.js";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const refreshSecret = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET);
 
@@ -61,9 +81,37 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
         const [result] = await pool.execute<ResultSetHeader>(
-            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-            [username, email, hashedPassword],
+            `
+                INSERT INTO users
+                    (
+                        username,
+                        email,
+                        password,
+                        is_verified,
+                        verification_token,
+                        verification_token_expires,
+                        terms_accepted_at,
+                        terms_version,
+                        privacy_accepted_at,
+                        privacy_version
+                    )
+                VALUES (?, ?, ?, FALSE, ?, ?, ?, ?, ?, ?)
+            `,
+            [
+                username,
+                email,
+                hashedPassword,
+                verificationToken,
+                verificationExpires,
+                new Date(),
+                process.env.TERMS_VERSION!,
+                new Date(),
+                process.env.PRIVACY_VERSION!,
+            ],
         );
 
         if (result.affectedRows === 0) {
@@ -75,22 +123,74 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        const userId = result.insertId;
+
         const [user] = await pool.execute<IUser[]>(
             "SELECT * FROM users WHERE email = ?",
             [email],
         );
 
-        const accessToken = await createAccessToken({
-            id: user[0].id,
+        if (!user.length) {
+            res.status(400).json({
+                status: "error",
+                message: "Failed to retrieve user",
+            });
+
+            return;
+        }
+
+        const verificationUrl = `${process.env.WEB_URL}/verifyEmail?token=${verificationToken}`;
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Welcome! Activate your account",
+            html: emailTemplate({
+                logo: "cid:app-logo",
+                title: "Verify Email",
+                heading: `Welcome, ${user[0].username}!`,
+                description:
+                    "Thanks for creating an account. Please verify your email address to activate your account.",
+                buttonText: "Verify Email",
+                buttonUrl: verificationUrl,
+                footer: "This verification link will expire in 24 hours. If you didn't create this account, simply ignore this email.",
+            }),
+            attachments: [
+                {
+                    filename: "logo.png",
+                    path: "./assets/generallogo.png",
+                    cid: "app-logo",
+                },
+            ],
+        };
+
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "register",
+                    },
+                    "Operation failed",
+                );
+            } else {
+                req.log.debug(
+                    { event: "email.sent", operation: "register" },
+                    "Email accepted by transport",
+                );
+            }
         });
 
-        const refreshToken = await createRefreshToken(user[0].id.toString());
+        req.log.info(
+            { event: "auth.registered", audit: true, userId },
+            "Operation completed",
+        );
 
         res.status(201).json({
             status: "success",
-            message: "User registered successfully",
-            accessToken,
-            refreshToken,
+            message:
+                "User has been successfully registered. Please check your email to verify your account.",
         });
     } catch (error) {
         if (error instanceof ZodError) {
@@ -107,10 +207,299 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        console.error("Registration error:", error);
+        req.log.error(
+            {
+                err: error,
+                event: "auth.register_failed",
+                operation: "register",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({
             status: "error",
             message: "Server error during registration",
+        });
+    }
+};
+
+export const verifyEmail = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    try {
+        const token = req.query.token;
+
+        if (typeof token !== "string" || !token) {
+            res.status(400).json({
+                status: "error",
+                message: "Verification token is required",
+            });
+
+            return;
+        }
+
+        const [rows] = await pool.execute<
+            (Pick<IUser, "id" | "is_verified" | "verification_token_expires"> &
+                RowDataPacket)[]
+        >(
+            `
+                SELECT id, is_verified, verification_token_expires
+                FROM users
+                WHERE verification_token = ?
+            `,
+            [token],
+        );
+
+        const user = rows[0];
+
+        if (!user) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.verification_rejected",
+                    reason: "invalid_or_expired",
+                },
+                "Email verification rejected",
+            );
+
+            res.status(400).json({
+                status: "error",
+                message: "Invalid verification token",
+            });
+
+            return;
+        }
+
+        if (user.is_verified) {
+            res.status(200).json({
+                status: "success",
+                message: "Email already verified",
+            });
+
+            return;
+        }
+
+        if (
+            !user.verification_token_expires ||
+            new Date(user.verification_token_expires) < new Date()
+        ) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.verification_rejected",
+                    reason: "invalid_or_expired",
+                },
+                "Email verification rejected",
+            );
+
+            res.status(400).json({
+                status: "error",
+                message: "Verification token has expired",
+            });
+
+            return;
+        }
+
+        await pool.execute<ResultSetHeader>(
+            `
+                UPDATE users
+                SET is_verified = TRUE,
+                    verification_token = NULL,
+                    verification_token_expires = NULL
+                WHERE id = ?
+            `,
+            [user.id],
+        );
+
+        req.log.info(
+            { audit: true, event: "auth.email_verified", userId: user.id },
+            "Email verified",
+        );
+
+        res.status(200).json({
+            status: "success",
+            message: "Email successfully verified. You can now log in.",
+        });
+    } catch (error) {
+        req.log.error(
+            {
+                err: error,
+                event: "auth.verify_email_failed",
+                operation: "verifyEmail",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error during email verification",
+        });
+    }
+};
+
+export const resendVerificationEmail = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    try {
+        const { email } = resendVerificationSchema.parse(req.body);
+
+        const [rows] = await pool.execute<
+            (Pick<IUser, "id" | "username" | "email" | "is_verified"> &
+                RowDataPacket)[]
+        >(
+            `
+                SELECT id, username, email, is_verified
+                FROM users
+                WHERE email = ?
+            `,
+            [email],
+        );
+
+        const user = rows[0];
+
+        if (!user) {
+            res.status(200).json({
+                status: "success",
+                message:
+                    "If this email is registered and not verified, a new verification link has been sent.",
+            });
+
+            return;
+        }
+
+        if (user.is_verified) {
+            res.status(200).json({
+                status: "success",
+                message:
+                    "If this email is registered and not verified, a new verification link has been sent.",
+            });
+
+            return;
+        }
+
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+        await pool.execute<ResultSetHeader>(
+            `
+                UPDATE users
+                SET verification_token = ?,
+                    verification_token_expires = ?
+                WHERE id = ?
+            `,
+            [verificationToken, verificationExpires, user.id],
+        );
+
+        const verificationUrl = `${process.env.WEB_URL}/verifyEmail?token=${verificationToken}`;
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "Confirm your email address",
+            html: emailTemplate({
+                logo: "cid:app-logo",
+                title: "Confirm your email",
+                heading: "Confirm your email address",
+                description: `
+                    Hello <strong>${user.username}</strong>,
+                    <br><br>
+                    We received a request to activate your account.
+                    Please confirm your email address by clicking the button below.
+                `,
+                children: `
+                    <div
+                        style="
+                            margin-top:28px;
+                            padding:20px;
+                            background:#fafafa;
+                            border:1px solid #e5e5e5;
+                            border-radius:12px;
+                        "
+                    >
+                        <p
+                            style="
+                                margin:0;
+                                font-size:14px;
+                                line-height:24px;
+                                color:#71717a;
+                            "
+                        >
+                            <strong style="color:#0a0a0a;">
+                                Security note:
+                            </strong>
+                            This verification link is valid for 24 hours.
+                        </p>
+                    </div>
+                `,
+                buttonText: "Activate Account",
+                buttonUrl: verificationUrl,
+                footer: "If you did not create this account, you can ignore this email.",
+            }),
+            attachments: [
+                {
+                    filename: "logo.png",
+                    path: "./assets/generallogo.png",
+                    cid: "app-logo",
+                },
+            ],
+        };
+
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "resendVerificationEmail",
+                    },
+                    "Operation failed",
+                );
+            } else {
+                req.log.debug(
+                    {
+                        event: "email.sent",
+                        operation: "resendVerificationEmail",
+                    },
+                    "Email accepted by transport",
+                );
+            }
+        });
+
+        res.status(200).json({
+            status: "success",
+            message:
+                "If this email is registered and not verified, a new verification link has been sent.",
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const errorMessages = error.issues.map((issue: any) => ({
+                field: issue.path[0],
+                message: issue.message,
+            }));
+
+            res.status(400).json({
+                status: "error",
+                message: "Invalid data",
+                details: errorMessages,
+            });
+
+            return;
+        }
+
+        req.log.error(
+            {
+                err: error,
+                event: "auth.resend_verification_email_failed",
+                operation: "resendVerificationEmail",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error while resending verification email",
         });
     }
 };
@@ -119,17 +508,43 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const validateData = loginSchema.parse(req.body);
 
-        const { email, password } = validateData;
+        const { email, password, acceptTerms } = validateData;
 
         const [user] = await pool.execute<IUser[]>(
             "SELECT * FROM users WHERE email = ?",
             [email],
         );
 
-        if (!user.length) {
+        if (
+            !user.length ||
+            user[0].auth_provider === "google" ||
+            !user[0].password
+        ) {
+            req.log.warn(
+                { audit: true, event: "auth.login_failed", operation: "login" },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid email or password",
+            });
+
+            return;
+        }
+
+        if (!user[0].is_verified) {
+            req.log.warn(
+                { audit: true, event: "auth.login_failed", operation: "login" },
+                "Authentication rejected",
+            );
+
+            res.status(403).json({
+                status: "error",
+                message: "Please verify your email before logging in",
+                data: {
+                    requiresVerification: true,
+                },
             });
 
             return;
@@ -141,6 +556,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         );
 
         if (!isPasswordValid) {
+            req.log.warn(
+                { audit: true, event: "auth.login_failed", operation: "login" },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid email or password",
@@ -149,17 +569,188 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const accessToken = await createAccessToken({
-            id: user[0].id,
-        });
+        if (
+            user[0].terms_version !== process.env.TERMS_VERSION ||
+            user[0].privacy_version !== process.env.PRIVACY_VERSION
+        ) {
+            if (!acceptTerms) {
+                req.log.warn(
+                    {
+                        audit: true,
+                        event: "auth.login_failed",
+                        operation: "login",
+                        reason: "terms_outdated",
+                    },
+                    "Authentication rejected",
+                );
 
-        const refreshToken = await createRefreshToken(user[0].id.toString());
+                res.status(401).json({
+                    status: "error",
+                    message:
+                        "Our Terms & Conditions and Privacy Policy have been updated. Please review and accept them to continue.",
+                    data: {
+                        requiresTermsAcceptance: true,
+                    },
+                });
+
+                return;
+            }
+
+            await pool.execute<ResultSetHeader>(
+                `
+                    UPDATE users
+                    SET terms_accepted_at = ?,
+                        terms_version = ?,
+                        privacy_accepted_at = ?,
+                        privacy_version = ?
+                    WHERE id = ?
+                `,
+                [
+                    new Date(),
+                    process.env.TERMS_VERSION!,
+                    new Date(),
+                    process.env.PRIVACY_VERSION!,
+                    user[0].id,
+                ],
+            );
+
+            req.log.info(
+                {
+                    event: "auth.terms_accepted",
+                    audit: true,
+                    userId: user[0].id,
+                    termsVersion: process.env.TERMS_VERSION,
+                    privacyVersion: process.env.PRIVACY_VERSION,
+                },
+                "Operation completed",
+            );
+        }
+
+        if (user[0].mfa_enabled) {
+            const rawTempToken = generateRawToken();
+            const tempTokenHash = hashToken(rawTempToken);
+
+            await pool.execute<ResultSetHeader>(
+                `
+                    INSERT INTO mfa_login_sessions
+                        (
+                            token_hash,
+                            user_id,
+                            ip_address,
+                            user_agent,
+                            expires_at
+                        )
+                    VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE))
+                `,
+                [
+                    tempTokenHash,
+                    user[0].id,
+                    req.ip ?? null,
+                    req.headers["user-agent"] ?? null,
+                ],
+            );
+
+            req.log.debug(
+                {
+                    event: "auth.challenge_created",
+                    userId: user[0].id,
+                    method: "totp",
+                },
+                "Login challenge created",
+            );
+
+            res.status(200).json({
+                status: "success",
+                message: "MFA verification required",
+                requiresMfa: true,
+                tempToken: rawTempToken,
+            });
+
+            return;
+        }
+
+        const rawTempToken = generateRawToken();
+        const tempTokenHash = hashToken(rawTempToken);
+        const code = generateEmailCode();
+
+        await pool.execute(`DELETE FROM login_email_codes WHERE user_id = ?`, [
+            user[0].id,
+        ]);
+
+        await pool.execute<ResultSetHeader>(
+            `
+                INSERT INTO login_email_codes
+                    (token_hash, user_id, code_hash, ip_address, user_agent, expires_at)
+                VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))
+            `,
+            [
+                tempTokenHash,
+                user[0].id,
+                hashEmailCode(user[0].id, code),
+                req.ip ?? null,
+                req.headers["user-agent"] ?? null,
+                10,
+            ],
+        );
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user[0].email,
+            subject: `${code} - your login code`,
+            html: emailTemplate({
+                logo: "cid:app-logo",
+                title: "Login code",
+                heading: `Hi, ${user[0].username}!`,
+                description: `
+                        Your verification code is:
+                        <br />
+                        <p style="font-size:28px;font-weight:700;letter-spacing:6px">${code}</p>
+                        It expires in 10 minutes.
+                    `,
+                footer: "If this wasn't you, please change your password immediately and contact support.",
+            }),
+            attachments: [
+                {
+                    filename: "logo.png",
+                    path: "./assets/generallogo.png",
+                    cid: "app-logo",
+                },
+            ],
+        };
+
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "login",
+                    },
+                    "Operation failed",
+                );
+
+                if (!res.headersSent) {
+                    res.status(500).send({
+                        status: "error",
+                        message: "Error sending email",
+                    });
+                }
+            } else {
+                req.log.debug(
+                    {
+                        event: "email.sent",
+                        operation: "login",
+                    },
+                    "Email accepted by transport",
+                );
+            }
+        });
 
         res.status(200).json({
             status: "success",
-            message: "Login successful",
-            accessToken,
-            refreshToken,
+            message: "Verification code sent to your email",
+            requiresEmailCode: true,
+            tempToken: rawTempToken,
         });
     } catch (error) {
         if (error instanceof ZodError) {
@@ -176,10 +767,401 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        console.error("Login error:", error);
+        req.log.error(
+            { err: error, event: "auth.login_error", operation: "login" },
+            "Operation failed",
+        );
+
         res.status(500).json({
             status: "error",
             message: "Server error during login",
+        });
+    }
+};
+
+export const verifyLoginEmailCode = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    try {
+        const { tempToken, code } = verifyEmailCodeSchema.parse(req.body);
+
+        const tokenHash = hashToken(tempToken);
+
+        const [bump] = await pool.execute<ResultSetHeader>(
+            `
+                UPDATE login_email_codes
+                SET attempts = attempts + 1
+                WHERE token_hash = ?
+                    AND expires_at > NOW()
+                    AND attempts < ?
+            `,
+            [tokenHash, 5],
+        );
+
+        if (bump.affectedRows === 0) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.login_failed",
+                    operation: "verifyLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message:
+                    "Code expired or too many attempts. Please log in again",
+                data: { requiresRelogin: true },
+            });
+
+            return;
+        }
+
+        const [rows] = await pool.execute<
+            (Pick<
+                ILoginEmailCodes,
+                "id" | "user_id" | "code_hash" | "attempts"
+            > &
+                RowDataPacket)[]
+        >(
+            `
+                SELECT id, user_id, code_hash, attempts
+                FROM login_email_codes
+                WHERE token_hash = ?
+            `,
+            [tokenHash],
+        );
+
+        const session = rows[0];
+
+        if (
+            !session ||
+            !safeEqualHex(
+                session.code_hash,
+                hashEmailCode(session.user_id, code),
+            )
+        ) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.login_failed",
+                    operation: "verifyLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message: "Invalid verification code",
+                data: {
+                    attemptsLeft: session ? 5 - session.attempts : 0,
+                },
+            });
+
+            return;
+        }
+
+        const [deleteRows] = await pool.execute<ResultSetHeader>(
+            `DELETE FROM login_email_codes WHERE id = ?`,
+            [session.id],
+        );
+
+        if (deleteRows.affectedRows === 0) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.login_failed",
+                    operation: "verifyLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message: "Invalid verification code",
+            });
+
+            return;
+        }
+
+        const [userRows] = await pool.execute<
+            (Pick<IUser, "id" | "username" | "email"> & RowDataPacket)[]
+        >(
+            `
+                SELECT id, username, email
+                FROM users
+                WHERE id = ?
+            `,
+            [session.user_id],
+        );
+
+        const user = userRows[0];
+
+        if (!user) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.login_failed",
+                    operation: "verifyLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message: "Invalid verification code",
+            });
+
+            return;
+        }
+
+        const refreshToken = await createRefreshToken(
+            user.id,
+            req.ip,
+            req.headers["user-agent"],
+        );
+        const accessToken = await createAccessToken(
+            { id: user.id },
+            refreshToken,
+        );
+        const csrfToken = generateCsrfToken();
+
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        req.log.info(
+            {
+                event: "auth.login_success",
+                audit: true,
+                userId: user.id,
+                method: "email_code",
+            },
+            "Operation completed",
+        );
+
+        res.status(200).json({
+            status: "success",
+            message: "User logged in successfully",
+            accessToken,
+            refreshToken,
+        });
+
+        sendLoginNotificationEmail(user, req).catch((error) => {
+            req.log.error(
+                {
+                    err: error,
+                    event: "email.delivery_failed",
+                    operation: "verifyLoginEmailCode",
+                },
+                "Operation failed",
+            );
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            res.status(400).json({
+                status: "error",
+                message: "Invalid data",
+                details: error.issues.map((issue) => ({
+                    field: issue.path[0],
+                    message: issue.message,
+                })),
+            });
+
+            return;
+        }
+
+        req.log.error(
+            {
+                err: error,
+                event: "auth.verify_login_email_code_failed",
+                operation: "verifyLoginEmailCode",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error during verification",
+        });
+    }
+};
+
+export const resendLoginEmailCode = async (
+    req: Request,
+    res: Response,
+): Promise<void> => {
+    try {
+        const { tempToken } = resendEmailCodeSchema.parse(req.body);
+
+        const tokenHash = hashToken(tempToken);
+
+        const [rows] = await pool.execute<
+            (Pick<ILoginEmailCodes, "id" | "user_id"> & {
+                email: string;
+                username: string;
+                seconds_since_sent: number;
+            } & RowDataPacket)[]
+        >(
+            `
+                SELECT
+                    c.id,
+                    c.user_id,
+                    TIMESTAMPDIFF(SECOND, c.last_sent_at, NOW()) AS seconds_since_sent,
+                    u.email,
+                    u.username
+                FROM login_email_codes c
+                JOIN users u ON u.id = c.user_id
+                WHERE c.token_hash = ?
+            `,
+            [tokenHash],
+        );
+
+        const session = rows[0];
+
+        if (!session) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.login_challenge_rejected",
+                    operation: "resendLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message: "Session expired. Please log in again",
+                data: { requiresRelogin: true },
+            });
+
+            return;
+        }
+
+        if (session.seconds_since_sent < 60) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "security.rate_limit_exceeded",
+                    operation: "resendLoginEmailCode",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(429).json({
+                status: "error",
+                message: "Please wait before requesting a new code",
+                data: {
+                    retryAfter: 60 - session.seconds_since_sent,
+                },
+            });
+
+            return;
+        }
+
+        const code = generateEmailCode();
+
+        await pool.execute(
+            `
+                UPDATE login_email_codes
+                SET code_hash = ?,
+                    attempts = 0,
+                    last_sent_at = NOW(),
+                    expires_at = DATE_ADD(NOW(), INTERVAL ? MINUTE)
+                WHERE id = ?
+            `,
+            [hashEmailCode(session.user_id, code), 10, session.id],
+        );
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: session.email,
+            subject: `${code} - your login code`,
+            html: emailTemplate({
+                logo: "cid:app-logo",
+                title: "Login code",
+                heading: `Hi, ${session.username}!`,
+                description: `
+                        Your verification code is:
+                        <br />
+                        <p style="font-size:28px;font-weight:700;letter-spacing:6px">${code}</p>
+                        It expires in 10 minutes.
+                    `,
+                footer: "If this wasn't you, please change your password immediately and contact support.",
+            }),
+            attachments: [
+                {
+                    filename: "logo.png",
+                    path: "./assets/generallogo.png",
+                    cid: "app-logo",
+                },
+            ],
+        };
+
+        transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "login",
+                    },
+                    "Operation failed",
+                );
+
+                if (!res.headersSent) {
+                    res.status(500).send({
+                        status: "error",
+                        message: "Error sending email",
+                    });
+                }
+            } else {
+                req.log.debug(
+                    {
+                        event: "email.sent",
+                        operation: "login",
+                    },
+                    "Email accepted by transport",
+                );
+            }
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "A new verification code has been sent",
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            res.status(400).json({
+                status: "error",
+                message: "Invalid data",
+                details: error.issues.map((issue) => ({
+                    field: issue.path[0],
+                    message: issue.message,
+                })),
+            });
+
+            return;
+        }
+
+        req.log.error(
+            {
+                err: error,
+                event: "auth.resend_login_email_code_failed",
+                operation: "resendLoginEmailCode",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error while resending code",
         });
     }
 };
@@ -193,6 +1175,11 @@ export const forgotPassword = async (
 
         const { email } = validateData;
 
+        req.log.info(
+            { audit: true, event: "auth.password_reset_requested" },
+            "Password reset requested",
+        );
+
         const [user] = await pool.execute<IUser[]>(
             "SELECT * FROM users WHERE email = ?",
             [email],
@@ -202,6 +1189,59 @@ export const forgotPassword = async (
             res.status(401).json({
                 status: "error",
                 message: "Invalid email",
+            });
+
+            return;
+        }
+
+        if (!user[0].password) {
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Password reset request",
+                html: emailTemplate({
+                    logo: "cid:app-logo",
+                    title: "Reset Password",
+                    heading: "Sign-in via Google",
+                    description: `Hi ${user[0].username}, we received a request to reset the password for this account, but it was created using Google Sign-In and doesn't have a password yet. Please continue signing in with Google. If you'd like, you can add a password afterward in your account security settings.`,
+                    footer: "If you didn't request this, you can safely ignore this email.",
+                }),
+                attachments: [
+                    {
+                        filename: "logo.png",
+                        path: "./assets/generallogo.png",
+                        cid: "app-logo",
+                    },
+                ],
+            };
+
+            transporter.sendMail(mailOptions, (error) => {
+                if (error) {
+                    req.log.error(
+                        {
+                            err: error,
+                            event: "email.delivery_failed",
+                            operation: "forgotPassword",
+                        },
+                        "Operation failed",
+                    );
+
+                    res.status(500).send({
+                        status: "error",
+                        message: "Error sending email",
+                    });
+                } else {
+                    req.log.debug(
+                        { event: "email.sent", operation: "forgotPassword" },
+                        "Email accepted by transport",
+                    );
+
+                    res.status(200).send({
+                        status: "message",
+                        message:
+                            "Check your email for instructions on resetting your password",
+                    });
+                }
             });
 
             return;
@@ -232,16 +1272,26 @@ export const forgotPassword = async (
             text: `Click the following link to reset your password: ${process.env.WEB_URL}/resetPassword?token=${token}&id=${user[0].id}`,
         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
+        transporter.sendMail(mailOptions, (error) => {
             if (error) {
-                console.error(error);
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "forgotPassword",
+                    },
+                    "Operation failed",
+                );
 
                 res.status(500).send({
                     status: "error",
                     message: "Error sending email",
                 });
             } else {
-                console.log(`Email sent: ${info.response}`);
+                req.log.debug(
+                    { event: "email.sent", operation: "forgotPassword" },
+                    "Email accepted by transport",
+                );
 
                 res.status(200).send({
                     status: "message",
@@ -265,7 +1315,15 @@ export const forgotPassword = async (
             return;
         }
 
-        console.error("Error:", error);
+        req.log.error(
+            {
+                err: error,
+                event: "auth.forgot_password_failed",
+                operation: "forgotPassword",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({
             status: "error",
             message: "Server error",
@@ -288,6 +1346,15 @@ export const resetPassword = async (
         );
 
         if (!existingIdUser.length) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.password_reset_rejected",
+                    operation: "resetPassword",
+                },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid or expired password reset token",
@@ -311,6 +1378,15 @@ export const resetPassword = async (
         );
 
         if (!isTokenValid) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.password_reset_rejected",
+                    operation: "resetPassword",
+                },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid or expired password reset token",
@@ -323,68 +1399,74 @@ export const resetPassword = async (
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const [updatePasswordQuery] = await pool.execute<ResultSetHeader>(
-            "UPDATE users SET password = ? WHERE id = ?",
-            [hashedPassword, id],
+            "UPDATE users SET password = ?, reset_token = NULL WHERE id = ? AND reset_token = ?",
+            [hashedPassword, id, existingIdUser[0].reset_token],
         );
 
         if (updatePasswordQuery.affectedRows === 0) {
-            res.status(400).json({
+            res.status(401).json({
                 status: "error",
-                message: "Failed to reset password",
+                message: "Invalid or expired password reset token",
             });
 
             return;
         }
 
-        const [deleteTokenQuery] = await pool.execute<ResultSetHeader>(
-            "UPDATE users SET reset_token = ? WHERE id = ?",
-            [null, id],
-        );
+        const userId = existingIdUser[0].id;
 
-        if (deleteTokenQuery.affectedRows === 0) {
-            res.status(400).json({
-                status: "error",
-                message: "Failed to reset password",
-            });
-
-            return;
-        }
-
-        const [user] = await pool.execute<IUser[]>(
-            "SELECT * FROM users WHERE password = ?",
-            [hashedPassword],
-        );
-
-        const accessToken = await createAccessToken({
-            id: user[0].id,
-        });
-
-        const refreshToken = await createRefreshToken(user[0].id.toString());
+        await revokeAllUserSessions(userId);
+        await pool.execute("DELETE FROM mfa_login_sessions WHERE user_id = ?", [
+            userId,
+        ]);
+        await pool.execute("DELETE FROM login_email_codes WHERE user_id = ?", [
+            userId,
+        ]);
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: user[0].email,
+            to: existingIdUser[0].email,
             subject: "Password Reset Successfully",
             text: `Your password has been changed successfully`,
         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
+        transporter.sendMail(mailOptions, (error) => {
             if (error) {
-                console.error(error);
-                res.status(500).send({
-                    status: "error",
-                    message: "Error sending email",
-                });
+                req.log.error(
+                    {
+                        err: error,
+                        event: "email.delivery_failed",
+                        operation: "resetPassword",
+                    },
+                    "Operation failed",
+                );
+
+                if (!res.headersSent) {
+                    res.status(500).send({
+                        status: "error",
+                        message: "Error sending email",
+                    });
+                }
             } else {
-                console.log(`Email sent: ${info.response}`);
+                req.log.debug(
+                    { event: "email.sent", operation: "resetPassword" },
+                    "Email accepted by transport",
+                );
             }
         });
 
-        res.status(201).json({
+        req.log.info(
+            {
+                event: "auth.password_reset_completed",
+                audit: true,
+                userId,
+            },
+            "Operation completed",
+        );
+
+        res.status(200).json({
             status: "success",
-            message: "Password Reset successfully",
-            accessToken,
-            refreshToken,
+            message:
+                "Your password has been reset. Sign in with your new password.",
         });
     } catch (error) {
         if (error instanceof ZodError) {
@@ -401,7 +1483,15 @@ export const resetPassword = async (
             return;
         }
 
-        console.error("Error:", error);
+        req.log.error(
+            {
+                err: error,
+                event: "auth.reset_password_failed",
+                operation: "resetPassword",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({
             status: "error",
             message: "Server error",
@@ -414,6 +1504,15 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "refresh",
+                },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid token",
@@ -422,26 +1521,47 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const { payload } = await jwtVerify(refreshToken, refreshSecret);
-        const jti = payload.jti;
+        let payload: JWTPayload;
+        let session: RowDataPacket;
+
+        try {
+            ({ payload, session } = await verifyRefreshToken(refreshToken));
+        } catch (error) {
+            if (error instanceof joseErrors.JOSEError) {
+                req.log.warn(
+                    {
+                        audit: true,
+                        event: "auth.token_rejected",
+                        operation: "refresh",
+                    },
+                    "Authentication rejected",
+                );
+            } else {
+                req.log.error(
+                    { err: error, event: "auth.refresh_failed" },
+                    "Refresh verification failed unexpectedly",
+                );
+            }
+
+            res.status(401).json({
+                status: "error",
+                message: "Invalid token",
+            });
+
+            return;
+        }
+
         const userId = payload.sub;
 
-        const [refreshTokenRows] = await pool.execute<IUser[]>(
-            "SELECT * FROM refresh_tokens WHERE id = ?",
-            [jti],
-        );
-
         if (!userId) {
-            res.status(401).json({
-                status: "error",
-                message: "Invalid token",
-            });
-
-            return;
-        }
-
-        if (!refreshTokenRows.length) {
-            await revokeAllUserTokens(userId);
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "refresh",
+                },
+                "Authentication rejected",
+            );
 
             res.status(401).json({
                 status: "error",
@@ -451,39 +1571,43 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const storedToken = refreshTokenRows[0];
-
-        if (storedToken.revoked) {
-            await revokeAllUserTokens(userId);
-
-            res.status(401).json({
-                status: "error",
-                message: "Invalid token",
-            });
-
-            return;
-        }
-
-        const [result] = await pool.execute<ResultSetHeader>(
-            "UPDATE refresh_tokens SET revoked = true WHERE id = ?",
-            [jti],
+        const newRefreshToken = await rotateRefreshToken(
+            refreshToken,
+            req.ip,
+            req.headers["user-agent"],
         );
 
-        if (result.affectedRows === 0) {
-            res.status(400).json({
+        if (!newRefreshToken) {
+            req.log.error(
+                { event: "auth.session_creation_failed" },
+                "Session operation returned no token",
+            );
+
+            res.status(500).json({
                 status: "error",
-                message: "Invalid token",
+                message: "Failed to refresh session",
             });
 
             return;
         }
 
-        const newAccessToken = await createAccessToken({ id: userId });
-        const newRefreshToken = await createRefreshToken(userId);
+        const newAccessToken = await createAccessToken(
+            { id: +userId },
+            newRefreshToken,
+        );
+        const csrfToken = generateCsrfToken();
+
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
 
         res.status(201).json({
             status: "success",
-            message: "Token is refresh",
+            message: "The token has been updated",
             accessToken: newAccessToken,
             refreshToken: newRefreshToken,
         });
@@ -495,14 +1619,41 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
             }));
 
             res.status(400).json({
-                error: "Invalid token",
+                status: "error",
+                message: "Invalid token",
                 details: errorMessages,
             });
 
             return;
         }
 
-        console.error("Error:", error);
+        if (error instanceof joseErrors.JOSEError) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "refresh",
+                },
+                "Token rejected",
+            );
+
+            res.status(401).json({
+                status: "error",
+                message: "Invalid or expired token",
+            });
+
+            return;
+        } else {
+            req.log.error(
+                {
+                    err: error,
+                    event: "auth.refresh_failed",
+                    operation: "refresh",
+                },
+                "Operation failed",
+            );
+        }
+
         res.status(500).json({
             status: "error",
             message: "Server error",
@@ -515,6 +1666,15 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "logout",
+                },
+                "Authentication rejected",
+            );
+
             res.status(401).json({
                 status: "error",
                 message: "Invalid token",
@@ -525,19 +1685,35 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
 
         const { payload } = await jwtVerify(refreshToken, refreshSecret);
 
-        const [result] = await pool.execute<ResultSetHeader>(
-            "UPDATE refresh_tokens SET revoked = true WHERE id = ?",
-            [payload.jti],
-        );
+        const sid = payload.sid;
 
-        if (result.affectedRows === 0) {
-            res.status(400).json({
+        if (!sid || typeof sid !== "string") {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "logout",
+                },
+                "Authentication rejected",
+            );
+
+            res.status(401).json({
                 status: "error",
-                message: "Failed to reset password",
+                message: "Invalid token",
             });
 
             return;
         }
+
+        await revokeSession(sid);
+
+        res.clearCookie("refreshToken");
+        res.clearCookie("csrfToken");
+
+        req.log.info(
+            { event: "auth.logout", audit: true, userId: payload.sub },
+            "Operation completed",
+        );
 
         res.status(201).json({
             status: "success",
@@ -551,17 +1727,244 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
             }));
 
             res.status(400).json({
-                error: "Invalid token",
+                status: "error",
+                message: "Invalid token",
                 details: errorMessages,
             });
 
             return;
         }
 
-        console.error("Error:", error);
+        if (error instanceof joseErrors.JOSEError) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.token_rejected",
+                    operation: "logout",
+                },
+                "Token rejected",
+            );
+        } else {
+            req.log.error(
+                {
+                    err: error,
+                    event: "auth.logout_failed",
+                    operation: "logout",
+                },
+                "Operation failed",
+            );
+        }
+
         res.status(500).json({
             status: "error",
             message: "Server error",
         });
     }
 };
+
+export function googleAuthStart(req: Request, res: Response) {
+    const state = crypto.randomUUID();
+
+    res.cookie("google_oauth_state", state, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 5 * 60 * 1000,
+    });
+
+    const url = getGoogleAuthUrl(state);
+
+    res.redirect(url);
+}
+
+export async function googleAuthCallback(req: Request, res: Response) {
+    try {
+        const { code, state } = req.query;
+        const savedState = req.cookies?.google_oauth_state;
+
+        res.clearCookie("google_oauth_state");
+
+        if (
+            !code ||
+            typeof code !== "string" ||
+            !state ||
+            state !== savedState
+        ) {
+            req.log.warn(
+                { audit: true, event: "auth.oauth_rejected" },
+                "OAuth callback rejected",
+            );
+
+            res.redirect(
+                `${process.env.WEB_URL}/signIn?error=oauth_state_mismatch`,
+            );
+
+            return;
+        }
+
+        const profile = await exchangeCodeForProfile(code);
+
+        if (!profile.emailVerified) {
+            req.log.warn(
+                { audit: true, event: "auth.oauth_rejected" },
+                "OAuth callback rejected",
+            );
+
+            res.redirect(
+                `${process.env.WEB_URL}/signIn?error=email_not_verified`,
+            );
+
+            return;
+        }
+
+        const userId = await findOrCreateGoogleUser(profile);
+        const exchangeCode = crypto.randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 60_000);
+
+        const [result] = await pool.execute<ResultSetHeader>(
+            `INSERT INTO oauth_exchange_codes (code, user_id, expires_at) VALUES (?, ?, ?)`,
+            [exchangeCode, userId, expiresAt],
+        );
+
+        if (result.affectedRows === 0) {
+            res.redirect(`${process.env.WEB_URL}/signIn?error=oauth_failed`);
+
+            return;
+        }
+
+        return res.redirect(
+            `${process.env.WEB_URL}/callback?code=${exchangeCode}`,
+        );
+    } catch (error) {
+        req.log.error(
+            {
+                err: error,
+                event: "auth.google_auth_callback_failed",
+                operation: "googleAuthCallback",
+            },
+            "Operation failed",
+        );
+
+        return res.redirect(`${process.env.WEB_URL}/signIn?error=oauth_failed`);
+    }
+}
+
+export async function googleAuthExchange(req: Request, res: Response) {
+    try {
+        const { code } = req.body;
+
+        if (!code || typeof code !== "string") {
+            res.status(400).json({ status: "error", message: "Missing code" });
+
+            return;
+        }
+
+        const [rows] = await pool.execute<RowDataPacket[]>(
+            `
+                SELECT * FROM oauth_exchange_codes
+                WHERE code = ? AND used_at IS NULL AND expires_at > NOW()
+            `,
+            [code],
+        );
+
+        const record = rows[0];
+
+        if (!record) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.oauth_rejected",
+                    reason: "invalid_or_expired",
+                },
+                "OAuth exchange rejected",
+            );
+
+            res.status(400).json({
+                status: "error",
+                message: "Invalid or expired code",
+            });
+
+            return;
+        }
+
+        const [result] = await pool.execute<ResultSetHeader>(
+            `UPDATE oauth_exchange_codes SET used_at = NOW() WHERE code = ? AND used_at IS NULL`,
+            [code],
+        );
+
+        if (result.affectedRows === 0) {
+            res.status(400).json({
+                status: "error",
+                message: "Something went wrong... Try again",
+            });
+
+            return;
+        }
+
+        const userId = record.user_id;
+        const refreshToken = await createRefreshToken(
+            userId,
+            req.ip,
+            req.headers["user-agent"],
+        );
+
+        if (!refreshToken) {
+            req.log.error(
+                { event: "auth.session_creation_failed" },
+                "Session operation returned no token",
+            );
+
+            res.status(500).json({
+                status: "error",
+                message: "Failed to create session",
+            });
+
+            return;
+        }
+
+        const accessToken = await createAccessToken(
+            { id: userId },
+            refreshToken,
+        );
+        const csrfToken = generateCsrfToken();
+
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        req.log.info(
+            {
+                event: "auth.login_success",
+                audit: true,
+                userId,
+                method: "google",
+            },
+            "Operation completed",
+        );
+
+        res.status(200).json({
+            status: "success",
+            message: "User logged in successfully",
+            accessToken,
+            refreshToken,
+        });
+    } catch (error) {
+        req.log.error(
+            {
+                err: error,
+                event: "auth.google_auth_exchange_failed",
+                operation: "googleAuthExchange",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error",
+        });
+    }
+}

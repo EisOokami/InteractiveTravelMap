@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { IUser } from "@/interfaces/interfaces";
 
 import {
@@ -17,6 +18,10 @@ import {
 import ProfileForm from "@/components/ui/profileForm/ProfileForm";
 import SecurityForm from "@/components/ui/securityForm/SecurityForm";
 import DangerZoneForm from "@/components/ui/dangerZoneForm/DangerZoneForm";
+import MfaSection from "@/components/ui/mfaSection/MfaSection";
+import SessionManagement from "@/components/ui/sessionManagement/SessionManagement";
+import SetPasswordForm from "@/components/ui/setPasswordForm/SetPasswordForm";
+import { Separator } from "@/components/ui/shadcn/separator";
 
 interface AccountSettingsModalProps {
     open: boolean;
@@ -29,6 +34,13 @@ export function AccountSettingsModal({
     onOpenChange,
     userData,
 }: Readonly<AccountSettingsModalProps>) {
+    const [mfaEnabled, setMfaEnabled] = useState<boolean>(
+        !!userData?.data?.mfa_enabled,
+    );
+    const [hasPassword, setHasPassword] = useState<boolean>(
+        userData?.data?.auth_provider !== "google",
+    );
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="gap-0 w-11/12 md:max-w-2xl p-0 rounded-md z-[1000]">
@@ -64,8 +76,28 @@ export function AccountSettingsModal({
                         <TabsContent value="profile">
                             <ProfileForm userData={userData} />
                         </TabsContent>
-                        <TabsContent value="security">
-                            <SecurityForm />
+                        <TabsContent
+                            value="security"
+                            className="custom-scroll max-h-[65vh] px-px overflow-y-auto"
+                        >
+                            {hasPassword ? (
+                                <SecurityForm />
+                            ) : (
+                                <SetPasswordForm
+                                    onPasswordSet={() => setHasPassword(true)}
+                                />
+                            )}
+                            {hasPassword && (
+                                <>
+                                    <Separator className="my-6" />
+                                    <MfaSection
+                                        mfaEnabled={mfaEnabled}
+                                        onMfaEnabledChange={setMfaEnabled}
+                                    />
+                                </>
+                            )}
+                            <Separator className="my-6" />
+                            <SessionManagement />
                         </TabsContent>
                         <TabsContent value="danger">
                             <DangerZoneForm userData={userData} />

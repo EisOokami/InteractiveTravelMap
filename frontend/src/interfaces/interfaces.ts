@@ -47,6 +47,24 @@ export interface IUserData {
     id: number;
     username: string;
     email: string;
+    mfa_enabled: boolean;
+    auth_provider: "local" | "google";
+}
+
+export interface IUserSession {
+    id: string;
+    ip: string | null;
+    device: {
+        type: string | null;
+        vendor: string | null;
+        model: string | null;
+    };
+    browser: { name: string | null; version: string | null };
+    os: { name: string | null; version: string | null };
+    createdAt: string;
+    lastUsedAt: string;
+    expiresAt: string;
+    isCurrent: boolean;
 }
 
 export interface IUser {
@@ -64,6 +82,7 @@ export interface IRegister {
 export interface ILogin {
     email: string;
     password: string;
+    acceptTerms?: boolean;
 }
 
 export interface IUpdateProfile {

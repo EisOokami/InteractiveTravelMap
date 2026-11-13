@@ -14,22 +14,29 @@ export interface IBaseAction {
     error: string | null;
     details: IDetailsError[] | null;
     formData: FormData | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: any;
 }
 
 export interface ILoginZodErrors extends IBaseZodErrors {
     identifier?: string[];
     password?: string[];
+    tempToken?: string[];
+    token?: string[];
+    acceptTerms?: string[];
 }
 
 export interface IRegisterZodErrors extends IBaseZodErrors {
     username?: string[];
     email?: string[];
     password?: string[];
+    terms?: string[];
 }
 
 export interface IUpdateProfileZodErrors extends IBaseZodErrors {
     username?: string[];
     email?: string[];
+    currentPassword?: string[];
 }
 
 export interface IChangePasswordZodErrors extends IBaseZodErrors {
@@ -47,6 +54,41 @@ export interface IResetPasswordZodErrors extends IBaseZodErrors {
     confirmPassword?: string[];
     id?: string[];
     token?: string[];
+}
+
+export interface IMfaEnableZodErrors extends IBaseZodErrors {
+    token?: string[];
+}
+
+export interface IMfaDisableZodErrors extends IBaseZodErrors {
+    password?: string[];
+    token?: string[];
+}
+
+export interface IMfaRegenerateBackupCodesZodErrors extends IBaseZodErrors {
+    password?: string[];
+}
+
+export interface IResendVerificationZodErrors extends IBaseZodErrors {
+    email?: string[];
+}
+
+export interface IDeleteAccountZodErrors extends IBaseZodErrors {
+    id?: string[];
+    password?: string[];
+    tempToken?: string[];
+    code?: string[];
+}
+
+export interface ISetPasswordZodErrors extends IBaseZodErrors {
+    newPassword?: string[];
+    confirmPassword?: string[];
+}
+
+export interface IEmailCodeZodErrors extends IBaseZodErrors {
+    tempToken?: string[];
+    intent?: string[];
+    code?: string[];
 }
 
 export interface ILoginAction extends IBaseAction {
@@ -71,4 +113,32 @@ export interface IForgotPasswordAction extends IBaseAction {
 
 export interface IResetPasswordAction extends IBaseAction {
     zodErrors: IResetPasswordZodErrors | null;
+}
+
+export interface IMfaEnableAction extends IBaseAction {
+    zodErrors: IMfaEnableZodErrors | null;
+}
+
+export interface IMfaDisableAction extends IBaseAction {
+    zodErrors: IMfaDisableZodErrors | null;
+}
+
+export interface IMfaRegenerateBackupCodesAction extends IBaseAction {
+    zodErrors: IMfaRegenerateBackupCodesZodErrors | null;
+}
+
+export interface IResendVerificationAction extends IBaseAction {
+    zodErrors: IResendVerificationZodErrors | null;
+}
+
+export interface IEmailCodeAction extends IBaseAction {
+    zodErrors: IEmailCodeZodErrors | null;
+}
+
+export interface IDeleteAccountAction extends IBaseAction {
+    zodErrors: IDeleteAccountZodErrors | null;
+}
+
+export interface ISetPasswordAction extends IBaseAction {
+    zodErrors: ISetPasswordZodErrors | null;
 }

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Info, Loader2 } from "lucide-react";
 import { resetPasswordAction } from "@/data/actions";
 import { IBaseAction } from "@/interfaces/actions";
@@ -125,6 +126,14 @@ export default function ResetPasswordForm() {
                             "Reset password"
                         )}
                     </Button>
+                    {formState?.status === "success" && (
+                        <Link
+                            href="/signIn"
+                            className="inline-flex justify-center items-center h-10 px-4 text-sm font-medium text-white bg-bright-blue rounded-md"
+                        >
+                            Go to Login
+                        </Link>
+                    )}
                 </form>
             </CardContent>
         </Card>

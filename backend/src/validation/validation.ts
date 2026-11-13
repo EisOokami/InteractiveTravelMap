@@ -37,6 +37,16 @@ export const loginSchema = z.object({
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
             "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
         ),
+    acceptTerms: z.boolean().optional(),
+});
+
+export const verifyEmailCodeSchema = z.object({
+    tempToken: z.string().min(1).max(255),
+    code: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
+});
+
+export const resendEmailCodeSchema = z.object({
+    tempToken: z.string().min(1).max(255),
 });
 
 export const getPlacesSchema = z.object({
@@ -128,6 +138,21 @@ export const updateProfileSchema = z.object({
         .trim()
         .min(2, "Username must be at least 2 characters")
         .max(50, "Username must be less than 50 characters"),
+    currentPassword: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .max(50, "Password must be less than 50 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+        )
+        .optional(),
+});
+
+export const confirmEmailChangeSchema = z.object({
+    token: z
+        .string("Invalid or expired confirmation link")
+        .regex(/^[a-f0-9]{64}$/, "Invalid or expired confirmation link"),
 });
 
 export const changePasswordSchema = z
@@ -189,6 +214,106 @@ export const resetPasswordSchema = z.object({
         ),
     id: z.number("Invalid data").int("Invalid data").positive("Invalid data"),
 });
+
+export const refreshTokenSchema = z.object({
+    refreshToken: z
+        .string("Invalid data")
+        .trim()
+        .min(50, "Invalid data")
+        .max(100, "Invalid data"),
+});
+
+export const mfaEnableSchema = z.object({
+    token: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Code must be exactly 6 digits"),
+});
+
+export const mfaVerifySchema = z.object({
+    tempToken: z.string().trim().min(1, "TempToken is required"),
+    token: z.string().trim().min(1, "Code is required").max(9),
+});
+
+export const mfaDisableSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .max(50, "Password must be less than 50 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+        ),
+    token: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Code must be exactly 6 digits")
+        .optional(),
+});
+
+export const mfaBackupCodesSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .max(50, "Password must be less than 50 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+        ),
+});
+
+export const resendVerificationSchema = z.object({
+    email: z
+        .email("Invalid email format")
+        .trim()
+        .toLowerCase()
+        .min(1, "Email is required")
+        .max(100, "Email must be less than 100 characters long"),
+});
+
+export const validateParamsIdSchema = z.object({
+    id: z
+        .string()
+        .regex(/^\d+$/)
+        .transform(Number)
+        .refine((value) => Number.isSafeInteger(value), {
+            message: "ID is too large a numerical value",
+        }),
+});
+
+export const deleteAccountSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .max(50, "Password must be less than 50 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+        )
+        .optional(),
+});
+
+export const confirmAccountDeletionSchema = z.object({
+    tempToken: z.string().min(1, "Session expired. Please try again"),
+    code: z.string().trim().min(1, "Enter a verification code").max(20),
+});
+
+export const resendAccountDeletionSchema = z.object({
+    tempToken: z.string().min(1),
+});
+
+export const setPasswordSchema = z.object({
+    newPassword: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .max(50, "Password must be less than 50 characters long")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?])/,
+            "Password must contain at least one uppercase letter, one lowercase letter, one special character and one number",
+        ),
+});
+
+export const sessionIdSchema = z.uuid();
 
 export const tripAnalysisRequestSchema = z.strictObject({
     day: z.iso.date("Day must be a valid ISO date (YYYY-MM-DD)"),

@@ -44,7 +44,15 @@ export const getFavorites = async (req: IGetUserRequest, res: Response) => {
 
         res.status(200).json(result);
     } catch (error) {
-        console.error(error);
+        req.log.error(
+            {
+                err: error,
+                event: "favorite.get_favorites_failed",
+                operation: "getFavorites",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({ status: "error", message: "Database error" });
     }
 };
@@ -88,8 +96,6 @@ export const addItemToFavorite = async (
             id: result.insertId,
         });
     } catch (error: any) {
-        console.error(error);
-
         if (error instanceof ZodError) {
             const errorMessages = error.issues.map((issue: any) => ({
                 field: issue.path[0],
@@ -110,6 +116,15 @@ export const addItemToFavorite = async (
                 message: "Item already in favorites",
             });
         }
+
+        req.log.error(
+            {
+                err: error,
+                event: "favorite.add_item_to_favorite_failed",
+                operation: "addItemToFavorite",
+            },
+            "Operation failed",
+        );
 
         res.status(500).json({ status: "error", message: "Database error" });
     }
@@ -151,7 +166,15 @@ export const removeItemFromFavorite = async (
             message: "Removed from favorites",
         });
     } catch (error) {
-        console.error(error);
+        req.log.error(
+            {
+                err: error,
+                event: "favorite.remove_item_from_favorite_failed",
+                operation: "removeItemFromFavorite",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({ status: "error", message: "Database error" });
     }
 };

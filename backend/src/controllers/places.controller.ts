@@ -129,8 +129,16 @@ export const getPlaces = async (req: Request, res: Response) => {
         }));
 
         res.status(200).json(rows);
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        req.log.error(
+            {
+                err: error,
+                event: "place.get_places_failed",
+                operation: "getPlaces",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({ message: "Database error" });
     }
 };
@@ -173,8 +181,18 @@ export const getPlaceById = async (req: Request, res: Response) => {
         }));
 
         res.status(200).json(rows[0] || {});
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.log(error);
+
+        req.log.error(
+            {
+                err: error,
+                event: "place.get_place_by_id_failed",
+                operation: "getPlaceById",
+            },
+            "Operation failed",
+        );
+
         res.status(500).json({ message: "Database error" });
     }
 };

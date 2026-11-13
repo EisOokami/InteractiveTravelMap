@@ -38,3 +38,159 @@ export const analysisSchema = z.strictObject({
         )
         .max(3, "No more than 3 warnings are allowed"),
 });
+
+export const mfaVerifySchema = z.object({
+    tempToken: z.string().min(1),
+    token: z.string().trim().min(1, "Code is required").max(9),
+});
+
+export const mfaEnableSchema = z.object({
+    token: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
+});
+
+export const mfaDisableSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters")
+        .max(50, "Password must be less than 50 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/\d/, "Password must contain at least one number")
+        .regex(
+            /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+            "Password must contain at least one special character",
+        ),
+    token: z.string().optional(),
+});
+
+export const mfaBackupCodesSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters")
+        .max(50, "Password must be less than 50 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/\d/, "Password must contain at least one number")
+        .regex(
+            /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+            "Password must contain at least one special character",
+        ),
+});
+
+export const resendVerificationSchema = z.object({
+    email: z
+        .email("Invalid email format")
+        .trim()
+        .toLowerCase()
+        .min(1, "Email is required")
+        .max(100, "Email must be less than 100 characters long"),
+});
+
+export const emailCodeVerifySchema = z.object({
+    intent: z.literal("verify"),
+    tempToken: z
+        .string()
+        .trim()
+        .min(1, "Session expired. Please log in again")
+        .max(256, "Invalid session"),
+    code: z
+        .string()
+        .trim()
+        .regex(/^\d{6}$/, "Enter the 6-digit code"),
+});
+
+export const emailCodeResendSchema = z.object({
+    intent: z.literal("resend"),
+    tempToken: z
+        .string()
+        .trim()
+        .min(1, "Session expired. Please log in again")
+        .max(256, "Invalid session"),
+});
+
+export const emailCodeFormSchema = z.discriminatedUnion("intent", [
+    emailCodeVerifySchema,
+    emailCodeResendSchema,
+]);
+
+export const setPasswordSchema = z
+    .object({
+        newPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .max(50, "Password must be less than 50 characters")
+            .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+            .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+            .regex(/\d/, "Password must contain at least one number")
+            .regex(
+                /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+                "Password must contain at least one special character",
+            ),
+        confirmPassword: z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .max(50, "Password must be less than 50 characters")
+            .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+            .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+            .regex(/\d/, "Password must contain at least one number")
+            .regex(
+                /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+                "Password must contain at least one special character",
+            ),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: "Confirm New Password must be the same as New Password",
+        path: ["confirmPassword"],
+    });
+
+export const deleteAccountPasswordSchema = z.object({
+    id: z
+        .string()
+        .regex(/^\d+$/, "Invalid data")
+        .transform(Number)
+        .refine((value) => Number.isSafeInteger(value), {
+            message: "Invalid data",
+        }),
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters")
+        .max(50, "Password must be less than 50 characters")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/\d/, "Password must contain at least one number")
+        .regex(
+            /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
+            "Password must contain at least one special character",
+        ).optional(),
+});
+
+export const deleteAccountConfirmSchema = z.object({
+    id: z
+        .string()
+        .regex(/^\d+$/, "Invalid data")
+        .transform(Number)
+        .refine((value) => Number.isSafeInteger(value), {
+            message: "Invalid data",
+        }),
+    tempToken: z.string().min(1, "Session expired. Please start again"),
+    code: z
+        .string()
+        .trim()
+        .regex(
+            /^(\d{6}|[A-Za-z0-9]{4}-[A-Za-z0-9]{4})$/,
+            "Enter the 6-digit code or a backup code",
+        ),
+});
+
+export const deleteAccountResendSchema = z.object({
+    id: z
+        .string()
+        .regex(/^\d+$/, "Invalid data")
+        .transform(Number)
+        .refine((value) => Number.isSafeInteger(value), {
+            message: "Invalid data",
+        }),
+    tempToken: z.string().min(1),
+});
+
+export const sessionIdSchema = z.uuid();

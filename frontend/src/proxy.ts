@@ -1,23 +1,112 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getUserData } from "./data/loaders";
+import { refreshAccessToken } from "./data/refreshAccessToken";
+import { bffHeaders } from "./data/clientIp";
+
+const accessTokenConfig = {
+    maxAge: 15 * 60,
+    path: "/",
+    domain: process.env.HOST ?? "localhost",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+};
+const refreshTokenConfig = {
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+    domain: process.env.HOST ?? "localhost",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+};
+const csrfTokenConfig = {
+    maxAge: 60 * 60 * 24 * 7,
+    path: "/",
+    domain: process.env.HOST ?? "localhost",
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict" as const,
+};
 
 const protectedAuthRoutes = ["/signIn", "/signUp"];
+
+const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
 function isProtectedAuthRoute(path: string): boolean {
     return protectedAuthRoutes.some((route) => path.startsWith(route));
 }
 
+async function isAccessTokenValid(
+    accessToken: string,
+    forwardedHeaders: Record<string, string>,
+): Promise<boolean> {
+    try {
+        const response = await fetch(new URL("/users/me", baseUrl), {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                ...forwardedHeaders,
+            },
+            cache: "no-store",
+        });
+
+        return response.status !== 401;
+    } catch {
+        return true;
+    }
+}
+
 export async function proxy(request: NextRequest) {
-    const user = await getUserData();
     const currentPath = request.nextUrl.pathname;
+    let accessToken = request.cookies.get("accessToken")?.value;
+    const refreshToken = request.cookies.get("refreshToken")?.value;
+    const csrfToken = request.cookies.get("csrfToken")?.value;
+    let tokens = null;
+    let isSessionExpired = false;
+    let isRefreshUnavailable = false;
+    const forwardedHeaders = bffHeaders(request.headers);
 
     if (
-        isProtectedAuthRoute(currentPath) &&
-        user.status === "success" &&
-        user.data
+        accessToken &&
+        !(await isAccessTokenValid(accessToken, forwardedHeaders))
     ) {
+        accessToken = undefined;
+    }
+
+    if (!accessToken && refreshToken && csrfToken) {
+        const refreshResult = await refreshAccessToken(
+            refreshToken,
+            csrfToken,
+            request.headers.get("user-agent") ?? undefined,
+            forwardedHeaders,
+        );
+
+        if (refreshResult.status === "success") {
+            tokens = refreshResult;
+            accessToken = tokens.accessToken;
+        }
+
+        if (refreshResult.status === "rejected") {
+            isSessionExpired = true;
+        }
+
+        if (refreshResult.status === "unavailable") {
+            isRefreshUnavailable = true;
+        }
+    }
+
+    if (isProtectedAuthRoute(currentPath) && accessToken) {
         return NextResponse.redirect(new URL("/map", request.url));
+    }
+
+    if (tokens) {
+        request.cookies.set("accessToken", tokens.accessToken);
+        request.cookies.set("refreshToken", tokens.refreshToken);
+        request.cookies.set("csrfToken", tokens.csrfToken);
+    }
+
+    if (isSessionExpired || isRefreshUnavailable) {
+        request.cookies.delete("accessToken");
+        request.cookies.delete("refreshToken");
     }
 
     const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
@@ -55,6 +144,32 @@ export async function proxy(request: NextRequest) {
             headers: requestHeaders,
         },
     });
+
+    if (tokens) {
+        response.cookies.set(
+            "accessToken",
+            tokens.accessToken,
+            accessTokenConfig,
+        );
+        response.cookies.set(
+            "refreshToken",
+            tokens.refreshToken,
+            refreshTokenConfig,
+        );
+        response.cookies.set("csrfToken", tokens.csrfToken, csrfTokenConfig);
+    }
+
+    if (isSessionExpired) {
+        response.cookies.set("accessToken", "", {
+            ...accessTokenConfig,
+            maxAge: 0,
+        });
+        response.cookies.set("refreshToken", "", {
+            ...refreshTokenConfig,
+            maxAge: 0,
+        });
+    }
+
     response.headers.set(
         "Content-Security-Policy",
         contentSecurityPolicyHeaderValue,

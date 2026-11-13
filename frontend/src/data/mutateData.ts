@@ -1,7 +1,7 @@
-"use server";
+import "server-only";
 
 import { getAccessToken, getRefreshToken } from "./getToken";
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { fetchWithRefresh } from "./fetchWithRefresh";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
@@ -29,17 +29,22 @@ export async function mutateData(
     const url = new URL(path, baseUrl);
 
     try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-                Cookie: `refreshToken=${refreshToken}`,
+        const response = await fetchWithRefresh(
+            url,
+            accessToken,
+            refreshToken,
+            {
+                method,
+                ...(payload && {
+                    body: JSON.stringify({ ...payload }),
+                }),
             },
-            body: JSON.stringify({ ...payload }),
-        });
+        );
 
-        if (method === "DELETE") {
+        if (
+            method === "DELETE" &&
+            !response.headers.get("content-type")?.includes("application/json")
+        ) {
             return {
                 status: response.ok ? "success" : "error",
                 message: response.ok ? "Success" : "Error",

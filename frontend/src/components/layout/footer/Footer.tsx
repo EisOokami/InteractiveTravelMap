@@ -7,8 +7,8 @@ export default function Footer() {
         <footer className="border-t py-12 z-10">
             <div className="grid place-content-center gap-8 container mx-auto px-4">
                 <div className="grid gap-3 z-10">
-                    <a
-                        href="#hero"
+                    <Link
+                        href="/#hero"
                         className="flex justify-center items-center gap-3 select-none"
                     >
                         <Image
@@ -19,7 +19,7 @@ export default function Footer() {
                             className="pointer-events-none"
                         />
                         <span className="text-lg">Interactive Travel Map</span>
-                    </a>
+                    </Link>
                     <p className="max-w-md text-center text-sm text-muted-foreground leading-relaxed">
                         Discover the world&apos;s best destinations with our
                         interactive travel map. Plan, explore, and create
@@ -27,24 +27,36 @@ export default function Footer() {
                     </p>
                 </div>
                 <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 z-10">
-                    <a
-                        href="#features"
+                    <Link
+                        href="/#features"
                         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                         Features
-                    </a>
-                    <a
-                        href="#how-it-works"
+                    </Link>
+                    <Link
+                        href="/#how-it-works"
                         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                         How It Works
-                    </a>
-                    <a
-                        href="#explore"
+                    </Link>
+                    <Link
+                        href="/#explore"
                         className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
                         Explore
-                    </a>
+                    </Link>
+                    <Link
+                        href="/terms"
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Terms
+                    </Link>
+                    <Link
+                        href="/privacy"
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Privacy
+                    </Link>
                 </nav>
                 <div className="flex justify-center items-center space-x-4 z-10">
                     <Link

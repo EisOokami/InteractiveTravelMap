@@ -5,6 +5,7 @@ import { IBaseAction } from "@/interfaces/actions";
 
 import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
+import { PasswordInput } from "@/components/ui/shadcn/password-input";
 import { Separator } from "@/components/ui/shadcn/separator";
 import { Button } from "@/components/ui/shadcn/button";
 import { ZodErrors } from "@/components/ui/zodErrors/ZodErrors";
@@ -39,6 +40,9 @@ export default function ProfileForm({ userData }: Readonly<ProfileFormProps>) {
                     </h3>
                     <p className="mb-2 text-sm text-muted-foreground">
                         Update your personal information and email address.
+                        A new email address is used only after you approve
+                        the change from your current address and confirm the
+                        new one.
                     </p>
                 </div>
                 <div className="grid gap-4">
@@ -82,6 +86,27 @@ export default function ProfileForm({ userData }: Readonly<ProfileFormProps>) {
                         />
                         <ZodErrors error={formState?.zodErrors?.email} />
                     </div>
+                    {userData?.data?.auth_provider === "local" && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="currentPassword">
+                                Current password
+                            </Label>
+                            <PasswordInput
+                                id="currentPassword"
+                                name="currentPassword"
+                                placeholder="Required to change your email"
+                                className={
+                                    formState?.zodErrors?.currentPassword
+                                        ? "border-red-500"
+                                        : ""
+                                }
+                                autoComplete="current-password"
+                            />
+                            <ZodErrors
+                                error={formState?.zodErrors?.currentPassword}
+                            />
+                        </div>
+                    )}
                     {formState?.message && (
                         <div
                             className={`flex items-center gap-2 text-sm rounded-md ${formState?.status === "error" ? "text-red-500" : formState?.status === "success" ? "text-green-500" : "text-yellow-300"}`}

@@ -2,9 +2,15 @@
 
 import { z } from "zod";
 import {
+    confirmEmailChangeService,
+    emailCodeResendService,
+    emailCodeVerifyService,
     forgotPasswordService,
+    googleExchangeService,
     loginService,
+    mfaVerifyService,
     registerService,
+    resendVerificationService,
     resetPasswordService,
 } from "./services";
 import { cookies } from "next/headers";
@@ -12,16 +18,36 @@ import { redirect } from "next/navigation";
 import {
     IBaseAction,
     IChangePasswordAction,
+    IDeleteAccountAction,
+    IEmailCodeAction,
     IForgotPasswordAction,
     ILoginAction,
+    IMfaDisableAction,
+    IMfaEnableAction,
+    IMfaRegenerateBackupCodesAction,
     IRegisterAction,
+    IResendVerificationAction,
     IResetPasswordAction,
+    ISetPasswordAction,
     IUpdateProfileAction,
 } from "@/interfaces/actions";
 import { mutateData } from "./mutateData";
 import { getUserData } from "./loaders";
-import { validateTokens } from "@/libs/validateTokens";
-import { analysisSchema } from "@/libs/validation/validation";
+import {
+    analysisSchema,
+    deleteAccountConfirmSchema,
+    deleteAccountPasswordSchema,
+    deleteAccountResendSchema,
+    emailCodeFormSchema,
+    mfaBackupCodesSchema,
+    mfaDisableSchema,
+    mfaEnableSchema,
+    mfaVerifySchema,
+    resendVerificationSchema,
+    sessionIdSchema,
+    setPasswordSchema,
+} from "@/libs/validation/validation";
+import { revalidatePath } from "next/cache";
 import { TravelMode } from "@/types/store";
 
 const accessTokenConfig = {
@@ -30,7 +56,7 @@ const accessTokenConfig = {
     domain: process.env.HOST ?? "localhost",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
+    sameSite: "lax" as const,
 };
 const refreshTokenConfig = {
     maxAge: 60 * 60 * 24 * 7,
@@ -65,6 +91,85 @@ export async function loginAction(
     prevState: any,
     formData: FormData,
 ): Promise<ILoginAction | undefined> {
+    const tempToken = formData.get("tempToken");
+
+    if (tempToken) {
+        const validatedFields = mfaVerifySchema.safeParse({
+            tempToken,
+            token: formData.get("token"),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                formData,
+                zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+                error: null,
+                status: null,
+                details: null,
+                message: null,
+                data: {
+                    requiresMfa: true,
+                    tempToken: tempToken.toString(),
+                },
+            };
+        }
+
+        const responseData = await mfaVerifyService(validatedFields.data);
+
+        if (!responseData) {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: null,
+                details: null,
+                message: "Ops! Something went wrong. Please try again.",
+                data: {
+                    requiresMfa: true,
+                    tempToken: tempToken.toString(),
+                },
+            };
+        }
+
+        if (
+            "message" in responseData &&
+            "status" in responseData &&
+            responseData.message &&
+            responseData.status !== "success"
+        ) {
+            return {
+                formData: null,
+                zodErrors: null,
+                error: null,
+                status: responseData.status,
+                details: null,
+                message: responseData.message,
+                data: {
+                    requiresMfa: true,
+                    tempToken: tempToken.toString(),
+                },
+            };
+        }
+
+        if ("refreshToken" in responseData && "accessToken" in responseData) {
+            const cookieStore = await cookies();
+            cookieStore.set(
+                "refreshToken",
+                responseData.refreshToken,
+                refreshTokenConfig,
+            );
+            cookieStore.set(
+                "accessToken",
+                responseData.accessToken,
+                accessTokenConfig,
+            );
+
+            redirect("/map");
+        }
+
+        return;
+    }
+
     const validatedFields = loginSchema.safeParse({
         email: formData.get("email"),
         password: formData.get("password"),
@@ -81,7 +186,10 @@ export async function loginAction(
         };
     }
 
-    const responseData = await loginService(validatedFields.data);
+    const responseData = await loginService({
+        ...validatedFields.data,
+        ...(formData.get("acceptTerms") === "on" && { acceptTerms: true }),
+    });
 
     if (!responseData) {
         return {
@@ -98,6 +206,24 @@ export async function loginAction(
         "message" in responseData &&
         "status" in responseData &&
         responseData.message &&
+        responseData.status !== "success" &&
+        "data" in responseData
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: responseData.data,
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
         responseData.status !== "success"
     ) {
         return {
@@ -107,6 +233,36 @@ export async function loginAction(
             status: responseData.status,
             details: null,
             message: responseData.message,
+        };
+    }
+
+    if ("requiresMfa" in responseData && responseData.requiresMfa) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "success",
+            details: null,
+            message: null,
+            data: {
+                requiresMfa: responseData.requiresMfa,
+                tempToken: responseData.tempToken,
+            },
+        };
+    }
+
+    if ("requiresEmailCode" in responseData && responseData.requiresEmailCode) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "success",
+            details: null,
+            message: null,
+            data: {
+                requiresEmailCode: responseData.requiresEmailCode,
+                tempToken: responseData.tempToken,
+            },
         };
     }
 
@@ -159,6 +315,9 @@ const registerSchema = z.object({
             /[~`!@#$%^&*()_+=\-\[\]\\|;:'",.<>/?]/,
             "Password must contain at least one special character",
         ),
+    terms: z.literal("on", {
+        message: "You must accept the Terms & Conditions and Privacy Policy",
+    }),
 });
 
 export async function registerAction(
@@ -170,6 +329,7 @@ export async function registerAction(
         username: formData.get("username"),
         email: formData.get("email"),
         password: formData.get("password"),
+        terms: formData.get("terms"),
     });
 
     if (!validatedFields.success) {
@@ -183,7 +343,11 @@ export async function registerAction(
         };
     }
 
-    const responseData = await registerService(validatedFields.data);
+    const responseData = await registerService({
+        username: validatedFields.data.username,
+        email: validatedFields.data.email,
+        password: validatedFields.data.password,
+    });
 
     if (!responseData) {
         return {
@@ -223,25 +387,30 @@ export async function registerAction(
         };
     }
 
-    if ("refreshToken" in responseData && "accessToken" in responseData) {
-        const cookieStore = await cookies();
-        cookieStore.set(
-            "refreshToken",
-            responseData.refreshToken,
-            refreshTokenConfig,
-        );
-        cookieStore.set(
-            "accessToken",
-            responseData.accessToken,
-            accessTokenConfig,
-        );
-
-        redirect("/map");
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message
+    ) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
     }
 }
 
 export async function logoutAction() {
-    const responseData = await mutateData("POST", "/auth/logout");
+    const responseData = await mutateData("POST", "/auth/logout").catch(
+        (error) => {
+            console.error(error);
+
+            return undefined;
+        },
+    );
 
     if (!responseData) {
         console.error("Unauthorized or invalid token");
@@ -261,6 +430,7 @@ export async function logoutAction() {
 
     cookieStore.delete("refreshToken");
     cookieStore.delete("accessToken");
+    cookieStore.delete("csrfToken");
 }
 
 const updateProfileSchema = z.object({
@@ -274,6 +444,10 @@ const updateProfileSchema = z.object({
         .trim()
         .min(1, "Email is required")
         .max(100, "Email must be less than 100 characters long"),
+    currentPassword: z
+        .string()
+        .max(50, "Password must be less than 50 characters")
+        .optional(),
 });
 
 export async function updateProfileAction(
@@ -281,18 +455,11 @@ export async function updateProfileAction(
     prevState: any,
     formData: FormData,
 ): Promise<IUpdateProfileAction | undefined> {
-    const isValidate = await validateTokens();
+    const currentPassword = formData.get("currentPassword");
 
-    if (!isValidate) {
-        return {
-            formData,
-            zodErrors: null,
-            error: null,
-            status: "error",
-            details: null,
-            message: "You are not logged in",
-        };
-    }
+    // The password only goes to the API; it is never sent back to the browser
+    // with the form state.
+    formData.delete("currentPassword");
 
     const user = await getUserData();
 
@@ -310,6 +477,7 @@ export async function updateProfileAction(
     const validatedFields = updateProfileSchema.safeParse({
         username: formData.get("username"),
         email: formData.get("email"),
+        currentPassword: currentPassword || undefined,
     });
 
     if (!validatedFields.success) {
@@ -364,6 +532,73 @@ export async function updateProfileAction(
             status: null,
             details: responseData.details,
             message: null,
+        };
+    }
+}
+
+const confirmEmailChangeSchema = z.object({
+    token: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/, "Invalid or expired confirmation link"),
+});
+
+// Called by the button on /confirmEmailChange. Opening the link alone changes
+// nothing, so mail scanners that fetch links cannot approve a change.
+export async function confirmEmailChangeAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IBaseAction | undefined> {
+    const validatedFields = confirmEmailChangeSchema.safeParse({
+        token: formData.get("token"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Invalid or expired confirmation link",
+        };
+    }
+
+    const responseData = await confirmEmailChangeService(
+        validatedFields.data.token,
+    );
+
+    if (!responseData) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: null,
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: responseData.error,
+            status: "error",
+            details: null,
+            message: "Invalid or expired confirmation link",
+        };
+    }
+
+    if ("message" in responseData && "status" in responseData) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: { stage: responseData.stage ?? null },
         };
     }
 }
@@ -436,19 +671,6 @@ export async function changePasswordAction(
     prevState: any,
     formData: FormData,
 ): Promise<IChangePasswordAction | undefined> {
-    const isValidate = await validateTokens();
-
-    if (!isValidate) {
-        return {
-            formData,
-            zodErrors: null,
-            error: null,
-            status: "error",
-            details: null,
-            message: "You are not logged in",
-        };
-    }
-
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -527,53 +749,267 @@ export async function deleteAccountAction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     prevState: any,
     formData: FormData,
-): Promise<Pick<IBaseAction, "status" | "message"> | undefined> {
-    const isValidate = await validateTokens();
-
-    if (!isValidate) {
-        return {
-            status: "error",
-            message: "You are not logged in",
-        };
-    }
-
-    const user = await getUserData();
-
-    if (user.status === "error" || !user.data) {
-        return {
-            status: "error",
-            message: "You are not logged in",
-        };
-    }
-
+): Promise<IDeleteAccountAction | undefined> {
     const id = formData.get("id");
+    const tempToken = formData.get("tempToken");
+    const method = formData.get("method");
+    const intent = formData.get("intent");
 
-    const responseData = await mutateData("DELETE", `/users/${id}`);
+    if (tempToken) {
+        const requiresMfa = method === "totp";
+        const requiresEmailCode = method === "email";
+
+        if (intent === "resend") {
+            const validatedFields = deleteAccountResendSchema.safeParse({
+                id: id,
+                tempToken: tempToken,
+            });
+
+            if (!validatedFields.success) {
+                return {
+                    formData,
+                    zodErrors: z.flattenError(validatedFields.error)
+                        .fieldErrors,
+                    error: null,
+                    status: "error",
+                    details: null,
+                    message: "Invalid request. Please start again",
+                    data: { requiresRestart: true },
+                };
+            }
+
+            const responseData = await mutateData(
+                "POST",
+                `/users/${validatedFields.data.id}/delete/resend-code`,
+                {
+                    tempToken: validatedFields.data.tempToken,
+                },
+            );
+
+            if (!responseData) {
+                return {
+                    formData,
+                    zodErrors: null,
+                    error: null,
+                    status: "error",
+                    details: null,
+                    message: "Ops! Something went wrong. Please try again.",
+                    data: {
+                        tempToken,
+                        requiresEmailCode: true,
+                    },
+                };
+            }
+
+            if (
+                "message" in responseData &&
+                "status" in responseData &&
+                responseData.message &&
+                responseData.status !== "success"
+            ) {
+                return {
+                    formData,
+                    zodErrors: null,
+                    error: null,
+                    status: responseData.status,
+                    details: null,
+                    message: responseData.message,
+                    data: {
+                        tempToken,
+                        requiresEmailCode: true,
+                        requiresRestart: responseData.data?.requiresRestart,
+                        retryAfter: responseData.data?.retryAfter,
+                    },
+                };
+            }
+
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "success",
+                details: null,
+                message: "A new verification code has been sent",
+                data: {
+                    tempToken,
+                    requiresEmailCode: true,
+                    sentAt: Date.now(),
+                },
+            };
+        }
+
+        const validatedFields = deleteAccountConfirmSchema.safeParse({
+            id: id,
+            tempToken: tempToken,
+            code: formData.get("code"),
+        });
+
+        if (!validatedFields.success) {
+            return {
+                formData,
+                zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+                error: null,
+                status: null,
+                details: null,
+                message: null,
+                data: {
+                    tempToken: tempToken,
+                    requiresMfa: requiresMfa,
+                    requiresEmailCode: requiresEmailCode,
+                },
+            };
+        }
+
+        const responseData = await mutateData(
+            "POST",
+            `/users/${validatedFields.data.id}/delete/confirm`,
+            {
+                tempToken: validatedFields.data.tempToken,
+                code: validatedFields.data.code,
+            },
+        );
+
+        if (!responseData) {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "error",
+                details: null,
+                message: "Ops! Something went wrong. Please try again.",
+                data: {
+                    tempToken: tempToken,
+                    requiresMfa: requiresMfa,
+                    requiresEmailCode: requiresEmailCode,
+                },
+            };
+        }
+
+        if (
+            "message" in responseData &&
+            "status" in responseData &&
+            responseData.message &&
+            responseData.status !== "success"
+        ) {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: responseData.status,
+                details: null,
+                message:
+                    responseData.data?.attemptsLeft !== undefined
+                        ? `${responseData.message}. Attempts left: ${responseData.data.attemptsLeft}`
+                        : responseData.message,
+                data: {
+                    tempToken,
+                    requiresMfa,
+                    requiresEmailCode,
+                    attemptsLeft: responseData.data?.attemptsLeft,
+                    requiresRestart: responseData.data?.requiresRestart,
+                },
+            };
+        }
+
+        if ("error" in responseData && responseData.error) {
+            return {
+                formData,
+                zodErrors: null,
+                error: responseData.error,
+                status: null,
+                details: responseData.details,
+                message: null,
+                data: {
+                    tempToken,
+                    requiresMfa,
+                    requiresEmailCode,
+                },
+            };
+        }
+
+        await logoutAction();
+
+        redirect("/map");
+    }
+
+    const validatedFields = deleteAccountPasswordSchema.safeParse({
+        id: formData.get("id"),
+        password: formData.get("password") || undefined,
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await mutateData(
+        "POST",
+        `/users/${validatedFields.data.id}/delete/initiate`,
+        {
+            password: validatedFields.data.password,
+        },
+    );
 
     if (!responseData) {
         return {
-            status: null,
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
             message: "Ops! Something went wrong. Please try again.",
         };
     }
 
-    await logoutAction();
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status !== "success"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
 
-    redirect("/map");
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: responseData.data,
+        };
+    }
 }
 
 export async function addItemToFavoriteAction(
     placeId: number,
 ): Promise<{ ok: boolean; message: string } | undefined> {
-    const isValidate = await validateTokens();
-
-    if (!isValidate) {
-        return {
-            ok: false,
-            message: "You are not logged in",
-        };
-    }
-
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -626,15 +1062,6 @@ export async function addItemToFavoriteAction(
 export async function removeItemFromFavoriteAction(
     placeId: number,
 ): Promise<{ ok: boolean; message: string } | undefined> {
-    const isValidate = await validateTokens();
-
-    if (!isValidate) {
-        return {
-            ok: false,
-            message: "You are not logged in",
-        };
-    }
-
     const user = await getUserData();
 
     if (user.status === "error" || !user.data) {
@@ -866,20 +1293,19 @@ export async function resetPasswordAction(
         };
     }
 
-    if ("refreshToken" in responseData && "accessToken" in responseData) {
-        const cookieStore = await cookies();
-        cookieStore.set(
-            "refreshToken",
-            responseData.refreshToken,
-            refreshTokenConfig,
-        );
-        cookieStore.set(
-            "accessToken",
-            responseData.accessToken,
-            accessTokenConfig,
-        );
-
-        redirect("/map");
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.status === "success"
+    ) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "success",
+            details: null,
+            message: responseData.message,
+        };
     }
 }
 
@@ -897,7 +1323,7 @@ export async function analyzeTripDay(data: {
     message: string;
     analysis?: z.infer<typeof analysisSchema>;
 }> {
-    const responseData = await mutateData("POST", "/api/ai/trip-analyze", data);
+    const responseData = await mutateData("POST", "/ai/trip-analyze", data);
 
     if (!responseData) {
         console.error("Ops! Something went wrong. Please try again.");
@@ -964,5 +1390,792 @@ export async function analyzeTripDay(data: {
         ok: true,
         message: "Trip day analysis is ready",
         analysis: validatedFields.data,
+    };
+}
+
+export async function mfaSetupAction(): Promise<IBaseAction | undefined> {
+    const responseData = await mutateData("POST", "/auth/mfa/setup");
+
+    if (!responseData) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: {
+                qrCode: responseData.data.qrCode,
+                manualEntryKey: responseData.data.manualEntryKey,
+            },
+        };
+    }
+}
+
+export async function mfaEnableAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IMfaEnableAction | undefined> {
+    const validatedFields = mfaEnableSchema.safeParse({
+        token: formData.get("token"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await mutateData("POST", "/auth/mfa/enable", {
+        token: validatedFields.data.token,
+    });
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: {
+                enable: true,
+            },
+        };
+    }
+}
+
+export async function mfaDisableAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IMfaDisableAction | undefined> {
+    const validatedFields = mfaDisableSchema.safeParse({
+        password: formData.get("password"),
+        token: formData.get("token") || undefined,
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await mutateData("POST", "/auth/mfa/disable", {
+        password: validatedFields.data.password,
+        token: validatedFields.data.token,
+    });
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    revalidatePath("/");
+}
+
+export async function mfaRegenerateBackupCodesAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IMfaRegenerateBackupCodesAction | undefined> {
+    const validatedFields = mfaBackupCodesSchema.safeParse({
+        password: formData.get("password"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await mutateData(
+        "POST",
+        "/auth/mfa/regenerate-backup-codes",
+        { password: validatedFields.data.password },
+    );
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+            data: {
+                backupCodes: responseData.data.backupCodes,
+            },
+        };
+    }
+}
+
+export async function resendVerificationAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IResendVerificationAction | undefined> {
+    const validatedFields = resendVerificationSchema.safeParse({
+        email: formData.get("email"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await resendVerificationService(
+        validatedFields.data.email,
+    );
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+}
+
+export async function emailCodeAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<IEmailCodeAction> {
+    const rawTempToken = formData.get("tempToken") ?? "";
+
+    const validatedFields = emailCodeFormSchema.safeParse({
+        intent: formData.get("intent") ?? "verify",
+        tempToken: formData.get("tempToken") ?? "",
+        code: formData.get("code"),
+    });
+
+    if (!validatedFields.success) {
+        if (
+            z.flattenError(validatedFields.error).fieldErrors.tempToken ||
+            z.flattenError(validatedFields.error).fieldErrors.intent
+        ) {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "error",
+                details: null,
+                message:
+                    z.flattenError(validatedFields.error).fieldErrors
+                        .tempToken?.[0] ??
+                    "Invalid request. Please log in again",
+                data: { tempToken: rawTempToken, requiresRelogin: true },
+            };
+        }
+
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+            data: { tempToken: rawTempToken },
+        };
+    }
+
+    if (validatedFields.data.intent === "resend") {
+        const responseData = await emailCodeResendService(
+            validatedFields.data.tempToken,
+        );
+
+        if (!responseData) {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "error",
+                details: null,
+                message: "Ops! Something went wrong. Please try again.",
+                data: { tempToken: validatedFields.data.tempToken },
+            };
+        }
+
+        if ("error" in responseData && responseData.error) {
+            return {
+                formData,
+                zodErrors: null,
+                error: responseData.error,
+                status: null,
+                details: responseData.details,
+                message: null,
+                data: { tempToken: validatedFields.data.tempToken },
+            };
+        }
+
+        if ("status" in responseData && responseData.status !== "success") {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "error",
+                details: null,
+                message: responseData.message,
+                data: {
+                    tempToken: validatedFields.data.tempToken,
+                    requiresRelogin: responseData.data?.requiresRelogin,
+                    retryAfter: responseData.data?.retryAfter,
+                },
+            };
+        }
+
+        if ("status" in responseData && responseData.status === "success") {
+            return {
+                formData,
+                zodErrors: null,
+                error: null,
+                status: "success",
+                details: null,
+                message: responseData.message,
+                data: {
+                    tempToken: validatedFields.data.tempToken,
+                    sentAt: Date.now(),
+                },
+            };
+        }
+    }
+
+    if (validatedFields.data.intent !== "verify") {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+            data: { tempToken: validatedFields.data.tempToken },
+        };
+    }
+
+    const responseData = await emailCodeVerifyService(
+        validatedFields.data.tempToken,
+        validatedFields.data.code,
+    );
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: null,
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+            data: { tempToken: validatedFields.data.tempToken },
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+            data: { tempToken: validatedFields.data.tempToken },
+        };
+    }
+
+    if ("status" in responseData && responseData.status !== "success") {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: "error",
+            details: null,
+            message:
+                responseData.data?.attemptsLeft !== undefined
+                    ? `${responseData.message}. Attempts left: ${responseData.data?.attemptsLeft}`
+                    : responseData.message,
+            data: {
+                tempToken: validatedFields.data.tempToken,
+                attemptsLeft: responseData.data?.attemptsLeft,
+                requiresRelogin: responseData.data?.requiresRelogin,
+            },
+        };
+    }
+
+    if ("refreshToken" in responseData && "accessToken" in responseData) {
+        const cookieStore = await cookies();
+
+        cookieStore.set(
+            "refreshToken",
+            responseData.refreshToken,
+            refreshTokenConfig,
+        );
+        cookieStore.set(
+            "accessToken",
+            responseData.accessToken,
+            accessTokenConfig,
+        );
+
+        redirect("/map");
+    }
+
+    return {
+        formData: null,
+        zodErrors: null,
+        error: null,
+        status: "error",
+        details: null,
+        message: "Ops! Something went wrong. Please try again.",
+        data: { tempToken: validatedFields.data.tempToken },
+    };
+}
+
+export async function setPasswordAction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prevState: any,
+    formData: FormData,
+): Promise<ISetPasswordAction | undefined> {
+    const validatedFields = setPasswordSchema.safeParse({
+        newPassword: formData.get("newPassword"),
+        confirmPassword: formData.get("confirmPassword"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            formData,
+            zodErrors: z.flattenError(validatedFields.error).fieldErrors,
+            error: null,
+            status: null,
+            details: null,
+            message: null,
+        };
+    }
+
+    const responseData = await mutateData("POST", "/users/set-password", {
+        newPassword: validatedFields.data.newPassword,
+    });
+
+    if (!responseData) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: null,
+            details: null,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            formData,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        return {
+            formData,
+            zodErrors: null,
+            error: responseData.error,
+            status: null,
+            details: responseData.details,
+            message: null,
+        };
+    }
+
+    revalidatePath("/");
+
+    if ("status" in responseData && responseData.status === "success") {
+        return {
+            formData: null,
+            zodErrors: null,
+            error: null,
+            status: responseData.status,
+            details: null,
+            message: responseData.message,
+        };
+    }
+}
+
+export async function exchangeGoogleCodeAction(
+    code: string,
+): Promise<{ ok: boolean; message: string } | undefined> {
+    const responseData = await googleExchangeService(code);
+
+    if (!responseData) {
+        console.error("Ops! Something went wrong. Please try again.");
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again or later",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return {
+            ok: false,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        console.error(responseData.error);
+
+        return {
+            ok: false,
+            message: "Failed to login",
+        };
+    }
+
+    if ("refreshToken" in responseData && "accessToken" in responseData) {
+        const cookieStore = await cookies();
+        cookieStore.set(
+            "refreshToken",
+            responseData.refreshToken,
+            refreshTokenConfig,
+        );
+        cookieStore.set(
+            "accessToken",
+            responseData.accessToken,
+            accessTokenConfig,
+        );
+
+        return { ok: true, message: "User logged in successfully" };
+    }
+
+    return {
+        ok: false,
+        message: "Failed to login",
+    };
+}
+
+export async function revokeSessionAction(
+    sessionId: string,
+): Promise<
+    | { ok: true; message: string; revokedCount: number }
+    | { ok: false; message: string }
+> {
+    const validatedFields = sessionIdSchema.safeParse(sessionId);
+
+    if (!validatedFields.success) {
+        return {
+            ok: false,
+            message: "Session not found",
+        };
+    }
+
+    const responseData = await mutateData(
+        "DELETE",
+        `/users/me/sessions/${sessionId}`,
+    );
+
+    if (!responseData) {
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status !== "success"
+    ) {
+        return {
+            ok: false,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData) {
+        console.error(responseData.error);
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    return {
+        ok: true,
+        message: responseData.message,
+        revokedCount: responseData.data?.revokedCount ?? 0,
+    };
+}
+
+export async function revokeOtherSessionsAction(): Promise<
+    | { ok: true; message: string; revokedCount: number }
+    | { ok: false; message: string }
+> {
+    const responseData = await mutateData("DELETE", "/users/me/sessions");
+
+    if (!responseData) {
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status !== "success"
+    ) {
+        return {
+            ok: false,
+            message: responseData.message,
+        };
+    }
+
+    if ("error" in responseData) {
+        console.error(responseData.error);
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    return {
+        ok: true,
+        message: responseData.message,
+        revokedCount: responseData.data?.revokedCount ?? 0,
     };
 }

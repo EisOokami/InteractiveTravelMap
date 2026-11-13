@@ -1,9 +1,12 @@
+import { rateLimitHandler } from "../middleware/securityAudit.middleware.js";
+import { userOrIpKey } from "../utils/rateLimitKeys.js";
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 import { analyzeTripDay } from "../controllers/ai.controller.js";
 import { validateData } from "../middleware/validation.middleware.js";
 import { tripAnalysisRequestSchema } from "../validation/validation.js";
+import { verifyCsrf } from "../middleware/csrf.middleware.js";
 
 const analyzeTripLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -15,6 +18,8 @@ const analyzeTripLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: userOrIpKey,
+    handler: rateLimitHandler,
 });
 
 const router = Router();
@@ -23,6 +28,7 @@ router.post(
     "/trip-analyze",
     analyzeTripLimiter,
     authenticateToken,
+    verifyCsrf,
     validateData(tripAnalysisRequestSchema),
     analyzeTripDay,
 );

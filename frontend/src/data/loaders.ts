@@ -1,23 +1,22 @@
 "use server";
 
-import { IPlace, IUser } from "@/interfaces/interfaces";
-import { getAccessToken } from "./getToken";
+import { IPlace, IUser, IUserSession } from "@/interfaces/interfaces";
+import { getAccessToken, getRefreshToken } from "./getToken";
+import { fetchWithRefresh } from "./fetchWithRefresh";
 
 const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 
-async function fetchData(url: string) {
+async function fetchData(url: string, options?: RequestInit) {
     const accessToken = await getAccessToken();
-
-    const headers = {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-        },
-    };
+    const refreshToken = await getRefreshToken();
 
     try {
-        const response = await fetch(url, accessToken ? headers : {});
+        const response = await fetchWithRefresh(
+            url,
+            accessToken,
+            refreshToken,
+            options,
+        );
 
         const data = await response.json();
         return data;
@@ -91,6 +90,8 @@ export async function getUserData(): Promise<IUser> {
             id: fetchedData.id,
             username: fetchedData.username,
             email: fetchedData.email,
+            mfa_enabled: fetchedData.mfa_enabled,
+            auth_provider: fetchedData.auth_provider,
         },
     };
 }
@@ -117,4 +118,54 @@ export async function getFavoritesData(): Promise<IPlace[]> {
     }
 
     return fetchedData;
+}
+
+export async function getVerifyEmailData(
+    token: string,
+): Promise<
+    | { status: "success"; message: string }
+    | { status: "error"; message: string }
+> {
+    if (!token) {
+        return { status: "error", message: "Token missing" };
+    }
+
+    const url = new URL(
+        `/auth/verify-email?token=${encodeURIComponent(token)}`,
+        baseUrl,
+    );
+
+    const fetchedData = await fetchData(url.href, { cache: "no-store" });
+
+    if (fetchedData.status === "error") {
+        return {
+            status: "error",
+            message:
+                fetchedData.message || "Unable to verify the email address",
+        };
+    }
+
+    return fetchedData;
+}
+
+export async function getUserSessionsData(): Promise<
+    | { status: "success"; message: string; data: IUserSession[] }
+    | { status: "error"; message: string }
+> {
+    const url = new URL("/users/me/sessions", baseUrl);
+
+    const fetchedData = await fetchData(url.href, { cache: "no-store" });
+
+    if (fetchedData.status === "error") {
+        return {
+            status: "error",
+            message: fetchedData.message,
+        };
+    }
+
+    return {
+        status: "success",
+        message: fetchedData.message,
+        data: fetchedData.data,
+    };
 }

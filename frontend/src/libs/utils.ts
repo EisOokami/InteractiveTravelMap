@@ -9,6 +9,19 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export function formatBackupCode(raw: string): string {
+    const cleaned = raw
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 8);
+
+    if (cleaned.length <= 4) {
+        return cleaned;
+    }
+
+    return `${cleaned.slice(0, 4)}-${cleaned.slice(4)}`;
+}
+
 export const formatDuration = (minutes: number) => {
     if (minutes < 60) {
         return `${minutes} min`;

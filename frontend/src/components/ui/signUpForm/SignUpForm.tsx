@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Info, Loader2 } from "lucide-react";
 import { registerAction } from "@/data/actions";
@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/shadcn/button";
 import { ZodErrors } from "@/components/ui/zodErrors/ZodErrors";
 import { DetailsErrors } from "@/components/ui/detailsErrors/DetailsErrors";
 import { PasswordInput } from "@/components/ui/shadcn/password-input";
+import { Checkbox } from "@/components/ui/shadcn/checkbox";
+import GoogleIcon from "@/components/ui/googleIcon/GoogleIcon";
 
 const INITIAL_STATE: IBaseAction = {
     zodErrors: null,
@@ -31,6 +33,8 @@ const INITIAL_STATE: IBaseAction = {
 };
 
 export default function SignUpForm() {
+    const [googleTermsAccepted, setGoogleTermsAccepted] =
+        useState<boolean>(false);
     const [formState, formAction, isPending] = useActionState(
         registerAction,
         INITIAL_STATE,
@@ -105,6 +109,39 @@ export default function SignUpForm() {
                         />
                         <ZodErrors error={formState?.zodErrors?.password} />
                     </div>
+                    <div className="flex items-start gap-2">
+                        <Checkbox
+                            id="terms"
+                            name="terms"
+                            checked={googleTermsAccepted}
+                            onCheckedChange={(checked) =>
+                                setGoogleTermsAccepted(checked === true)
+                            }
+                            className={`mt-0.5 ${formState?.zodErrors?.terms ? "border-red-500" : ""}`}
+                        />
+                        <Label
+                            htmlFor="terms"
+                            className="text-sm font-normal leading-snug text-muted-foreground"
+                        >
+                            I agree to the{" "}
+                            <Link
+                                href="/terms"
+                                target="_blank"
+                                className="underline text-primary"
+                            >
+                                Terms &amp; Conditions
+                            </Link>{" "}
+                            and{" "}
+                            <Link
+                                href="/privacy"
+                                target="_blank"
+                                className="underline text-primary"
+                            >
+                                Privacy Policy
+                            </Link>
+                        </Label>
+                    </div>
+                    <ZodErrors error={formState?.zodErrors?.terms} />
                     {formState?.message && (
                         <div
                             className={`flex items-center gap-2 text-sm rounded-md ${formState?.status === "error" ? "text-red-500" : formState?.status === "success" ? "text-green-500" : "text-yellow-300"}`}
@@ -136,6 +173,32 @@ export default function SignUpForm() {
                         )}
                     </Button>
                 </form>
+                <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-xs text-muted-foreground">OR</span>
+                    <div className="flex-1 h-px bg-border" />
+                </div>
+                <Button
+                    asChild={googleTermsAccepted}
+                    type="button"
+                    variant="outline"
+                    disabled={!googleTermsAccepted}
+                    className="w-full"
+                >
+                    {googleTermsAccepted ? (
+                        <a
+                            href={`${process.env.NEXT_PUBLIC_DB_URL}/auth/google`}
+                        >
+                            <GoogleIcon className="size-4 mr-2" />
+                            Continue with Google
+                        </a>
+                    ) : (
+                        <>
+                            <GoogleIcon className="size-4 mr-2" />
+                            Continue with Google
+                        </>
+                    )}
+                </Button>
             </CardContent>
             <CardFooter className="flex justify-center">
                 <p className="text-sm text-muted-foreground">

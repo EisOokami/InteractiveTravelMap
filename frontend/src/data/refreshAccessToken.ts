@@ -1,19 +1,71 @@
-"use server";
+import "server-only";
 
-import { handleRefreshToken } from "@/libs/refreshManager";
-import { cookies } from "next/headers";
+const baseUrl = process.env.DB_URL;
 
-export async function refreshAccessToken(status: number) {
-    if (status !== 401) {
-        return;
-    }
+export type RefreshResult =
+    | {
+          status: "success";
+          accessToken: string;
+          refreshToken: string;
+          csrfToken: string;
+      }
+    | { status: "rejected" }
+    | { status: "unavailable" };
 
-    const success = await handleRefreshToken();
+export async function refreshAccessToken(
+    refreshToken: string,
+    csrfToken: string,
+    userAgent?: string,
+    forwardedHeaders: Record<string, string> = {},
+): Promise<RefreshResult> {
+    try {
+        const response = await fetch(`${baseUrl}/auth/refresh`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(userAgent ? { "User-Agent": userAgent } : {}),
+                ...forwardedHeaders,
+                Cookie: `refreshToken=${refreshToken}; csrfToken=${csrfToken ?? ""}`,
+                "X-CSRF-Token": csrfToken,
+            },
+            credentials: "include",
+        });
 
-    if (!success) {
-        const cookieStore = await cookies();
+        if (response.status === 401 || response.status === 403) {
+            return { status: "rejected" };
+        }
 
-        cookieStore.delete("accessToken");
-        cookieStore.delete("refreshToken");
+        if (!response.ok) {
+            return { status: "unavailable" };
+        }
+
+        const setCookieHeaders = response.headers.getSetCookie();
+        const newCsrfToken = setCookieHeaders
+            .find((cookieHeader) => cookieHeader.startsWith("csrfToken="))
+            ?.split(";")[0]
+            .split("=")[1];
+
+        if (!newCsrfToken) {
+            return { status: "unavailable" };
+        }
+
+        const data = await response.json();
+
+        if (
+            data.status === "error" ||
+            !data.accessToken ||
+            !data.refreshToken
+        ) {
+            return { status: "unavailable" };
+        }
+
+        return {
+            status: "success",
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            csrfToken: newCsrfToken,
+        };
+    } catch {
+        return { status: "unavailable" };
     }
 }
