@@ -1,11 +1,11 @@
 import { Response } from "express";
-import { IGetUserRequest, IUser } from "../types/interfaces";
+import { IGetUserRequest, IUser } from "../types/interfaces.js";
 import {
     changePasswordSchema,
     updateProfileSchema,
     validateIdSchema,
-} from "../validation/validation";
-import { pool } from "../db/pool";
+} from "../validation/validation.js";
+import { pool } from "../db/pool.js";
 import { ZodError } from "zod";
 import bcrypt from "bcryptjs";
 import { ResultSetHeader } from "mysql2";

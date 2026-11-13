@@ -7,14 +7,14 @@ import {
     refresh,
     register,
     resetPassword,
-} from "../controllers/auth.controller";
-import { validateData } from "../middleware/validation.middleware";
+} from "../controllers/auth.controller.js";
+import { validateData } from "../middleware/validation.middleware.js";
 import {
     forgotPasswordSchema,
     loginSchema,
     registerSchema,
     resetPasswordSchema,
-} from "../validation/validation";
+} from "../validation/validation.js";
 
 const registerLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { IGetUserRequest } from "../types/interfaces";
-import { verifyAccessToken } from "../utils/jwt";
+import { IGetUserRequest } from "../types/interfaces.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 
 export async function authenticateToken(
     req: IGetUserRequest,

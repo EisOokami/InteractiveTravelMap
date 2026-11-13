@@ -1,8 +1,8 @@
-import { pool } from "../db/pool";
+import { pool } from "../db/pool.js";
 import { Response } from "express";
-import { IFavorite, IGetUserRequest } from "../types/interfaces";
+import { IFavorite, IGetUserRequest } from "../types/interfaces.js";
 import { ResultSetHeader } from "mysql2";
-import { validateIdSchema } from "../validation/validation";
+import { validateIdSchema } from "../validation/validation.js";
 import { ZodError } from "zod";
 
 export const getFavorites = async (req: IGetUserRequest, res: Response) => {

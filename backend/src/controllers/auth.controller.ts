@@ -2,22 +2,22 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { IUser } from "../types/interfaces";
-import { pool } from "../db/pool";
+import { IUser } from "../types/interfaces.js";
+import { pool } from "../db/pool.js";
 import {
     forgotPasswordSchema,
     loginSchema,
     registerSchema,
     resetPasswordSchema,
-} from "../validation/validation";
+} from "../validation/validation.js";
 import { ZodError } from "zod";
 import { ResultSetHeader } from "mysql2";
-import { transporter } from "../utils/email";
+import { transporter } from "../utils/email.js";
 import {
     createAccessToken,
     createRefreshToken,
     revokeAllUserTokens,
-} from "../utils/jwt";
+} from "../utils/jwt.js";
 import { jwtVerify } from "jose";
 
 dotenv.config();

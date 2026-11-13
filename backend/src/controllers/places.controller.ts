@@ -1,7 +1,7 @@
-import { pool } from "../db/pool";
+import { pool } from "../db/pool.js";
 import { Request, Response } from "express";
-import { IPlace } from "../types/interfaces";
-import { getPlacesSchema } from "../validation/validation";
+import { IPlace } from "../types/interfaces.js";
+import { getPlacesSchema } from "../validation/validation.js";
 
 export const getPlaces = async (req: Request, res: Response) => {
     try {

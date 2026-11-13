@@ -1,17 +1,17 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { authenticateToken } from "../middleware/auth.middleware";
+import { authenticateToken } from "../middleware/auth.middleware.js";
 import {
     deleteAccount,
     me,
     changePassword,
     updateProfile,
-} from "../controllers/users.controller";
-import { validateData } from "../middleware/validation.middleware";
+} from "../controllers/users.controller.js";
+import { validateData } from "../middleware/validation.middleware.js";
 import {
     changePasswordSchema,
     updateProfileSchema,
-} from "../validation/validation";
+} from "../validation/validation.js";
 
 const updateProfileLimiter = rateLimit({
     windowMs: 30 * 60 * 1000,

@@ -4,13 +4,13 @@
     "description": "",
     "license": "MIT",
     "author": "EisOokami",
-    "type": "commonjs",
+    "type": "module",
     "main": "index.js",
     "scripts": {
         "build": "tsc",
-        "watch": "tsc -w",
         "start": "node dist/app.js",
-        "dev": "nodemon src/app.ts",
+        "dev": "tsx watch src/app.ts",
+        "test": "tsx --test tests/*.test.ts",
         "lint": "eslint 'src/**/*.ts'"
     },
     "dependencies": {
@@ -40,9 +40,8 @@
         "@types/node": "^25.0.10",
         "@types/nodemailer": "^7.0.9",
         "eslint": "^9.39.2",
-        "nodemon": "^3.1.11",
         "prettier": "^3.7.4",
-        "ts-node": "^10.9.2",
+        "tsx": "^4.23.15",
         "typescript": "^5.9.3"
     }
 }

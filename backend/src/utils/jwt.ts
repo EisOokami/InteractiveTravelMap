@@ -1,7 +1,7 @@
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import dotenv from "dotenv";
 import crypto from "crypto";
-import { pool } from "../db/pool";
+import { pool } from "../db/pool.js";
 import { ResultSetHeader } from "mysql2";
 
 dotenv.config();

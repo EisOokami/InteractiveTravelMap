@@ -7,10 +7,10 @@ import { xss } from "express-xss-sanitizer";
 import hostValidation from "host-validation";
 import cookieParser from "cookie-parser";
 import hpp from "hpp";
-import placesRoutes from "./routes/places.routes";
-import favoritesRoutes from "./routes/favorites.routes";
-import authRoutes from "./routes/auth.routes";
-import usersRoutes from "./routes/users.routes";
+import placesRoutes from "./routes/places.routes.js";
+import favoritesRoutes from "./routes/favorites.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import usersRoutes from "./routes/users.routes.js";
 
 dotenv.config();
 
