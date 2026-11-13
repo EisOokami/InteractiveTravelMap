@@ -1,8 +1,8 @@
 "use client";
 
-import { RefObject, useEffect } from "react";
+import { useMapStore } from "@/libs/stores/mapStoreProvider";
+import { RefObject, useEffect, useMemo } from "react";
 import { renderToString } from "react-dom/server";
-import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import L, { divIcon } from "leaflet";
@@ -16,22 +16,13 @@ import {
     Popup,
 } from "react-leaflet";
 import { MapPin, Star } from "lucide-react";
-import {
-    setIsPlaceDetailsLoading,
-    setOpenPlaceDetails,
-    setOpenSearch,
-    setOpenTrip,
-} from "@/libs/redux/features/ui/uiSlice";
-import { RootState } from "@/libs/redux/store";
-import {
-    setZoomLocationX,
-    setZoomLocationY,
-} from "@/libs/redux/features/map/mapSlice";
 import { IPlace } from "@/interfaces/interfaces";
 import "leaflet/dist/leaflet.css";
 import "./Map.scss";
+import TripDayRoute from "./TripDayRoute";
 
 import { Button } from "@/components/ui/shadcn/button";
+import { normalizeCoordinates } from "@/libs/utils";
 
 interface MapProps {
     places: IPlace[];
@@ -57,6 +48,7 @@ function ResizeMapObserver() {
         });
 
         const mapContainer = map.getContainer();
+
         observer.observe(mapContainer);
 
         return () => observer.disconnect();
@@ -66,18 +58,31 @@ function ResizeMapObserver() {
 }
 
 export default function Map({ places, mapRef }: Readonly<MapProps>) {
-    const openPlaceDetails = useSelector(
-        (state: RootState) => state.ui.openPlaceDetails,
+    const setIsPlaceDetailsLoading = useMapStore(
+        (state) => state.setIsPlaceDetailsLoading,
     );
-    const zoomLocationX = useSelector(
-        (state: RootState) => state.map.zoomLocationX,
+    const setOpenPlaceDetails = useMapStore(
+        (state) => state.setOpenPlaceDetails,
     );
-    const zoomLocationY = useSelector(
-        (state: RootState) => state.map.zoomLocationY,
-    );
-    const dispatch = useDispatch();
+    const setOpenSearch = useMapStore((state) => state.setOpenSearch);
+    const setOpenTrip = useMapStore((state) => state.setOpenTrip);
+    const setZoomLocationX = useMapStore((state) => state.setZoomLocationX);
+    const setZoomLocationY = useMapStore((state) => state.setZoomLocationY);
+    const openPlaceDetails = useMapStore((state) => state.ui.openPlaceDetails);
+    const zoomLocationX = useMapStore((state) => state.map.zoomLocationX);
+    const zoomLocationY = useMapStore((state) => state.map.zoomLocationY);
     const pathname = usePathname();
     const router = useRouter();
+
+    const markerPlaces = useMemo(
+        () =>
+            places.flatMap((place) => {
+                const coordinates = normalizeCoordinates(place);
+
+                return coordinates === null ? [] : [{ place, coordinates }];
+            }),
+        [places],
+    );
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -100,16 +105,17 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
     }, [mapRef]);
 
     const handleZoomLocation = (x: number, y: number) => {
-        dispatch(setZoomLocationX(x));
-        dispatch(setZoomLocationY(y));
+        setZoomLocationX(x);
+        setZoomLocationY(y);
     };
 
     const handleButtonClick = (placeId: number) => {
         router.push(`${pathname}?placeId=${placeId}`);
-        dispatch(setIsPlaceDetailsLoading(true));
-        dispatch(setOpenSearch(true));
-        dispatch(setOpenPlaceDetails(true));
-        dispatch(setOpenTrip(false));
+
+        setIsPlaceDetailsLoading(true);
+        setOpenSearch(true);
+        setOpenPlaceDetails(true);
+        setOpenTrip(false);
     };
 
     return (
@@ -121,6 +127,7 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
         >
             <ChangeView center={[zoomLocationX, zoomLocationY]} />
             <ResizeMapObserver />
+            <TripDayRoute places={places} />
             <LayersControl>
                 <LayersControl.BaseLayer checked name="OpenStreetMap">
                     <TileLayer
@@ -145,16 +152,16 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
                     />
                 </LayersControl.BaseLayer>
             </LayersControl>
-            {places.map((place) => (
+            {markerPlaces.map(({ place, coordinates }) => (
                 <Marker
                     key={place.id}
-                    position={[place.x, place.y]}
+                    position={coordinates}
                     icon={divIcon({
                         html: renderToString(
                             <div
                                 className={`relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full shadow-lg hover:ring-4 hover:ring-blue-300 hover:ring-opacity-50 hover:scale-110 transition-all duration-400 cursor-pointer select-none ${
-                                    place.x === zoomLocationX &&
-                                    place.y === zoomLocationY &&
+                                    coordinates[0] === zoomLocationX &&
+                                    coordinates[1] === zoomLocationY &&
                                     openPlaceDetails
                                         ? "ring-4 ring-blue-300 ring-opacity-70 scale-110 animate-bounce"
                                         : ""
@@ -177,7 +184,8 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
                         popupAnchor: [0, -48],
                     })}
                     eventHandlers={{
-                        click: () => handleZoomLocation(place.x, place.y),
+                        click: () =>
+                            handleZoomLocation(coordinates[0], coordinates[1]),
                     }}
                 >
                     <Popup className="custom-popup" closeButton={true}>
@@ -222,6 +230,7 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
                                 <Button
                                     onClick={(e) => {
                                         e.stopPropagation();
+
                                         handleButtonClick(place.id);
                                     }}
                                     className="w-full px-4 py-2 md:py-3 text-white font-semibold bg-bright-blue hover:bg-blue-600 rounded-lg transition-colors shadow-lg"

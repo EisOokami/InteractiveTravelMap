@@ -21,6 +21,8 @@ import {
 import { mutateData } from "./mutateData";
 import { getUserData } from "./loaders";
 import { validateTokens } from "@/libs/validateTokens";
+import { analysisSchema } from "@/libs/validation/validation";
+import { TravelMode } from "@/types/store";
 
 const accessTokenConfig = {
     maxAge: 15 * 60,
@@ -879,4 +881,88 @@ export async function resetPasswordAction(
 
         redirect("/map");
     }
+}
+
+export async function analyzeTripDay(data: {
+    day: string;
+    places: { id: number; name: string; latitude: number; longitude: number }[];
+    travelMode: TravelMode;
+    routeMetrics?: { distanceMeters: number; durationSeconds: number };
+    preferences: {
+        pace?: "relaxed" | "balanced" | "intensive";
+        instructions?: string;
+    };
+}): Promise<{
+    ok: boolean;
+    message: string;
+    analysis?: z.infer<typeof analysisSchema>;
+}> {
+    const responseData = await mutateData("POST", "/api/ai/trip-analyze", data);
+
+    if (!responseData) {
+        console.error("Ops! Something went wrong. Please try again.");
+
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again or later",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.message &&
+        responseData.status === "error"
+    ) {
+        return { ok: false, message: responseData.message };
+    }
+
+    if ("error" in responseData && responseData.error) {
+        console.error(responseData.error);
+
+        return { ok: false, message: "Failed to analyze the trip day" };
+    }
+
+    if (!("data" in responseData)) {
+        return { ok: false, message: "Failed to analyze the trip day" };
+    }
+
+    const validatedFields = analysisSchema.safeParse(
+        responseData.data.analysis,
+    );
+
+    if (!validatedFields.success) {
+        console.error(validatedFields.error);
+
+        return {
+            ok: false,
+            message:
+                "AI could not provide a valid suggestion. Please try again later.",
+        };
+    }
+
+    const originalIds = data.places.map((place) => place.id);
+    const suggestedIds = validatedFields.data.suggestedPlaceIds;
+
+    if (
+        !(
+            suggestedIds.length === originalIds.length &&
+            new Set(suggestedIds).size === originalIds.length &&
+            suggestedIds.every((id) => originalIds.includes(id))
+        )
+    ) {
+        console.error("Invalid suggested stops");
+
+        return {
+            ok: false,
+            message:
+                "AI could not provide a valid suggestion. Please try again later.",
+        };
+    }
+
+    return {
+        ok: true,
+        message: "Trip day analysis is ready",
+        analysis: validatedFields.data,
+    };
 }

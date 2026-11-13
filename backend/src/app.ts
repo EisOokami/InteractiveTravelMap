@@ -11,6 +11,7 @@ import placesRoutes from "./routes/places.routes.js";
 import favoritesRoutes from "./routes/favorites.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import usersRoutes from "./routes/users.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use("/places", placesRoutes);
 app.use("/favorites", favoritesRoutes);
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
+app.use("/ai", aiRoutes);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

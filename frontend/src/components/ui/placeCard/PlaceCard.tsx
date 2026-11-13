@@ -1,7 +1,7 @@
+import { useMapStore } from "@/libs/stores/mapStoreProvider";
 import { IPlace, IUser } from "@/interfaces/interfaces";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
 import {
     Accessibility,
     Banknote,
@@ -10,22 +10,16 @@ import {
     MapPin,
     ParkingSquare,
     PawPrint,
+    Plus,
+    Check,
     Star,
     Wifi,
 } from "lucide-react";
-import { formatPrice } from "@/libs/formatPrice";
-import { formatDuration } from "@/libs/formatDuration";
-import { RootState, AppDispatch } from "@/libs/redux/store";
 import {
-    setOpenFavorite,
-    setOpenPlaceDetails,
-    setOpenSearch,
-} from "@/libs/redux/features/ui/uiSlice";
-import {
-    setZoomLocationX,
-    setZoomLocationY,
-} from "@/libs/redux/features/map/mapSlice";
-import { toggleFavoriteAsync } from "@/libs/redux/features/favorites/favoritesSlice";
+    formatDuration,
+    formatPrice,
+    normalizeCoordinates,
+} from "@/libs/utils";
 
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
@@ -33,37 +27,57 @@ import { Button } from "../shadcn/button";
 interface PlaceCardProps {
     place: IPlace;
     userData: IUser;
+    onAddToTrip?: () => void;
+    isInTripDay?: boolean;
 }
 
 export default function PlaceCard({
     place,
     userData,
+    onAddToTrip,
+    isInTripDay = false,
 }: Readonly<PlaceCardProps>) {
-    const { favorites, loading } = useSelector(
-        (state: RootState) => state.favorites,
+    const setOpenFavorite = useMapStore((state) => state.setOpenFavorite);
+    const setOpenPlaceDetails = useMapStore(
+        (state) => state.setOpenPlaceDetails,
     );
-    const dispatch = useDispatch<AppDispatch>();
+    const setOpenSearch = useMapStore((state) => state.setOpenSearch);
+    const setZoomLocationX = useMapStore((state) => state.setZoomLocationX);
+    const setZoomLocationY = useMapStore((state) => state.setZoomLocationY);
+    const toggleFavoriteAsync = useMapStore(
+        (state) => state.toggleFavoriteAsync,
+    );
+    const isFavorite = useMapStore(
+        (state) =>
+            userData.status === "success" &&
+            !!userData.data &&
+            state.favorites.favorites.some(
+                (favorite) => favorite.id === place.id,
+            ),
+    );
+    const loading = useMapStore((state) => state.favorites.loading);
     const pathname = usePathname();
     const router = useRouter();
 
-    const handleZoomLocation = (x: number, y: number, placeId: number) => {
-        dispatch(setZoomLocationX(x));
-        dispatch(setZoomLocationY(y));
-        dispatch(setOpenPlaceDetails(true));
-        dispatch(setOpenSearch(true));
-        dispatch(setOpenFavorite(false));
-        router.push(`${pathname}?placeId=${placeId}`);
-    };
+    const handleZoomLocation = (place: IPlace) => {
+        const coordinates = normalizeCoordinates(place);
 
-    const isFavorite =
-        userData.status === "success" && userData.data
-            ? favorites.find((favorite) => favorite.id === place.id)
-            : false;
+        if (coordinates !== null) {
+            setZoomLocationX(coordinates[0]);
+            setZoomLocationY(coordinates[1]);
+        }
+
+        setOpenPlaceDetails(true);
+        setOpenSearch(true);
+        setOpenFavorite(false);
+
+        router.push(`${pathname}?placeId=${place.id}`);
+    };
 
     return (
         <div
-            onClick={() => handleZoomLocation(place.x, place.y, place.id)}
-            className="flex flex-col bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group"
+            onClick={onAddToTrip ? undefined : () => handleZoomLocation(place)}
+            className={`flex flex-col min-w-0 bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all group ${onAddToTrip ? "" : "cursor-pointer"}`}
         >
             <div className="relative min-h-48 overflow-hidden rounded-t-xl">
                 {userData.status === "success" && userData.data && (
@@ -71,13 +85,8 @@ export default function PlaceCard({
                         onClick={(e) => {
                             e.stopPropagation();
 
-                            dispatch(toggleFavoriteAsync(place));
+                            toggleFavoriteAsync(place);
                         }}
-                        aria-label={
-                            isFavorite
-                                ? "Remove from favorites"
-                                : "Add to favorites"
-                        }
                         className="absolute top-3 left-3 text-red-500 bg-white/90 hover:bg-gray-100 dark:bg-dark-mode-black/90 rounded-full hover:scale-110 transition-transform z-30"
                         size="icon"
                         variant="secondary"
@@ -160,6 +169,22 @@ export default function PlaceCard({
                     </div>
                 </div>
             </div>
+            {onAddToTrip && (
+                <div className="px-4 pb-4">
+                    <Button
+                        disabled={isInTripDay}
+                        className="w-full bg-bright-blue text-white hover:bg-blue-600"
+                        onClick={(event) => {
+                            event.stopPropagation();
+
+                            onAddToTrip();
+                        }}
+                    >
+                        {isInTripDay ? <Check /> : <Plus />}
+                        {isInTripDay ? "Added" : "Add to day"}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

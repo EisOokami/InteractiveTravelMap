@@ -11,30 +11,36 @@ import {
     ParkingSquare,
     PawPrint,
     Star,
+    Trash2,
     Wifi,
 } from "lucide-react";
-import { formatPrice } from "@/libs/formatPrice";
-import { formatDuration } from "@/libs/formatDuration";
+import { formatDuration, formatPrice } from "@/libs/utils";
 import { IPlace } from "@/interfaces/interfaces";
 
 import { Badge } from "../shadcn/badge";
 import { Button } from "../shadcn/button";
 
 interface PlaceCardTripProps {
-    place: IPlace;
-    convertTime: (totalSeconds: number) => string;
+    place?: IPlace;
+    placeId: number;
+    onRemove: () => void;
 }
 
-export default function PlaceCardTrip({ place }: Readonly<PlaceCardTripProps>) {
+export default function PlaceCardTrip({
+    place,
+    placeId,
+    onRemove,
+}: Readonly<PlaceCardTripProps>) {
     const {
         attributes,
         listeners,
         setNodeRef,
+        setActivatorNodeRef,
         transform,
         transition,
         isDragging,
     } = useSortable({
-        id: place.id,
+        id: placeId,
         animateLayoutChanges: (args) =>
             defaultAnimateLayoutChanges({ ...args, wasDragging: true }),
     });
@@ -47,15 +53,55 @@ export default function PlaceCardTrip({ place }: Readonly<PlaceCardTripProps>) {
         transition: transition || "transform 200ms ease",
     };
 
+    if (!place)
+        return (
+            <li ref={setNodeRef} style={style}>
+                <div className="relative rounded-xl border border-gray-200 dark:border-gray-700 p-4 pt-16">
+                    <Button
+                        ref={setActivatorNodeRef}
+                        {...attributes}
+                        {...listeners}
+                        size="icon"
+                        className="absolute top-3 left-3 bg-white/90 hover:bg-white dark:bg-dark-mode-black dark:hover:bg-gray-900 shadow-md cursor-grab active:cursor-grabbing z-10 touch-none"
+                    >
+                        <Grip className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="secondary"
+                        onClick={onRemove}
+                        className="absolute top-3 right-3 text-red-600 bg-white/90 hover:bg-red-50 dark:bg-dark-mode-black dark:hover:bg-gray-900 z-10"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <p className="font-semibold">{`Unavailable place #${placeId}`}</p>
+                    <p className="text-sm text-muted-foreground">
+                        This place is no longer available. You can reorder or
+                        remove this stop.
+                    </p>
+                </div>
+            </li>
+        );
+
     return (
-        <div ref={setNodeRef} style={style} {...attributes}>
+        <li ref={setNodeRef} style={style} className="min-w-0">
             <div className="relative flex md:grid w-full max-w-full mb-4 bg-white dark:bg-dark-mode-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden group cursor-default">
                 <Button
+                    ref={setActivatorNodeRef}
+                    {...attributes}
                     {...listeners}
                     size="icon"
-                    className="absolute top-3 left-3 bg-white/90 hover:bg-white dark:bg-dark-mode-black dark:hover:bg-gray-900 shadow-md cursor-grab backdrop-blur-sm active:cursor-grabbing z-10 touch-none"
+                    className="absolute top-3 left-3 bg-white/90 hover:bg-white dark:bg-dark-mode-black dark:hover:bg-gray-900 shadow-md cursor-grab active:cursor-grabbing z-10 touch-none"
                 >
                     <Grip className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                </Button>
+                <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={onRemove}
+                    className="absolute top-3 right-3 text-red-600 bg-white/90 hover:bg-red-50 dark:bg-dark-mode-black dark:hover:bg-gray-900 z-10"
+                >
+                    <Trash2 className="w-4 h-4" />
                 </Button>
                 <div className="relative w-1/3 md:w-full max-w-48 md:max-w-full h-48 max-h-40 md:max-h-48 overflow-hidden">
                     <div className="relative w-full h-full">
@@ -139,6 +185,6 @@ export default function PlaceCardTrip({ place }: Readonly<PlaceCardTripProps>) {
                     </div>
                 </div>
             </div>
-        </div>
+        </li>
     );
 }

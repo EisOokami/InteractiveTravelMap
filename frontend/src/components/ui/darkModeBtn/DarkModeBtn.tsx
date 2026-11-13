@@ -32,7 +32,6 @@ export default function DarkModeBtn({
 
     return (
         <Button
-            aria-label="Toggle dark mode"
             variant={variant}
             size={size}
             className={cn(

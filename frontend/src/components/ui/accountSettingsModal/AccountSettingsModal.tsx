@@ -18,13 +18,17 @@ import ProfileForm from "@/components/ui/profileForm/ProfileForm";
 import SecurityForm from "@/components/ui/securityForm/SecurityForm";
 import DangerZoneForm from "@/components/ui/dangerZoneForm/DangerZoneForm";
 
-interface Props {
+interface AccountSettingsModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     userData: IUser | undefined;
 }
 
-export function AccountSettingsModal({ open, onOpenChange, userData }: Props) {
+export function AccountSettingsModal({
+    open,
+    onOpenChange,
+    userData,
+}: Readonly<AccountSettingsModalProps>) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="gap-0 w-11/12 md:max-w-2xl p-0 rounded-md z-[1000]">

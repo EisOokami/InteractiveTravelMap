@@ -1,6 +1,10 @@
 @use "./variables.scss" as *;
 @use "./mixins.scss" as *;
 
+.trip-day-routing-control {
+    display: none !important;
+}
+
 .leaflet-routing-container,
 .leaflet-routing-error {
     box-sizing: border-box;

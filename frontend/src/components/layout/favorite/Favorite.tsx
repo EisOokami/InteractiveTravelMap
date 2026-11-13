@@ -1,6 +1,5 @@
-import { useSelector } from "react-redux";
+import { useMapStore } from "@/libs/stores/mapStoreProvider";
 import { Bookmark } from "lucide-react";
-import { RootState } from "@/libs/redux/store";
 import { IUser } from "@/interfaces/interfaces";
 
 import PlaceCard from "@/components/ui/placeCard/PlaceCard";
@@ -10,9 +9,7 @@ interface FavoriteProps {
 }
 
 export default function Favorite({ userData }: Readonly<FavoriteProps>) {
-    const favorites = useSelector(
-        (state: RootState) => state.favorites.favorites,
-    );
+    const favorites = useMapStore((state) => state.favorites.favorites);
 
     return (
         <aside className="absolute flex flex-col w-screen md:w-[400px] lg:w-[500px] xl:w-[600px] h-full bg-white dark:bg-dark-mode-black z-[1002] transition-colors">

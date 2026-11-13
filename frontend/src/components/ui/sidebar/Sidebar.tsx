@@ -1,21 +1,9 @@
 "use client";
 
+import { useMapStore } from "@/libs/stores/mapStoreProvider";
 import { Bookmark, Map, Route, Search } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { usePathname, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { RootState } from "@/libs/redux/store";
-import {
-    setIsPlaceDetailsLoading,
-    setOpenFavorite,
-    setOpenPlaceDetails,
-    setOpenSearch,
-    setOpenTrip,
-} from "@/libs/redux/features/ui/uiSlice";
-import {
-    setZoomLocationX,
-    setZoomLocationY,
-} from "@/libs/redux/features/map/mapSlice";
 import { IUser } from "@/interfaces/interfaces";
 import styles from "./Sidebar.module.scss";
 
@@ -31,79 +19,91 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ userData }: Readonly<SidebarProps>) {
-    const openSearch = useSelector((state: RootState) => state.ui.openSearch);
-    const openTrip = useSelector((state: RootState) => state.ui.openTrip);
-    const openFavorite = useSelector(
-        (state: RootState) => state.ui.openFavorite,
+    const setIsPlaceDetailsLoading = useMapStore(
+        (state) => state.setIsPlaceDetailsLoading,
     );
-    const openPlaceDetails = useSelector(
-        (state: RootState) => state.ui.openPlaceDetails,
+    const setOpenFavorite = useMapStore((state) => state.setOpenFavorite);
+    const setOpenPlaceDetails = useMapStore(
+        (state) => state.setOpenPlaceDetails,
     );
-    const dispatch = useDispatch();
+    const setOpenSearch = useMapStore((state) => state.setOpenSearch);
+    const setOpenTrip = useMapStore((state) => state.setOpenTrip);
+    const setZoomLocationX = useMapStore((state) => state.setZoomLocationX);
+    const setZoomLocationY = useMapStore((state) => state.setZoomLocationY);
+    const openSearch = useMapStore((state) => state.ui.openSearch);
+    const openTrip = useMapStore((state) => state.ui.openTrip);
+    const openFavorite = useMapStore((state) => state.ui.openFavorite);
+    const openPlaceDetails = useMapStore((state) => state.ui.openPlaceDetails);
     const pathname = usePathname();
     const router = useRouter();
 
     const handleOpenMap = () => {
-        dispatch(setOpenSearch(false));
-        dispatch(setOpenPlaceDetails(false));
-        dispatch(setOpenTrip(false));
-        dispatch(setOpenFavorite(false));
-        dispatch(setZoomLocationX(52.083));
-        dispatch(setZoomLocationY(19.375));
-        dispatch(setIsPlaceDetailsLoading(true));
+        setOpenSearch(false);
+        setOpenPlaceDetails(false);
+        setOpenTrip(false);
+        setOpenFavorite(false);
+        setZoomLocationX(52.083);
+        setZoomLocationY(19.375);
+        setIsPlaceDetailsLoading(true);
+
         router.push(pathname);
     };
 
     const handleOpenSearch = () => {
         if (openSearch && openPlaceDetails) {
-            dispatch(setOpenPlaceDetails(false));
-            dispatch(setZoomLocationX(52.083));
-            dispatch(setZoomLocationY(19.375));
-            dispatch(setIsPlaceDetailsLoading(true));
+            setOpenPlaceDetails(false);
+            setZoomLocationX(52.083);
+            setZoomLocationY(19.375);
+            setIsPlaceDetailsLoading(true);
+
             router.push(pathname);
 
             return;
         }
 
-        dispatch(setOpenSearch(!openSearch));
-        dispatch(setOpenPlaceDetails(false));
-        dispatch(setOpenTrip(false));
-        dispatch(setOpenFavorite(false));
-        dispatch(setZoomLocationX(52.083));
-        dispatch(setZoomLocationY(19.375));
-        dispatch(setIsPlaceDetailsLoading(true));
+        setOpenSearch(!openSearch);
+        setOpenPlaceDetails(false);
+        setOpenTrip(false);
+        setOpenFavorite(false);
+        setZoomLocationX(52.083);
+        setZoomLocationY(19.375);
+        setIsPlaceDetailsLoading(true);
+
         router.push(pathname);
     };
 
     const handleOpenTrip = () => {
-        dispatch(setOpenSearch(false));
-        dispatch(setOpenPlaceDetails(false));
-        dispatch(setOpenTrip(!openTrip));
-        dispatch(setOpenFavorite(false));
-        dispatch(setZoomLocationX(52.083));
-        dispatch(setZoomLocationY(19.375));
-        dispatch(setIsPlaceDetailsLoading(true));
+        setOpenSearch(false);
+        setOpenPlaceDetails(false);
+        setOpenTrip(!openTrip);
+        setOpenFavorite(false);
+        setZoomLocationX(52.083);
+        setZoomLocationY(19.375);
+        setIsPlaceDetailsLoading(true);
+
         router.push(pathname);
     };
 
     const handleOpenFavorite = () => {
         if (openFavorite && openPlaceDetails) {
-            dispatch(setOpenPlaceDetails(false));
-            dispatch(setZoomLocationX(52.083));
-            dispatch(setZoomLocationY(19.375));
-            dispatch(setIsPlaceDetailsLoading(true));
+            setOpenPlaceDetails(false);
+            setZoomLocationX(52.083);
+            setZoomLocationY(19.375);
+            setIsPlaceDetailsLoading(true);
+
             router.push(pathname);
 
             return;
         }
 
-        dispatch(setOpenSearch(false));
-        dispatch(setOpenPlaceDetails(false));
-        dispatch(setOpenTrip(false));
-        dispatch(setOpenFavorite(!openFavorite));
-        dispatch(setZoomLocationX(52.083));
-        dispatch(setZoomLocationY(19.375));
-        dispatch(setIsPlaceDetailsLoading(true));
+        setOpenSearch(false);
+        setOpenPlaceDetails(false);
+        setOpenTrip(false);
+        setOpenFavorite(!openFavorite);
+        setZoomLocationX(52.083);
+        setZoomLocationY(19.375);
+        setIsPlaceDetailsLoading(true);
+
         router.push(pathname);
     };
 

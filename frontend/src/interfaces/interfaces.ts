@@ -1,3 +1,5 @@
+import { TripsStore } from "./store";
+
 export interface IDate {
     id: number;
     date: string;
@@ -5,7 +7,7 @@ export interface IDate {
 }
 
 export interface IDateStorage {
-    [key: number]: IDate[];
+    [key: number]: IDate[] | undefined;
 }
 
 export interface IPlace {
@@ -14,8 +16,9 @@ export interface IPlace {
     location: string;
     category: string;
     img: string;
-    x: number;
-    y: number;
+    // MySQL DECIMAL values can arrive as strings; normalize before map use.
+    x: number | string | null;
+    y: number | string | null;
     time: number;
     address: string;
     average_visit_duration: number;
@@ -38,20 +41,6 @@ export interface IPlace {
         tue: string;
         wed: string;
     };
-}
-
-export interface ISortedDate {
-    date: string;
-    places: IPlace[];
-}
-
-export interface IRouteSegment {
-    distance: string;
-    time: string;
-}
-
-export interface IDateMap {
-    [key: string]: IPlace[];
 }
 
 export interface IUserData {
@@ -90,4 +79,23 @@ export interface IResetPassword {
     token: string;
     password: string;
     id: number;
+}
+
+export interface RouteMetrics {
+    totalDistance: number;
+    totalTime: number;
+}
+
+export interface DayRoutePlan {
+    key: string;
+    points: [number, number][];
+    issues: string[];
+    stopCount: number;
+}
+
+export interface AnalysisSession {
+    dispose: () => void;
+    apply: (
+        ids: number[],
+    ) => ReturnType<TripsStore["reorderPlaces"]> | { ok: false; error: string };
 }

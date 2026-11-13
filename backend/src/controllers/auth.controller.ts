@@ -235,12 +235,14 @@ export const forgotPassword = async (
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 console.error(error);
+
                 res.status(500).send({
                     status: "error",
                     message: "Error sending email",
                 });
             } else {
                 console.log(`Email sent: ${info.response}`);
+
                 res.status(200).send({
                     status: "message",
                     message:
@@ -452,8 +454,6 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
         const storedToken = refreshTokenRows[0];
 
         if (storedToken.revoked) {
-            console.log("revoked");
-
             await revokeAllUserTokens(userId);
 
             res.status(401).json({

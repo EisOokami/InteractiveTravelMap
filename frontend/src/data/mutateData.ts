@@ -10,7 +10,7 @@ export async function mutateData(
     path: string,
     payload?: any,
 ): Promise<
-    | { status: "error" | "message" | "success"; message: string }
+    | { status: "error" | "message" | "success"; message: string; data?: any }
     | {
           error: string;
           details: {

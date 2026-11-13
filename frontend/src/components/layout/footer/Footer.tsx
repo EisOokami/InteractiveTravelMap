@@ -50,14 +50,12 @@ export default function Footer() {
                     <Link
                         href="https://github.com/EisOokami"
                         className="p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors group"
-                        aria-label="Github profile link"
                     >
                         <Github className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </Link>
                     <Link
                         href="/"
                         className="p-2 rounded-full bg-muted/50 hover:bg-muted transition-colors group"
-                        aria-label="Linkedin profile link"
                     >
                         <Linkedin className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </Link>

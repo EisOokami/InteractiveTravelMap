@@ -11,8 +11,7 @@ import {
     Wifi,
 } from "lucide-react";
 import { getPlacesData } from "@/data/loaders";
-import { formatDuration } from "@/libs/formatDuration";
-import { formatPrice } from "@/libs/formatPrice";
+import { formatDuration, formatPrice } from "@/libs/utils";
 
 import { Button } from "@/components/ui/shadcn/button";
 

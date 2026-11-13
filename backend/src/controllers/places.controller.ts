@@ -172,7 +172,7 @@ export const getPlaceById = async (req: Request, res: Response) => {
             working_hours: JSON.parse(place.working_hours),
         }));
 
-        res.json(rows[0] || {});
+        res.status(200).json(rows[0] || {});
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Database error" });

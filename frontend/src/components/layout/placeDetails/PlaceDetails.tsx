@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMapStore } from "@/libs/stores/mapStoreProvider";
+import { getLegacyDates } from "@/libs/stores/mapStore";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
 import {
     Accessibility,
     ArrowLeft,
     Banknote,
-    CirclePlus,
     Clock,
     Heart,
     MapPin,
@@ -17,29 +16,13 @@ import {
     Star,
     Wifi,
 } from "lucide-react";
-import { AppDispatch, RootState } from "@/libs/redux/store";
-import {
-    setIsPlaceDetailsLoading,
-    setOpenPlaceDetails,
-} from "@/libs/redux/features/ui/uiSlice";
-import {
-    setZoomLocationX,
-    setZoomLocationY,
-} from "@/libs/redux/features/map/mapSlice";
-import { setRoutingControl } from "@/libs/redux/features/routes/routesSlice";
-import {
-    setDates,
-    updateDatesStorage,
-} from "@/libs/redux/features/dates/datesSlice";
-import { formatPrice } from "@/libs/formatPrice";
-import { formatDuration } from "@/libs/formatDuration";
+import { formatDuration, formatPrice } from "@/libs/utils";
 import { IPlace, IUser } from "@/interfaces/interfaces";
-import { toggleFavoriteAsync } from "@/libs/redux/features/favorites/favoritesSlice";
 
 import InfoCard from "@/components/ui/infoCard/InfoCard";
 import WorkingHours from "@/components/ui/workingHours/WorkingHours";
 import FacilityBadge from "@/components/ui/facilityBadge/FacilityBadge";
-import DateButton from "@/components/ui/dateButton/DateButton";
+import AddPlaceToTrip from "@/components/ui/addPlaceToTrip/AddPlaceToTrip";
 import { Button } from "@/components/ui/shadcn/button";
 import { Badge } from "@/components/ui/shadcn/badge";
 
@@ -52,96 +35,36 @@ export default function PlaceDetails({
     placeDetailsData,
     userData,
 }: Readonly<PlaceDetailsProps>) {
-    const { favorites, loading } = useSelector(
-        (state: RootState) => state.favorites,
+    const setIsPlaceDetailsLoading = useMapStore(
+        (state) => state.setIsPlaceDetailsLoading,
     );
-    const datesStorage = useSelector(
-        (state: RootState) => state.dates.datesStorage,
+    const setOpenPlaceDetails = useMapStore(
+        (state) => state.setOpenPlaceDetails,
     );
-    const routingControl = useSelector(
-        (state: RootState) => state.routes.routingControl,
+    const setZoomLocationX = useMapStore((state) => state.setZoomLocationX);
+    const setZoomLocationY = useMapStore((state) => state.setZoomLocationY);
+    const toggleFavoriteAsync = useMapStore(
+        (state) => state.toggleFavoriteAsync,
     );
-    const dates = useSelector((state: RootState) => state.dates.dates);
-    const dispatch = useDispatch<AppDispatch>();
+    const isFavorite = useMapStore((state) =>
+        state.favorites.favorites.some(
+            (favorite) => favorite.id === placeDetailsData.id,
+        ),
+    );
+    const loading = useMapStore((state) => state.favorites.loading);
+    const legacyDates = useMapStore((state) =>
+        getLegacyDates(state.dates.datesStorage, placeDetailsData.id),
+    );
     const pathname = usePathname();
     const router = useRouter();
 
-    const todayDate = useMemo(() => new Date(), []);
-    const formattedTodayDate = `${
-        todayDate.getDate() < 10
-            ? "0" + todayDate.getDate()
-            : todayDate.getDate()
-    }/${
-        todayDate.getMonth() + 1 < 10
-            ? "0" + (todayDate.getMonth() + 1)
-            : todayDate.getMonth() + 1
-    }`;
-
-    useEffect(() => {
-        dispatch(setDates(datesStorage[placeDetailsData.id] || []));
-    }, [dispatch, datesStorage, placeDetailsData]);
-
-    useEffect(() => {
-        if (!dates.some((dateObj) => dateObj.date === formattedTodayDate)) {
-            const newDates = [
-                ...dates,
-                {
-                    id: dates.length + 1,
-                    date: formattedTodayDate,
-                    active: false,
-                },
-            ];
-
-            dispatch(setDates(newDates));
-            dispatch(
-                updateDatesStorage({
-                    markerId: placeDetailsData.id,
-                    dates: newDates,
-                }),
-            );
-        }
-    }, [dispatch, formattedTodayDate, dates, placeDetailsData]);
-
-    useEffect(() => {
-        const isAnyDateActive = dates.some((d) => d.active);
-
-        if (!isAnyDateActive && routingControl) {
-            routingControl.remove();
-            dispatch(setRoutingControl(null));
-        }
-    }, [dates, routingControl, dispatch]);
-
-    const handleDateStorage = () => {
-        const nextDay = new Date(todayDate);
-        nextDay.setDate(todayDate.getDate() + dates.length);
-        const formattedNextDay = `${
-            nextDay.getDate() < 10 ? "0" + nextDay.getDate() : nextDay.getDate()
-        }/${
-            nextDay.getMonth() + 1 < 10
-                ? "0" + (nextDay.getMonth() + 1)
-                : nextDay.getMonth() + 1
-        }`;
-
-        const newDates = [
-            ...dates,
-            { id: dates.length + 1, date: formattedNextDay, active: false },
-        ];
-
-        dispatch(setDates(newDates));
-        dispatch(
-            updateDatesStorage({
-                markerId: placeDetailsData.id,
-                dates: newDates,
-            }),
-        );
-    };
-
     const handleOpenPlaceDetails = () => {
         router.push(pathname);
-        dispatch(setIsPlaceDetailsLoading(true));
-        dispatch(setOpenPlaceDetails(false));
-        dispatch(setZoomLocationX(52.083));
-        dispatch(setZoomLocationY(19.375));
+
+        setIsPlaceDetailsLoading(true);
+        setOpenPlaceDetails(false);
+        setZoomLocationX(52.083);
+        setZoomLocationY(19.375);
     };
 
     return (
@@ -162,19 +85,12 @@ export default function PlaceDetails({
                             variant="secondary"
                             onClick={() =>
                                 placeDetailsData &&
-                                dispatch(toggleFavoriteAsync(placeDetailsData))
+                                toggleFavoriteAsync(placeDetailsData)
                             }
                             disabled={loading}
                         >
                             <Heart
-                                fill={
-                                    favorites.find(
-                                        (favorite) =>
-                                            favorite.id === placeDetailsData.id,
-                                    )
-                                        ? "#ef4444"
-                                        : "transparent"
-                                }
+                                fill={isFavorite ? "#ef4444" : "transparent"}
                                 className="w-6 h-6"
                             />
                         </Button>
@@ -277,35 +193,26 @@ export default function PlaceDetails({
                         </div>
                     </div>
                     {userData.status === "success" && userData.data && (
-                        <div className="mb-6">
-                            <h2 className="mb-3 text-lg font-bold text-black dark:text-white">
-                                Select Visit Date
-                            </h2>
-                            <div className="grid grid-cols-5 gap-2">
-                                {dates.map((date) => (
-                                    <DateButton
-                                        key={date.id}
-                                        id={date.id}
-                                        active={date.active}
-                                        date={date.date}
-                                        dates={dates}
-                                        placeId={placeDetailsData.id}
-                                        setDates={(value) =>
-                                            dispatch(setDates(value))
-                                        }
-                                        updateDatesStorage={(value) =>
-                                            dispatch(updateDatesStorage(value))
-                                        }
-                                    />
-                                ))}
-                                <Button
-                                    className="w-full h-14 bg-bright-blue hover:bg-blue-700 text-white rounded-lg [&_svg]:size-6 md:[&_svg]:size-7"
-                                    onClick={handleDateStorage}
-                                >
-                                    <CirclePlus />
-                                </Button>
-                            </div>
-                        </div>
+                        <>
+                            <AddPlaceToTrip placeId={placeDetailsData.id} />
+                            {!!legacyDates.length && (
+                                <details className="mb-6 rounded-lg border p-3 text-sm">
+                                    <summary className="cursor-pointer font-medium">
+                                        Previous date assignments
+                                    </summary>
+                                    <ul className="mt-3 grid gap-2">
+                                        {legacyDates.map((date) => (
+                                            <li key={date.id}>
+                                                {date.date} ·{" "}
+                                                {date.active
+                                                    ? "Selected"
+                                                    : "Not selected"}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </details>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
