@@ -1,112 +1,238 @@
-# Interactive Map Trip
+<p align="center">
+    <img src="frontend/public/logo.png" alt="Interactive Travel Map logo" width="96" />
+</p>
 
-Welcome to the **Interactive Map Trip** project! This application is designed to help tourists find points of interest and plan their routes. The interactive map allows users to search for locations, view details about various attractions, and create customized travel itineraries.
+<h1 align="center">Interactive Travel Map</h1>
 
-## Table of Contents
+<h3 align="center">Find points of interest on an interactive map and plan multi-day trips with daily routes.</h3>
 
--   [Features](#features)
--   [Demo](#demo)
--   [Installation](#installation)
--   [Usage](#usage)
--   [Technologies](#technologies)
--   [Contributing](#contributing)
--   [Authors](#authors)
--   [License](#license)
--   [Acknowledgments](#acknowledgments)
+<p align="center">
+    <a href="https://github.com/EisOokami/InteractiveMapTrip/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/EisOokami/InteractiveMapTrip?style=social" /></a>
+    <a href="https://github.com/EisOokami/InteractiveMapTrip/commits"><img alt="Last commit" src="https://img.shields.io/github/last-commit/EisOokami/InteractiveMapTrip" /></a>
+    <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-brightgreen" /></a>
+    <a href="https://github.com/EisOokami"><img alt="Made by EisOokami" src="https://img.shields.io/badge/made%20by-EisOokami-ff69b4" /></a>
+</p>
 
-## Features
+<h4 align="center">🚧 Status: in active development 🚧</h4>
 
--   **Interactive Map**: View and interact with a map displaying various tourist attractions.
--   **Search Functionality**: Search for attractions by name, location, or category.
--   **Category Filter**: Filter attractions by categories such as parks, shopping centers, restaurants, etc.
--   **Detailed View**: Click on a marker to view detailed information about the attraction.
--   **Date Tracker**: Track and activate dates for visiting attractions.
--   **Trip Planning**: Create and manage your travel itinerary.
+<p align="center">
+    <a href="#about">About</a> •
+    <a href="#features">Features</a> •
+    <a href="#layout">Layout</a> •
+    <a href="#started">Getting Started</a> •
+    <a href="#tech">Tech Stack</a> •
+    <a href="#contribute">Contribute</a> •
+    <a href="#author">Author</a> •
+    <a href="#license">License</a>
+</p>
 
-## Demo
+<p align="center">
+    <a href="https://interactive-map-trip.vercel.app/">📱 Visit this Project</a>
+</p>
 
-Check out the live demo [here](https://interactive-map-trip.vercel.app/).
+<h2 id="about">📖 About</h2>
 
-## Installation
+**Interactive Travel Map** helps tourists find places worth visiting and turn them into a travel plan. Explore attractions on a Leaflet map, read their details, save favorites, then build a multi-day trip and calculate a driving, cycling or walking route for every day.
 
-To get a local copy up and running, follow these simple steps:
+The repository contains two applications:
 
-### Prerequisites
+| Folder      | What it is                                                                             |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `frontend/` | Next.js web app: landing page, map, place details, trip planner, accounts and settings |
+| `backend/`  | Express REST API on MySQL / MariaDB: accounts, places, favorites and the AI assistant  |
 
--   **Node.js**: Ensure you have Node.js installed. You can download it from [nodejs.org](https://nodejs.org/).
+<h3>How the trip planner works</h3>
 
-### Clone the repository
+1. Sign in, explore the map and save places with the heart button.
+2. Open the Trip Planner, create a named trip with a date range and pick a day.
+3. Add saved places, or add a place directly from its details. Reorder stops with the drag handle; keyboard users press Space, use the arrow keys and press Space again to drop.
+4. Choose the transport mode for the day. The map draws the route and shows the day totals and the available trip totals.
+5. Optionally ask the AI Trip Assistant to review the day and apply its suggested order.
 
-```sh
-git clone https://github.com/EisOokami/InteractiveMapTrip
+<h2 id="layout">🎨 Layout</h2>
+
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="frontend/public/map-page2.webp" />
+        <img src="frontend/public/map-page1.webp" alt="Map page with place details" width="900" />
+    </picture>
+</p>
+
+<p align="center">
+    <img src="frontend/public/mobile-map-page1.webp" alt="Mobile map page" width="220" />
+    <img src="frontend/public/mobile-map-page2.webp" alt="Mobile map page" width="220" />
+</p>
+
+<h2 id="started">🚀 Getting Started</h2>
+
+<h3>Prerequisites</h3>
+
+- [Git](https://git-scm.com)
+- [Node.js](https://nodejs.org/) 22 or newer with npm
+- [MySQL](https://www.mysql.com/) or [MariaDB](https://mariadb.org/) with the application data. The base tables (users, places, favorites) and the place data are not included in this repository.
+- A [Mapbox](https://www.mapbox.com/) public token for route calculations. The optional Thunderforest layer needs its own [API key](https://www.thunderforest.com/).
+- Optional: a Google OAuth client (Google sign-in), an SMTP mailbox (verification emails), a [Gemini API key](https://ai.google.dev/) (AI Trip Assistant) and [Docker](https://www.docker.com/) (log monitoring)
+
+<h3>Cloning</h3>
+
+```bash
+git clone https://github.com/EisOokami/InteractiveMapTrip.git
 cd InteractiveMapTrip
 ```
 
-### Install dependencies
+<h3>Installing dependencies</h3>
 
-```sh
-npm install
+Each application has its own `package.json`; the root one only holds release tooling.
+
+```bash
+npm --prefix backend install
+npm --prefix frontend install
 ```
 
-### Start the development server
+<h3>Environment variables</h3>
 
-```sh
-npm run dev
+**Backend** (`backend/.env`)
+
+| Variable                                                          | Description                                                                                                                                        |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`, `PORT`                                                | Runtime mode and API port (`3001`)                                                                                                                 |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`     | Database connection (default database: `interactive_travel_map`)                                                                                   |
+| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`                         | Secrets for signing access and refresh tokens                                                                                                      |
+| `CSRF_SECRET`                                                     | Secret for CSRF tokens                                                                                                                             |
+| `MFA_ENCRYPTION_KEY`                                              | Encrypts stored 2FA secrets, at least 32 characters                                                                                                |
+| `LOGIN_CODE_SECRET`, `DELETION_CODE_SECRET`                       | Sign the email codes for login and account deletion                                                                                                |
+| `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASSWORD`                   | Mailbox used by Nodemailer                                                                                                                         |
+| `WEB_URL`                                                         | Frontend URL used in email links, e.g. `http://localhost:3000`                                                                                     |
+| `HOSTS`, `CORS_URLS`                                              | Comma-separated allowed hosts and origins                                                                                                          |
+| `TRUST_PROXY`                                                     | Reverse proxies in front of the API that may set `X-Forwarded-For` (addresses, subnets or `loopback`, `uniquelocal`). Empty: the header is ignored |
+| `BFF_SHARED_SECRET`                                               | Same value as in the frontend, at least 32 characters. The API takes the visitor address from the Next.js server only with this secret             |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Google sign-in. The redirect URI is `<API URL>/auth/google/callback`                                                                               |
+| `TERMS_VERSION`, `PRIVACY_VERSION`                                | Current versions of `/terms` and `/privacy`. After a bump, users accept them at the next sign-in                                                   |
+| `LOG_LEVEL`, `LOG_FILE`                                           | Log level and optional log file (set `LOG_FILE=./logs/app.log` to feed Grafana)                                                                    |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`                                  | AI Trip Assistant.                                                                                                                                 |
+
+**Frontend** (`frontend/.env`)
+
+```dotenv
+NEXT_PUBLIC_DB_URL=http://localhost:3001
+NEXT_PUBLIC_MAPBOX_API_KEY=your_public_mapbox_token
+NEXT_PUBLIC_THUNDERFOREST_API_KEY=your_thunderforest_key
+HOST=localhost
+BFF_SHARED_SECRET=same_value_as_in_backend_env
+CLIENT_IP_HEADER=
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+<h3>Preparing the database</h3>
 
-## Usage
+```bash
+mariadb -u root -p interactive_travel_map < backend/database/database.sql
+```
 
-1. **Explore the Map**: Use the map to explore various tourist attractions.
-2. **Search**: Utilize the search bar to find specific attractions by name or location.
-3. **Filter by Category**: Use the category filter to narrow down your search.
-4. **View Details**: Click on a map marker to view more details about an attraction.
-5. **Plan Your Trip**: Add attractions to your trip plan and manage your itinerary with date tracking.
+<h3>Starting</h3>
 
-## Technologies
+Start the API in one terminal:
 
--   **React**: JavaScript library for building user interfaces.
--   **Vite**: Next-generation front-end tooling. It's fast, opinionated, and feature-rich. Vite serves your code via native ES module imports during development and bundles it with Rollup for production.
--   **Leaflet**: Open-source JavaScript library for mobile-friendly interactive maps.
--   **React-Leaflet**: React components for Leaflet maps.
--   **SCSS**: CSS preprocessor for easier and more efficient styling.
--   **Icons**: Various icons from React Icons library.
--   **TailwindCSS**: Streamlines web development by providing a set of pre-designed utility classes
--   **Framer Motion**: A powerful animation library for React, offering a simple yet flexible API to create smooth and complex animations.
--   **Leaflet Routing Machine**: A routing control for Leaflet that enables easy integration of route planning and navigation functionality into Leaflet maps.
+```bash
+npm --prefix backend run dev        # or: npm --prefix backend run build && npm --prefix backend start
+```
 
-## Contributing
+Start the web app in a second terminal:
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+```bash
+npm --prefix frontend run dev
+```
 
-### Steps to Contribute
+Open [http://localhost:3000/map](http://localhost:3000/map).
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/YourFeature`)
-3. Commit your Changes (`git commit -m 'Add some YourFeature'`)
-4. Push to the Branch (`git push origin feature/YourFeature`)
-5. Open a Pull Request
+<h3>Log monitoring (optional)</h3>
 
-## Authors
+The API writes JSON logs to stdout. To browse them in Grafana, set `LOG_FILE=./logs/app.log` in `backend/.env` and start Loki, Promtail and Grafana:
 
-EisOokami
+```bash
+GRAFANA_ADMIN_PASSWORD=change-me docker compose -f docker-compose.logging.yml up -d
+```
 
-## License
+Grafana opens on [http://localhost:3200](http://localhost:3200) with the "Express Backend - Security Audit" dashboard.
 
-Distributed under the **MIT License**. See `LICENSE` for more information.
+<h3>Useful scripts</h3>
 
-## Acknowledgments
+| Where       | Command                       | What it does                       |
+| ----------- | ----------------------------- | ---------------------------------- |
+| `backend/`  | `npm run dev`                 | Start the API with hot reload      |
+| `backend/`  | `npm run build` / `npm start` | Compile TypeScript and run `dist/` |
+| `frontend/` | `npm run dev`                 | Start Next.js in development mode  |
+| `frontend/` | `npm run build` / `npm start` | Production build and server        |
+| `frontend/` | `npm run lint`                | Run ESLint                         |
 
-Inspiration, code snippets, etc.
+<h2 id="tech">💻 Tech Stack</h2>
 
--   [awesome-readme](https://github.com/matiassingers/awesome-readme)
--   [Najciekawsze Na Wsi](https://mapa.najciekawszenawsi.pl/#/map/new_trip)
--   [OpenStreetMap](https://www.openstreetmap.org/#map=7/51.968/18.660)
--   [mapbox](https://www.mapbox.com/)
--   [Leaflet Routing Machine](https://www.liedman.net/leaflet-routing-machine/)
--   [React Leaflet](https://react-leaflet.js.org/)
+#### **Frontend** ([Next.js 16](https://nextjs.org/) + [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/))
 
----
+- **[Leaflet](https://leafletjs.com/)** and **[React Leaflet](https://react-leaflet.js.org/)** for the map
+- **[Leaflet Routing Machine](https://www.liedman.net/leaflet-routing-machine/)** with **[Mapbox](https://www.mapbox.com/)** routing
+- **[Zustand](https://zustand.docs.pmnd.rs/)** for client state
+- **[dnd kit](https://dndkit.com/)** for drag-and-drop
+- **[Tailwind CSS](https://tailwindcss.com/)**, **[SCSS](https://sass-lang.com/)**, **[shadcn/ui](https://ui.shadcn.com/)** and **[Radix UI](https://www.radix-ui.com/)**
+- **[Framer Motion](https://motion.dev/)** for animations
+- **[Zod](https://zod.dev/)** for validation
+- **[next-themes](https://github.com/pacocoursey/next-themes)**, **[Sonner](https://sonner.emilkowal.ski/)**, **[date-fns](https://date-fns.org/)** and **[Lucide](https://lucide.dev/)** icons
 
-Thank you for visiting the Interactive Map Trip project! I hope this tool helps you have an amazing travel experience. If you have any questions or feedback, please feel free to open an issue or contribute to the project. Happy travels!
+> See [frontend/package.json](./frontend/package.json)
+
+#### **Backend** ([Node.js](https://nodejs.org/) + [Express 5](https://expressjs.com/) + [TypeScript](https://www.typescriptlang.org/))
+
+- **[MySQL / MariaDB](https://mariadb.org/)** through **[mysql2](https://github.com/sidorares/node-mysql2)**
+- **[jose](https://github.com/panva/jose)** (JWT), **[bcryptjs](https://github.com/dcodeIO/bcrypt.js)**, **[otplib](https://github.com/yeojz/otplib)** and **[qrcode](https://github.com/soldair/node-qrcode)** for authentication and 2FA
+- **[Google Auth Library](https://github.com/googleapis/google-auth-library-nodejs)** for Google sign-in
+- **[Google Gen AI SDK](https://github.com/googleapis/js-genai)** for the AI Trip Assistant
+- **[Nodemailer](https://nodemailer.com/)** for emails
+- **[Helmet](https://helmetjs.github.io/)**, **[express-rate-limit](https://github.com/express-rate-limit/express-rate-limit)**, **[hpp](https://github.com/analog-nico/hpp)**, **[express-xss-sanitizer](https://github.com/AhmedAdelFahim/express-xss-sanitizer)**, **[host-validation](https://github.com/brannondorsey/host-validation)**
+- **[Pino](https://getpino.io/)** for logging
+- **[Zod](https://zod.dev/)** for validation
+
+> See [backend/package.json](./backend/package.json)
+
+#### **Utils**
+
+- Maps: **[OpenStreetMap](https://www.openstreetmap.org/)**, **[Thunderforest](https://www.thunderforest.com/)**
+- Routing: **[Mapbox Directions](https://docs.mapbox.com/api/navigation/directions/)**
+- Monitoring: **[Grafana](https://grafana.com/)**, **[Loki](https://grafana.com/oss/loki/)**, **[Promtail](https://grafana.com/docs/loki/latest/send-data/promtail/)**
+- Releases: **[semantic-release](https://semantic-release.gitbook.io/)**
+
+<h2 id="contribute">📫 Contribute</h2>
+
+1. Fork the project and clone your fork
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/) (`feat: ...`, `fix: ...`); releases are generated from them
+4. Push the branch: `git push origin feature/your-feature`
+5. Open a Pull Request that explains the problem or feature, and add screenshots for visual changes
+
+The repository includes templates for [bug reports, feature requests](./.github/ISSUE_TEMPLATE) and [pull requests](./.github/PULL_REQUEST_TEMPLATE.md).
+
+<h3>Documentation that might help</h3>
+
+[📝 How to create a Pull Request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+
+[💾 Commit pattern](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716)
+
+<h3>Acknowledgments</h3>
+
+- [Najciekawsze Na Wsi](https://mapa.najciekawszenawsi.pl/#/map/new_trip) for the inspiration
+- [awesome-readme](https://github.com/matiassingers/awesome-readme)
+
+<h2 id="author">👤 Author</h2>
+
+<table>
+    <tr>
+        <td align="center">
+            <a href="https://github.com/EisOokami">
+                <img src="https://github.com/EisOokami.png" width="100" alt="EisOokami" /><br />
+                <sub><b>EisOokami</b></sub>
+            </a>
+        </td>
+    </tr>
+</table>
+
+<h2 id="license">📝 License</h2>
+
+This project is distributed under the [MIT License](./LICENSE).
