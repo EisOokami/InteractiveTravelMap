@@ -84,6 +84,8 @@ const sensitiveFields = [
     "headers",
     "credentials",
     "encryptionKey",
+    "apiKey",
+    "geminiApiKey",
 ];
 
 export const logger = pino(
@@ -111,11 +113,25 @@ export const logger = pino(
             },
         },
     },
-    pino.destination({
-        dest: process.env.LOG_FILE || 1,
-        sync: false,
-        mkdir: true,
-    }),
+    process.env.LOG_FILE
+        ? pino.transport({
+              target: "pino-roll",
+              options: {
+                  file: process.env.LOG_FILE.replace(/\.log$/, ""),
+                  extension: ".log",
+                  frequency: "daily",
+                  dateFormat: "yyyy-MM-dd",
+                  limit: {
+                      count: 30,
+                      removeOtherLogFiles: true,
+                  },
+                  mkdir: true,
+              },
+          })
+        : pino.destination({
+              dest: 1,
+              sync: false,
+          }),
 );
 
 export const httpLoggingOptions: Options<Request, Response> = {
