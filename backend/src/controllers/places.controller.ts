@@ -3,6 +3,9 @@ import { Request, Response } from "express";
 import { IPlace } from "../types/interfaces.js";
 import { getPlacesSchema } from "../validation/validation.js";
 
+const fromJson = <T>(value: T | string): T =>
+    typeof value === "string" ? (JSON.parse(value) as T) : value;
+
 export const getPlaces = async (req: Request, res: Response) => {
     try {
         const validateData = getPlacesSchema.parse(req.query);
@@ -27,6 +30,7 @@ export const getPlaces = async (req: Request, res: Response) => {
             maxPrice < minPrice
         ) {
             return res.status(400).json({
+                status: "error",
                 message: "maxPrice must be greater than or equal to minPrice",
             });
         }
@@ -115,18 +119,24 @@ export const getPlaces = async (req: Request, res: Response) => {
             params,
         );
 
-        const rows = places.map((place) => ({
-            ...place,
-            facilities: {
-                parking: !!JSON.parse(place.facilities).parking,
-                pet_friendly: !!JSON.parse(place.facilities).pet_friendly,
-                wheelchair_access: !!JSON.parse(place.facilities)
-                    .wheelchair_access,
-                wifi: !!JSON.parse(place.facilities).wifi,
-            },
-            price: +place.price,
-            working_hours: JSON.parse(place.working_hours),
-        }));
+        const rows = places.map((place) => {
+            const facilities =
+                typeof place.facilities === "string"
+                    ? JSON.parse(place.facilities)
+                    : place.facilities;
+
+            return {
+                ...place,
+                facilities: {
+                    parking: !!facilities.parking,
+                    pet_friendly: !!facilities.pet_friendly,
+                    wheelchair_access: !!facilities.wheelchair_access,
+                    wifi: !!facilities.wifi,
+                },
+                price: +place.price,
+                working_hours: fromJson(place.working_hours),
+            };
+        });
 
         res.status(200).json(rows);
     } catch (error) {
@@ -139,7 +149,7 @@ export const getPlaces = async (req: Request, res: Response) => {
             "Operation failed",
         );
 
-        res.status(500).json({ message: "Database error" });
+        res.status(500).json({ status: "error", message: "Database error" });
     }
 };
 
@@ -167,23 +177,27 @@ export const getPlaceById = async (req: Request, res: Response) => {
             [id],
         );
 
-        const rows = places.map((place) => ({
-            ...place,
-            facilities: {
-                parking: !!JSON.parse(place.facilities).parking,
-                pet_friendly: !!JSON.parse(place.facilities).pet_friendly,
-                wheelchair_access: !!JSON.parse(place.facilities)
-                    .wheelchair_access,
-                wifi: !!JSON.parse(place.facilities).wifi,
-            },
-            price: +place.price,
-            working_hours: JSON.parse(place.working_hours),
-        }));
+        const rows = places.map((place) => {
+            const facilities =
+                typeof place.facilities === "string"
+                    ? JSON.parse(place.facilities)
+                    : place.facilities;
+
+            return {
+                ...place,
+                facilities: {
+                    parking: !!facilities.parking,
+                    pet_friendly: !!facilities.pet_friendly,
+                    wheelchair_access: !!facilities.wheelchair_access,
+                    wifi: !!facilities.wifi,
+                },
+                price: +place.price,
+                working_hours: fromJson(place.working_hours),
+            };
+        });
 
         res.status(200).json(rows[0] || {});
     } catch (error) {
-        console.log(error);
-
         req.log.error(
             {
                 err: error,
@@ -193,6 +207,6 @@ export const getPlaceById = async (req: Request, res: Response) => {
             "Operation failed",
         );
 
-        res.status(500).json({ message: "Database error" });
+        res.status(500).json({ status: "error", message: "Database error" });
     }
 };

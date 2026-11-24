@@ -31,6 +31,23 @@ export interface IUser extends RowDataPacket {
     email_change_expires_at: string | null;
 }
 
+export interface IFacilities extends RowDataPacket {
+    parking: number;
+    pet_friendly: number;
+    wheelchair_access: number;
+    wifi: number;
+}
+
+export interface IWorkingHours extends RowDataPacket {
+    mon: string;
+    tue: string;
+    wed: string;
+    thu: string;
+    fri: string;
+    sat: string;
+    sun: string;
+}
+
 export interface IPlace extends RowDataPacket {
     id: number;
     name: string;
