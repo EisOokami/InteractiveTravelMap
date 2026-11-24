@@ -1,7 +1,7 @@
 services:
     loki:
         image: grafana/loki:2.9.6
-        container_name: interactive-map-trip-loki
+        container_name: interactive-travel-map-loki
         restart: unless-stopped
         ports:
             - "127.0.0.1:3100:3100"
@@ -23,7 +23,7 @@ services:
 
     promtail:
         image: grafana/promtail:2.9.6
-        container_name: interactive-map-trip-promtail
+        container_name: interactive-travel-map-promtail
         restart: unless-stopped
         volumes:
             - ./backend/promtail/promtail-config.yaml:/etc/promtail/config.yml:ro
@@ -37,7 +37,7 @@ services:
 
     grafana:
         image: grafana/grafana:10.4.2
-        container_name: interactive-map-trip-grafana
+        container_name: interactive-travel-map-grafana
         restart: unless-stopped
         ports:
             - "127.0.0.1:3200:3000"
