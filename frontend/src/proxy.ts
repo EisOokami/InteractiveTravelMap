@@ -115,7 +115,7 @@ export async function proxy(request: NextRequest) {
             script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
             style-src 'self' 'nonce-${nonce}';
             style-src-attr 'self' 'unsafe-inline';
-            img-src 'self' http://127.0.0.1:3001 http://localhost:3001 https://*.tile.openstreetmap.org https://www.google.com https://tile.thunderforest.com blob: data:;
+            img-src 'self' http://127.0.0.1:3001 http://localhost:3001 https://*.tile.openstreetmap.org https://api.mapbox.com https://tile.thunderforest.com blob: data:;
             connect-src 'self' http://127.0.0.1:3001 http://localhost:3001 https://api.mapbox.com;
             font-src 'self';
             object-src 'none';

@@ -20,6 +20,7 @@ import { IPlace } from "@/interfaces/interfaces";
 import "leaflet/dist/leaflet.css";
 import "./Map.scss";
 import TripDayRoute from "./TripDayRoute";
+import MapboxLogo from "./MapboxLogo";
 
 import { Button } from "@/components/ui/shadcn/button";
 import { normalizeCoordinates } from "@/libs/utils";
@@ -139,19 +140,20 @@ export default function Map({ places, mapRef }: Readonly<MapProps>) {
                 <LayersControl.BaseLayer name="Satellite">
                     <LayerGroup>
                         <TileLayer
-                            attribution="&copy; <a href='https://www.google.com/maps'>Google Maps Satellite</a>"
-                            url="https://www.google.com/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+                            attribution="&copy; <a href='https://www.mapbox.com/about/maps/' target='_blank' rel='noopener noreferrer'>Mapbox</a> &copy; <a href='https://www.openstreetmap.org/copyright' target='_blank' rel='noopener noreferrer'>OpenStreetMap</a> &copy; <a href='https://www.maxar.com/' target='_blank' rel='noopener noreferrer'>Maxar</a> <strong><a href='https://apps.mapbox.com/feedback/' target='_blank' rel='noopener noreferrer'>Improve this map</a></strong>"
+                            url={`https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}{r}.jpg90?access_token=${process.env.NEXT_PUBLIC_MAPBOX_API_KEY}`}
                         />
                     </LayerGroup>
                 </LayersControl.BaseLayer>
                 <LayersControl.BaseLayer name="Circle">
                     <TileLayer
                         className="dark-leaflet-layer"
-                        attribution="&copy; <a href='https://www.thunderforest.com/'>Thunderforest</a>"
+                        attribution="Maps &copy; <a href='https://www.thunderforest.com/'>Thunderforest</a>, Data &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>"
                         url={`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${process.env.NEXT_PUBLIC_THUNDERFOREST_API_KEY}`}
                     />
                 </LayersControl.BaseLayer>
             </LayersControl>
+            <MapboxLogo layerName="Satellite" />
             {markerPlaces.map(({ place, coordinates }) => (
                 <Marker
                     key={place.id}
