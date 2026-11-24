@@ -3,13 +3,21 @@ name: Test
 on: push
 
 jobs:
-    lint:
-        name: Run tests
+    build:
+        name: Build backend and frontend
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-            - run: npm ci
-            - run: npm run build --if-present
+
+            - name: Build backend
+              working-directory: backend
+              run: npm ci && npm run build
+
+            - name: Build frontend
+              working-directory: frontend
+              env:
+                  NEXT_PUBLIC_DB_URL: http://127.0.0.1:3001
+              run: npm ci && npm run build
