@@ -15,6 +15,7 @@ export interface IUser extends RowDataPacket {
     google_id: string | null;
     auth_provider: "local" | "google";
     reset_token: string | null;
+    reset_token_expires_at: string | null;
     mfa_enabled: boolean;
     mfa_secret: Buffer | null;
     mfa_enabled_at: string | null;
@@ -61,10 +62,10 @@ export interface IPlace extends RowDataPacket {
     average_visit_duration: number;
     description_short: string;
     description_full: string;
-    facilities: string;
+    facilities: IFacilities;
     price: string;
     rating: number;
-    working_hours: string;
+    working_hours: IWorkingHours;
 }
 
 export interface IFavorite extends RowDataPacket {
@@ -126,7 +127,6 @@ export interface IGoogleProfile {
     googleId: string;
     email: string;
     emailVerified: boolean;
-    name: string;
 }
 
 export interface IAccountDeletionSession extends RowDataPacket {

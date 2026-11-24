@@ -16,7 +16,7 @@ const client = new OAuth2Client(
 export function getGoogleAuthUrl(state: string): string {
     return client.generateAuthUrl({
         access_type: "online",
-        scope: ["openid", "email", "profile"],
+        scope: ["openid", "email"],
         state,
         prompt: "select_account",
     });
@@ -46,23 +46,14 @@ export async function exchangeCodeForProfile(
         googleId: payload.sub,
         email: payload.email,
         emailVerified: payload.email_verified ?? false,
-        name: payload.name ?? payload.given_name ?? "",
     };
 }
 
-async function createUsername(profile: {
-    email: string;
-    name: string;
-}): Promise<string> {
-    const cleanName = profile.name.replace(/[<>]/g, "").trim();
-    const emailName = (profile.email.split("@")[0] ?? "").replace(/[<>]/g, "");
-    const base = (cleanName.length >= 2 ? cleanName : emailName)
-        .slice(0, 40)
-        .padEnd(2, "_");
+async function createUsername(): Promise<string> {
+    const base = "traveler";
 
     for (let attempt = 0; attempt < 5; attempt++) {
-        const username =
-            attempt === 0 ? base : `${base}${crypto.randomInt(1000, 10000)}`;
+        const username = `${base}${crypto.randomInt(100000, 1000000)}`;
 
         const [existingUsernameUser] = await pool.execute<
             (Pick<IUser, "id"> & RowDataPacket)[]
@@ -76,11 +67,25 @@ async function createUsername(profile: {
     return `${base}${crypto.randomBytes(4).toString("hex")}`;
 }
 
-export async function findOrCreateGoogleUser(profile: {
-    googleId: string;
-    email: string;
-    name: string;
-}): Promise<number> {
+export function isTermsVersionCurrent(
+    user: Pick<IUser, "terms_version" | "privacy_version">,
+): boolean {
+    return (
+        user.terms_version === process.env.TERMS_VERSION &&
+        user.privacy_version === process.env.PRIVACY_VERSION
+    );
+}
+
+export async function findOrCreateGoogleUser(
+    profile: {
+        googleId: string;
+        email: string;
+    },
+    consent: {
+        termsAccepted: boolean;
+        ageConfirmed: boolean;
+    },
+): Promise<number | null> {
     const [byGoogleId] = await pool.execute<
         (Pick<IUser, "id"> & RowDataPacket)[]
     >(`SELECT id FROM users WHERE google_id = ?`, [profile.googleId]);
@@ -108,6 +113,10 @@ export async function findOrCreateGoogleUser(profile: {
         return byEmail[0].id;
     }
 
+    if (!consent.termsAccepted || !consent.ageConfirmed) {
+        return null;
+    }
+
     if (byEmail[0]) {
         const [result] = await pool.execute<ResultSetHeader>(
             `
@@ -116,12 +125,24 @@ export async function findOrCreateGoogleUser(profile: {
                     auth_provider = 'google',
                     password = NULL,
                     reset_token = NULL,
+                    reset_token_expires_at = NULL,
                     is_verified = TRUE,
                     verification_token = NULL,
-                    verification_token_expires = NULL
+                    verification_token_expires = NULL,
+                    terms_accepted_at = ?,
+                    terms_version = ?,
+                    privacy_accepted_at = ?,
+                    privacy_version = ?
                 WHERE id = ? AND is_verified = FALSE
             `,
-            [profile.googleId, byEmail[0].id],
+            [
+                profile.googleId,
+                new Date(),
+                process.env.TERMS_VERSION!,
+                new Date(),
+                process.env.PRIVACY_VERSION!,
+                byEmail[0].id,
+            ],
         );
 
         if (result.affectedRows === 0) {
@@ -131,7 +152,7 @@ export async function findOrCreateGoogleUser(profile: {
         return byEmail[0].id;
     }
 
-    const username = await createUsername(profile);
+    const username = await createUsername();
 
     const [result] = await pool.execute<ResultSetHeader>(
         `

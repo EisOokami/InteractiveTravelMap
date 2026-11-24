@@ -30,6 +30,7 @@ import {
     exchangeCodeForProfile,
     findOrCreateGoogleUser,
     getGoogleAuthUrl,
+    isTermsVersionCurrent,
 } from "../utils/googleAuth.js";
 import { generateRawToken, hashToken } from "../utils/mfa.js";
 import { emailTemplate } from "../utils/emailTemplate.js";
@@ -1252,7 +1253,12 @@ export const forgotPassword = async (
         const hash = await bcrypt.hash(token, salt);
 
         const [result] = await pool.execute<ResultSetHeader>(
-            "UPDATE users SET reset_token = ? WHERE id = ?",
+            `
+                UPDATE users 
+                SET reset_token = ?, 
+                    reset_token_expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR) 
+                WHERE id = ?
+            `,
             [hash, user[0].id],
         );
 
@@ -1363,7 +1369,12 @@ export const resetPassword = async (
             return;
         }
 
-        if (!existingIdUser[0].reset_token) {
+        if (
+            !existingIdUser[0].reset_token ||
+            !existingIdUser[0].reset_token_expires_at ||
+            new Date(existingIdUser[0].reset_token_expires_at).getTime() <=
+                Date.now()
+        ) {
             res.status(401).json({
                 status: "error",
                 message: "Invalid or expired password reset token",
@@ -1399,7 +1410,15 @@ export const resetPassword = async (
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const [updatePasswordQuery] = await pool.execute<ResultSetHeader>(
-            "UPDATE users SET password = ?, reset_token = NULL WHERE id = ? AND reset_token = ?",
+            `
+                UPDATE users 
+                SET password = ?, 
+                    reset_token = NULL, 
+                    reset_token_expires_at = NULL 
+                WHERE id = ? 
+                    AND reset_token = ? 
+                    AND reset_token_expires_at > NOW()
+            `,
             [hashedPassword, id, existingIdUser[0].reset_token],
         );
 
@@ -1772,6 +1791,23 @@ export function googleAuthStart(req: Request, res: Response) {
         maxAge: 5 * 60 * 1000,
     });
 
+    if (req.query.acceptTerms === "true") {
+        res.cookie(
+            "google_oauth_consent",
+            `${process.env.TERMS_VERSION}|${process.env.PRIVACY_VERSION}|${req.query.confirmAge === "true" ? 1 : 0}`,
+            {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 5 * 60 * 1000,
+            },
+        );
+    }
+
+    if (req.query.acceptTerms !== "true") {
+        res.clearCookie("google_oauth_consent");
+    }
+
     const url = getGoogleAuthUrl(state);
 
     res.redirect(url);
@@ -1781,8 +1817,18 @@ export async function googleAuthCallback(req: Request, res: Response) {
     try {
         const { code, state } = req.query;
         const savedState = req.cookies?.google_oauth_state;
+        const savedConsent: unknown = req.cookies?.google_oauth_consent;
 
         res.clearCookie("google_oauth_state");
+        res.clearCookie("google_oauth_consent");
+
+        const consentPrefix = `${process.env.TERMS_VERSION}|${process.env.PRIVACY_VERSION}`;
+        const consent = {
+            termsAccepted:
+                savedConsent === `${consentPrefix}|0` ||
+                savedConsent === `${consentPrefix}|1`,
+            ageConfirmed: savedConsent === `${consentPrefix}|1`,
+        };
 
         if (
             !code ||
@@ -1817,7 +1863,83 @@ export async function googleAuthCallback(req: Request, res: Response) {
             return;
         }
 
-        const userId = await findOrCreateGoogleUser(profile);
+        const userId = await findOrCreateGoogleUser(profile, consent);
+
+        if (userId === null) {
+            req.log.warn(
+                {
+                    audit: true,
+                    event: "auth.oauth_rejected",
+                    reason: "terms_not_accepted",
+                },
+                "OAuth callback rejected",
+            );
+
+            res.redirect(`${process.env.WEB_URL}/signUp?error=terms_required`);
+
+            return;
+        }
+
+        const [user] = await pool.execute<IUser[]>(
+            "SELECT terms_version, privacy_version FROM users WHERE id = ?",
+            [userId],
+        );
+
+        if (!user.length) {
+            res.redirect(`${process.env.WEB_URL}/signIn?error=oauth_failed`);
+
+            return;
+        }
+
+        if (!isTermsVersionCurrent(user[0])) {
+            if (!consent.termsAccepted) {
+                req.log.warn(
+                    {
+                        audit: true,
+                        event: "auth.login_failed",
+                        operation: "googleAuthCallback",
+                        reason: "terms_outdated",
+                    },
+                    "Authentication rejected",
+                );
+
+                res.redirect(
+                    `${process.env.WEB_URL}/signIn?error=terms_outdated`,
+                );
+
+                return;
+            }
+
+            await pool.execute<ResultSetHeader>(
+                `
+                    UPDATE users
+                    SET terms_accepted_at = ?,
+                        terms_version = ?,
+                        privacy_accepted_at = ?,
+                        privacy_version = ?
+                    WHERE id = ?
+                `,
+                [
+                    new Date(),
+                    process.env.TERMS_VERSION!,
+                    new Date(),
+                    process.env.PRIVACY_VERSION!,
+                    userId,
+                ],
+            );
+
+            req.log.info(
+                {
+                    event: "auth.terms_accepted",
+                    audit: true,
+                    userId,
+                    termsVersion: process.env.TERMS_VERSION,
+                    privacyVersion: process.env.PRIVACY_VERSION,
+                },
+                "Operation completed",
+            );
+        }
+
         const exchangeCode = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 60_000);
 
@@ -1902,6 +2024,48 @@ export async function googleAuthExchange(req: Request, res: Response) {
         }
 
         const userId = record.user_id;
+
+        const [mfaUsers] = await pool.execute<
+            (Pick<IUser, "mfa_enabled"> & RowDataPacket)[]
+        >(`SELECT mfa_enabled FROM users WHERE id = ?`, [userId]);
+
+        if (mfaUsers[0]?.mfa_enabled) {
+            const rawTempToken = generateRawToken();
+
+            await pool.execute<ResultSetHeader>(
+                `
+                    INSERT INTO mfa_login_sessions
+                        (token_hash, user_id, ip_address, user_agent, expires_at)
+                    VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE))
+                `,
+                [
+                    hashToken(rawTempToken),
+                    userId,
+                    req.ip ?? null,
+                    req.headers["user-agent"] ?? null,
+                ],
+            );
+
+            req.log.debug(
+                {
+                    event: "auth.challenge_created",
+                    userId,
+                    method: "totp",
+                    via: "google",
+                },
+                "Login challenge created",
+            );
+
+            res.status(200).json({
+                status: "success",
+                message: "MFA verification required",
+                requiresMfa: true,
+                tempToken: rawTempToken,
+            });
+
+            return;
+        }
+
         const refreshToken = await createRefreshToken(
             userId,
             req.ip,

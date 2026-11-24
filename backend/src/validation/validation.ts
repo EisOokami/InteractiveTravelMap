@@ -20,6 +20,20 @@ export const registerSchema = z.object({
         .trim()
         .min(2, "Username must be at least 2 characters")
         .max(50, "Username must be less than 50 characters"),
+    acceptTerms: z.literal(true, {
+        message:
+            "You must accept the Terms & Conditions and confirm that you have read the Privacy Policy",
+    }),
+    confirmAge: z.literal(true, {
+        message: "You must confirm that you are at least 18 years old",
+    }),
+});
+
+export const acceptTermsSchema = z.object({
+    acceptTerms: z.literal(true, {
+        message:
+            "You must accept the Terms & Conditions and confirm that you have read the Privacy Policy",
+    }),
 });
 
 export const loginSchema = z.object({

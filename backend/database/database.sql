@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) DEFAULT NULL,
   `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expires_at` datetime DEFAULT NULL,
   `mfa_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `mfa_secret` varbinary(255) DEFAULT NULL,
   `mfa_enabled_at` datetime DEFAULT NULL,
@@ -142,7 +143,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `google_id` (`google_id`),
   UNIQUE KEY `uq_users_email_change_token_hash` (`email_change_token_hash`),
-  KEY `idx_users_verification_token` (`verification_token`)
+  KEY `idx_users_verification_token` (`verification_token`),
+  KEY `idx_users_unverified_cleanup` (`is_verified`, `verification_token_expires`)
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS `user_sessions` (

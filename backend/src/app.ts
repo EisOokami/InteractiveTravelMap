@@ -21,6 +21,7 @@ import { logger, requestRoute, httpLoggingOptions } from "./utils/logger.js";
 import { securityAudit } from "./middleware/securityAudit.middleware.js";
 import { bffClientIp } from "./middleware/clientIp.middleware.js";
 import { userOrIpKey } from "./utils/rateLimitKeys.js";
+import { startRetentionJob } from "./utils/retention.js";
 
 dotenv.config({ quiet: true });
 
@@ -99,4 +100,6 @@ app.use(errorMiddleware);
 
 app.listen(port, () => {
     logger.info({ event: "app.started", port }, "Server listening");
+
+    startRetentionJob();
 });

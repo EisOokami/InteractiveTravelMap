@@ -6,6 +6,7 @@ import {
     IUser,
 } from "../types/interfaces.js";
 import {
+    acceptTermsSchema,
     changePasswordSchema,
     confirmAccountDeletionSchema,
     confirmEmailChangeSchema,
@@ -35,6 +36,7 @@ import {
     sendEmailChangeConfirmation,
     sendEmailChangedNotice,
 } from "../utils/emailChangeEmails.js";
+import { isTermsVersionCurrent } from "../utils/googleAuth.js";
 
 dotenv.config({ quiet: true });
 
@@ -69,6 +71,9 @@ export const me = async (
             username: user[0].username,
             mfa_enabled: user[0].mfa_enabled,
             auth_provider: user[0].auth_provider,
+            requires_terms_acceptance: !isTermsVersionCurrent(user[0]),
+            terms_version: process.env.TERMS_VERSION,
+            privacy_version: process.env.PRIVACY_VERSION,
         });
     } catch (error) {
         req.log.error(
@@ -79,6 +84,88 @@ export const me = async (
         res.status(500).json({
             status: "error",
             message: "Server error during getting user",
+        });
+    }
+};
+
+export const acceptTerms = async (
+    req: IGetUserRequest,
+    res: Response,
+): Promise<void> => {
+    try {
+        acceptTermsSchema.parse(req.body);
+
+        const { id } = req.user;
+
+        const [result] = await pool.execute<ResultSetHeader>(
+            `
+                UPDATE users
+                SET terms_accepted_at = ?,
+                    terms_version = ?,
+                    privacy_accepted_at = ?,
+                    privacy_version = ?
+                WHERE id = ?
+            `,
+            [
+                new Date(),
+                process.env.TERMS_VERSION!,
+                new Date(),
+                process.env.PRIVACY_VERSION!,
+                id,
+            ],
+        );
+
+        if (result.affectedRows === 0) {
+            res.status(404).json({
+                status: "error",
+                message: "User not found",
+            });
+
+            return;
+        }
+
+        req.log.info(
+            {
+                event: "auth.terms_accepted",
+                audit: true,
+                userId: id,
+                termsVersion: process.env.TERMS_VERSION,
+                privacyVersion: process.env.PRIVACY_VERSION,
+            },
+            "Operation completed",
+        );
+
+        res.status(200).json({
+            status: "success",
+            message: "Terms accepted",
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            const errorMessages = error.issues.map((issue: any) => ({
+                field: issue.path[0],
+                message: issue.message,
+            }));
+
+            res.status(400).json({
+                error: "Invalid data",
+                details: errorMessages,
+            });
+
+            return;
+        }
+
+        req.log.error(
+            {
+                err: error,
+                event: "user.accept_terms_failed",
+                operation: "acceptTerms",
+            },
+            "Operation failed",
+        );
+
+        res.status(500).json({
+            status: "error",
+            message: "Server error while accepting terms",
         });
     }
 };
@@ -413,6 +500,7 @@ export const confirmEmailChange = async (
                     email_change_token_hash = NULL,
                     email_change_expires_at = NULL,
                     reset_token = NULL,
+                    reset_token_expires_at = NULL,
                     is_verified = TRUE
                 WHERE id = ?
                     AND email_change_token_hash = ?

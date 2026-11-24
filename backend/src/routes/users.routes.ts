@@ -9,6 +9,7 @@ import {
 } from "../controllers/sessions.controller.js";
 import {
     me,
+    acceptTerms,
     changePassword,
     confirmEmailChange,
     updateProfile,
@@ -19,6 +20,7 @@ import {
 } from "../controllers/users.controller.js";
 import { validateData } from "../middleware/validation.middleware.js";
 import {
+    acceptTermsSchema,
     changePasswordSchema,
     confirmAccountDeletionSchema,
     confirmEmailChangeSchema,
@@ -29,6 +31,20 @@ import {
 } from "../validation/validation.js";
 import { verifyCsrf } from "../middleware/csrf.middleware.js";
 import { validateEmailMiddleware } from "../middleware/emailValidation.middleware.js";
+
+const acceptTermsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    message: {
+        status: 429,
+        error: "Too many requests",
+        message: "Too many requests. Please try again in 15 minutes.",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: userOrIpKey,
+    handler: rateLimitHandler,
+});
 
 const updateProfileLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
@@ -158,6 +174,14 @@ const deleteSessionsLimiter = rateLimit({
 const router = Router();
 
 router.get("/me", authenticateToken, me);
+router.post(
+    "/me/accept-terms",
+    acceptTermsLimiter,
+    authenticateToken,
+    verifyCsrf,
+    validateData(acceptTermsSchema),
+    acceptTerms,
+);
 router.get("/me/sessions", authenticateToken, getSessions);
 router.delete(
     "/me/sessions/:sessionId",

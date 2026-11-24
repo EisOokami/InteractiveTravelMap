@@ -253,7 +253,7 @@
         },
         "textMode": "value"
       },
-      "description": "Counts only HTTP access records with status 500–599. A separate application error for the same request is not counted again."
+      "description": "Counts only HTTP access records with status 500-599. A separate application error for the same request is not counted again."
     },
     {
       "id": 5,
