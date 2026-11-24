@@ -47,15 +47,13 @@ export default function DeleteTripDialog({
                 <DialogHeader>
                     <DialogTitle>Delete trip?</DialogTitle>
                     <DialogDescription className="break-words">
-                        Delete “{trip.name}” and all its itinerary stops? This
-                        cannot be undone. Your favorite places will be kept.
+                        Delete &quot;{trip.name}&quot; and all its itinerary
+                        stops? This cannot be undone. Your favorite places will
+                        be kept.
                     </DialogDescription>
                 </DialogHeader>
                 {error && (
-                    <p
-                        role="alert"
-                        className="text-sm text-red-600 dark:text-red-400"
-                    >
+                    <p className="text-sm text-red-600 dark:text-red-400">
                         {error}
                     </p>
                 )}

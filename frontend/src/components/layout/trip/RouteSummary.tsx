@@ -85,10 +85,7 @@ export default function RouteSummary({
                 </div>
             </dl>
             {plan.issues.length > 0 ? (
-                <div
-                    role="alert"
-                    className="text-sm text-amber-800 dark:text-amber-300"
-                >
+                <div className="text-sm text-amber-800 dark:text-amber-300">
                     <p>
                         Route not calculated. Resolve these stops to keep your
                         full itinerary:
@@ -106,14 +103,11 @@ export default function RouteSummary({
                         : "Add at least two stops to calculate a route."}
                 </p>
             ) : loading ? (
-                <p role="status" className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                     Calculating route...
                 </p>
             ) : result !== undefined && result.status === "error" ? (
-                <div
-                    role="alert"
-                    className="grid justify-items-start gap-2 text-sm"
-                >
+                <div className="grid justify-items-start gap-2 text-sm">
                     <p className="text-red-600 dark:text-red-400">
                         {result.message}
                     </p>
@@ -122,7 +116,7 @@ export default function RouteSummary({
                     </Button>
                 </div>
             ) : !metrics ? (
-                <p role="status" className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                     Waiting for route calculation.
                 </p>
             ) : null}

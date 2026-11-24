@@ -8,8 +8,11 @@ const baseUrl = process.env.NEXT_PUBLIC_DB_URL;
 export async function mutateData(
     method: string,
     path: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payload?: any,
+    extraHeaders?: Record<string, string>,
 ): Promise<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | { status: "error" | "message" | "success"; message: string; data?: any }
     | {
           error: string;
@@ -38,6 +41,7 @@ export async function mutateData(
                 ...(payload && {
                     body: JSON.stringify({ ...payload }),
                 }),
+                ...(extraHeaders && { headers: extraHeaders }),
             },
         );
 

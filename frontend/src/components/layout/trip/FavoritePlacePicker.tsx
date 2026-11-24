@@ -95,10 +95,7 @@ export default function FavoritePlacePicker({
                         />
                     ))}
                     {!matches.length && (
-                        <p
-                            role="status"
-                            className="py-8 text-sm text-muted-foreground sm:col-span-2"
-                        >
+                        <p className="py-8 text-sm text-muted-foreground sm:col-span-2">
                             {favorites.length
                                 ? "No saved places match your search."
                                 : "Save places using the heart on a place card, then add them here."}

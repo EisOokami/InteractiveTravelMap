@@ -165,17 +165,14 @@ export default function Trip({ places, userData }: Readonly<TripProps>) {
             </div>
             <div className="custom-scroll min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 grid content-start gap-5">
                 {storageError && (
-                    <div
-                        role="alert"
-                        className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-300"
-                    >
+                    <div className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-300">
                         {storageError}{" "}
                         {hydrationStatus === "error" &&
                             "Changes will be temporary until saved trips can be recovered."}
                     </div>
                 )}
                 {loading ? (
-                    <p role="status" className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                         Loading saved trips...
                     </p>
                 ) : !trip ? (
@@ -261,13 +258,22 @@ export default function Trip({ places, userData }: Readonly<TripProps>) {
                                     placesById={placesById}
                                 />
                                 <TripAssistant
-                                    key={JSON.stringify([trip.id, day, day.placeIds.map((id) => {
-                                        const place = placesById.get(id);
-                                        return [place?.name, place?.x, place?.y];
-                                    })])}
+                                    key={JSON.stringify([
+                                        trip.id,
+                                        day,
+                                        day.placeIds.map((id) => {
+                                            const place = placesById.get(id);
+                                            return [
+                                                place?.name,
+                                                place?.x,
+                                                place?.y,
+                                            ];
+                                        }),
+                                    ])}
                                     tripId={trip.id}
                                     day={day}
                                     placesById={placesById}
+                                    userId={userData.data?.id ?? null}
                                 />
                                 {day.placeIds.length ? (
                                     <DndContext

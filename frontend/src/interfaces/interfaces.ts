@@ -16,7 +16,6 @@ export interface IPlace {
     location: string;
     category: string;
     img: string;
-    // MySQL DECIMAL values can arrive as strings; normalize before map use.
     x: number | string | null;
     y: number | string | null;
     time: number;
@@ -49,6 +48,7 @@ export interface IUserData {
     email: string;
     mfa_enabled: boolean;
     auth_provider: "local" | "google";
+    requires_terms_acceptance?: boolean;
 }
 
 export interface IUserSession {
@@ -77,6 +77,8 @@ export interface IRegister {
     username: string;
     password: string;
     email: string;
+    acceptTerms: true;
+    confirmAge: true;
 }
 
 export interface ILogin {

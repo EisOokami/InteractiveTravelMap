@@ -88,7 +88,6 @@ export default function TripFormDialog({
     );
 }
 
-// Mount a fresh action state for each opening and each selected trip.
 function TripForm({
     trip,
     onSuccess,
@@ -109,7 +108,6 @@ function TripForm({
         prevState: TripFormActionState,
         formData: FormData,
     ): Promise<TripFormActionState> {
-        // Queued duplicate submissions cannot create a second trip after success.
         if (!active.current || succeeded.current) return prevState;
 
         const validatedFields = createTripSchema.safeParse({
@@ -163,12 +161,7 @@ function TripForm({
     );
 
     return (
-        <form
-            action={formAction}
-            className="grid gap-4"
-            noValidate
-            aria-busy={isPending}
-        >
+        <form action={formAction} className="grid gap-4" noValidate>
             <div className="grid gap-2">
                 <Label htmlFor="trip-name">Trip name</Label>
                 <Input
@@ -182,17 +175,11 @@ function TripForm({
                     className={
                         formState.zodErrors?.name ? "border-red-500" : ""
                     }
-                    aria-invalid={!!formState.zodErrors?.name}
-                    aria-describedby={
-                        formState.zodErrors?.name
-                            ? "trip-name-errors"
-                            : undefined
-                    }
                     disabled={isPending}
                     required
                 />
                 {formState.zodErrors?.name && (
-                    <div id="trip-name-errors" aria-live="polite">
+                    <div id="trip-name-errors">
                         <ZodErrors error={formState.zodErrors.name} />
                     </div>
                 )}
@@ -220,19 +207,13 @@ function TripForm({
                                     ? "border-red-500"
                                     : ""
                             }
-                            aria-invalid={!!formState.zodErrors?.startDate}
-                            aria-describedby={
-                                formState.zodErrors?.startDate
-                                    ? "trip-start-errors"
-                                    : undefined
-                            }
                             disabled={isPending}
                             required
                             min="0001-01-01"
                             max="9999-12-31"
                         />
                         {formState.zodErrors?.startDate && (
-                            <div id="trip-start-errors" aria-live="polite">
+                            <div id="trip-start-errors">
                                 <ZodErrors
                                     error={formState.zodErrors.startDate}
                                 />
@@ -255,19 +236,13 @@ function TripForm({
                                     ? "border-red-500"
                                     : ""
                             }
-                            aria-invalid={!!formState.zodErrors?.endDate}
-                            aria-describedby={
-                                formState.zodErrors?.endDate
-                                    ? "trip-end-errors"
-                                    : undefined
-                            }
                             disabled={isPending}
                             required
                             min="0001-01-01"
                             max="9999-12-31"
                         />
                         {formState.zodErrors?.endDate && (
-                            <div id="trip-end-errors" aria-live="polite">
+                            <div id="trip-end-errors">
                                 <ZodErrors
                                     error={formState.zodErrors.endDate}
                                 />
@@ -278,7 +253,6 @@ function TripForm({
             )}
             {formState.message && (
                 <div
-                    role={formState.status === "error" ? "alert" : "status"}
                     className={`flex items-center gap-2 text-sm rounded-md ${formState.status === "error" ? "text-red-500" : formState.status === "success" ? "text-green-500" : "text-yellow-300"}`}
                 >
                     <Info className="w-4 h-4" />
@@ -286,7 +260,7 @@ function TripForm({
                 </div>
             )}
             {(formState.error || !!formState.details?.length) && (
-                <div role="alert">
+                <div>
                     {formState.error && (
                         <DetailsErrors
                             error={{ field: "trip", message: formState.error }}

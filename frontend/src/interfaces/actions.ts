@@ -31,6 +31,7 @@ export interface IRegisterZodErrors extends IBaseZodErrors {
     email?: string[];
     password?: string[];
     terms?: string[];
+    confirmAge?: string[];
 }
 
 export interface IUpdateProfileZodErrors extends IBaseZodErrors {

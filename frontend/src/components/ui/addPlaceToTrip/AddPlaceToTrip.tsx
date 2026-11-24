@@ -37,15 +37,12 @@ export default function AddPlaceToTrip({
                 Add to trip
             </h2>
             {storageError && (
-                <p
-                    role="alert"
-                    className="text-sm text-amber-700 dark:text-amber-400"
-                >
+                <p className="text-sm text-amber-700 dark:text-amber-400">
                     {storageError}
                 </p>
             )}
             {hydrationStatus === "pending" ? (
-                <p role="status">Loading saved trips...</p>
+                <p>Loading saved trips...</p>
             ) : trip && day ? (
                 <>
                     <p className="text-sm text-muted-foreground break-words">

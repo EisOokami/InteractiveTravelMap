@@ -37,6 +37,7 @@ import {
     analysisSchema,
     deleteAccountConfirmSchema,
     deleteAccountPasswordSchema,
+    geminiApiKeySchema,
     deleteAccountResendSchema,
     emailCodeFormSchema,
     mfaBackupCodesSchema,
@@ -94,6 +95,10 @@ export async function loginAction(
     const tempToken = formData.get("tempToken");
 
     if (tempToken) {
+        const cookieStore = await cookies();
+
+        cookieStore.delete("google_mfa_challenge");
+
         const validatedFields = mfaVerifySchema.safeParse({
             tempToken,
             token: formData.get("token"),
@@ -316,7 +321,11 @@ const registerSchema = z.object({
             "Password must contain at least one special character",
         ),
     terms: z.literal("on", {
-        message: "You must accept the Terms & Conditions and Privacy Policy",
+        message:
+            "You must accept the Terms & Conditions and confirm that you have read the Privacy Policy",
+    }),
+    confirmAge: z.literal("on", {
+        message: "You must confirm that you are at least 18 years old",
     }),
 });
 
@@ -330,6 +339,7 @@ export async function registerAction(
         email: formData.get("email"),
         password: formData.get("password"),
         terms: formData.get("terms"),
+        confirmAge: formData.get("confirmAge"),
     });
 
     if (!validatedFields.success) {
@@ -347,6 +357,8 @@ export async function registerAction(
         username: validatedFields.data.username,
         email: validatedFields.data.email,
         password: validatedFields.data.password,
+        acceptTerms: true,
+        confirmAge: true,
     });
 
     if (!responseData) {
@@ -457,8 +469,6 @@ export async function updateProfileAction(
 ): Promise<IUpdateProfileAction | undefined> {
     const currentPassword = formData.get("currentPassword");
 
-    // The password only goes to the API; it is never sent back to the browser
-    // with the form state.
     formData.delete("currentPassword");
 
     const user = await getUserData();
@@ -542,8 +552,6 @@ const confirmEmailChangeSchema = z.object({
         .regex(/^[a-f0-9]{64}$/, "Invalid or expired confirmation link"),
 });
 
-// Called by the button on /confirmEmailChange. Opening the link alone changes
-// nothing, so mail scanners that fetch links cannot approve a change.
 export async function confirmEmailChangeAction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     prevState: any,
@@ -929,6 +937,16 @@ export async function deleteAccountAction(
 
         await logoutAction();
 
+        const cookieStore = await cookies();
+
+        cookieStore.set("deletedAccountId", String(validatedFields.data.id), {
+            maxAge: 5 * 60,
+            path: "/",
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+
         redirect("/map");
     }
 
@@ -1309,21 +1327,40 @@ export async function resetPasswordAction(
     }
 }
 
-export async function analyzeTripDay(data: {
-    day: string;
-    places: { id: number; name: string; latitude: number; longitude: number }[];
-    travelMode: TravelMode;
-    routeMetrics?: { distanceMeters: number; durationSeconds: number };
-    preferences: {
-        pace?: "relaxed" | "balanced" | "intensive";
-        instructions?: string;
-    };
-}): Promise<{
+export async function analyzeTripDay(
+    data: {
+        day: string;
+        places: {
+            id: number;
+            name: string;
+            latitude: number;
+            longitude: number;
+        }[];
+        travelMode: TravelMode;
+        routeMetrics?: { distanceMeters: number; durationSeconds: number };
+        preferences: {
+            pace?: "relaxed" | "balanced" | "intensive";
+            instructions?: string;
+        };
+    },
+    geminiApiKey: string,
+): Promise<{
     ok: boolean;
     message: string;
     analysis?: z.infer<typeof analysisSchema>;
 }> {
-    const responseData = await mutateData("POST", "/ai/trip-analyze", data);
+    const validatedKey = geminiApiKeySchema.safeParse(geminiApiKey);
+
+    if (!validatedKey.success) {
+        return {
+            ok: false,
+            message: "Add a valid Gemini API key to use AI analysis",
+        };
+    }
+
+    const responseData = await mutateData("POST", "/ai/trip-analyze", data, {
+        "X-Gemini-Api-Key": validatedKey.data,
+    });
 
     if (!responseData) {
         console.error("Ops! Something went wrong. Please try again.");
@@ -2027,9 +2064,47 @@ export async function setPasswordAction(
     }
 }
 
+export async function acceptTermsAction(): Promise<{
+    ok: boolean;
+    message: string;
+}> {
+    const responseData = await mutateData("POST", "/users/me/accept-terms", {
+        acceptTerms: true,
+    }).catch((error) => {
+        console.error(error);
+
+        return undefined;
+    });
+
+    if (!responseData) {
+        return {
+            ok: false,
+            message: "Ops! Something went wrong. Please try again.",
+        };
+    }
+
+    if (
+        "message" in responseData &&
+        "status" in responseData &&
+        responseData.status === "success"
+    ) {
+        return { ok: true, message: responseData.message };
+    }
+
+    return {
+        ok: false,
+        message:
+            "message" in responseData && responseData.message
+                ? responseData.message
+                : "Failed to accept the updated terms",
+    };
+}
+
 export async function exchangeGoogleCodeAction(
     code: string,
-): Promise<{ ok: boolean; message: string } | undefined> {
+): Promise<
+    { ok: boolean; message: string; requiresMfa?: boolean } | undefined
+> {
     const responseData = await googleExchangeService(code);
 
     if (!responseData) {
@@ -2060,6 +2135,20 @@ export async function exchangeGoogleCodeAction(
             ok: false,
             message: "Failed to login",
         };
+    }
+
+    if ("requiresMfa" in responseData && responseData.tempToken) {
+        const cookieStore = await cookies();
+
+        cookieStore.set("google_mfa_challenge", responseData.tempToken, {
+            maxAge: 5 * 60,
+            path: "/",
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+        });
+
+        return { ok: true, message: responseData.message, requiresMfa: true };
     }
 
     if ("refreshToken" in responseData && "accessToken" in responseData) {

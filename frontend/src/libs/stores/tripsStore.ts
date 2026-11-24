@@ -18,7 +18,7 @@ export function createTripsStore(
     const key =
         userId === null
             ? null
-            : `interactive-map-trip:trips:v${1}:user:${userId}`;
+            : `interactive-travel-map:trips:v${1}:user:${userId}`;
     const getStorage =
         options.getStorage ??
         (() => (typeof window === "undefined" ? null : window.localStorage));

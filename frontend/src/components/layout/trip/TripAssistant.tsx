@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { KeyRound, LoaderCircle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/shadcn/button";
 import { Input } from "@/components/ui/shadcn/input";
@@ -17,20 +17,41 @@ import type { AnalysisSession, IPlace } from "@/interfaces/interfaces";
 import type { TripDay } from "@/interfaces/store";
 import { useTripsStoreApi } from "@/libs/stores/tripsStoreProvider";
 import { normalizeCoordinates, planDayRoute } from "@/libs/utils";
-import { analysisSchema } from "@/libs/validation/validation";
+import {
+    analysisSchema,
+    geminiApiKeySchema,
+} from "@/libs/validation/validation";
 import z from "zod";
 import { analyzeTripDay } from "@/data/actions";
+import { geminiKeyStorageKey } from "@/libs/localData";
 
 export default function TripAssistant({
     tripId,
     day,
     placesById,
+    userId,
 }: Readonly<{
     tripId: string;
     day: TripDay;
     placesById: Map<number, IPlace>;
+    userId: number | null;
 }>) {
     const store = useTripsStoreApi();
+    const [apiKey, setApiKey] = useState<string>(() => {
+        if (userId === null) {
+            return "";
+        }
+
+        try {
+            return (
+                window.localStorage.getItem(geminiKeyStorageKey(userId)) ?? ""
+            );
+        } catch {
+            return "";
+        }
+    });
+    const [apiKeyInput, setApiKeyInput] = useState<string>("");
+    const [apiKeyError, setApiKeyError] = useState<string>("");
     const [pace, setPace] = useState<
         "relaxed" | "balanced" | "intensive" | "none"
     >("none");
@@ -59,8 +80,50 @@ export default function TripAssistant({
                 ? "All stops need valid place details and coordinates before analysis."
                 : "";
 
+    const handleSaveKey = () => {
+        const validatedKey = geminiApiKeySchema.safeParse(apiKeyInput);
+
+        if (!validatedKey.success || userId === null) {
+            setApiKeyError("Enter a valid Gemini API key.");
+
+            return;
+        }
+
+        try {
+            window.localStorage.setItem(
+                geminiKeyStorageKey(userId),
+                validatedKey.data,
+            );
+        } catch {
+            setApiKeyError(
+                "The key could not be saved in this browser. Check that site data is allowed.",
+            );
+
+            return;
+        }
+
+        setApiKey(validatedKey.data);
+        setApiKeyInput("");
+        setApiKeyError("");
+    };
+
+    const handleRemoveKey = () => {
+        setApiKeyError("");
+
+        if (userId !== null) {
+            try {
+                window.localStorage.removeItem(geminiKeyStorageKey(userId));
+            } catch {
+                setApiKeyError("Failed to remove API key from local storage.");
+            }
+        }
+
+        setApiKey("");
+        setApiKeyInput("");
+    };
+
     const handleAnalyze = async () => {
-        if (unavailable || pending) {
+        if (unavailable || pending || !apiKey) {
             return;
         }
 
@@ -170,23 +233,26 @@ export default function TripAssistant({
         let succeeded = false;
 
         try {
-            const result = await analyzeTripDay({
-                day: day.date,
-                places,
-                travelMode: day.travelMode,
-                ...(metrics
-                    ? {
-                          routeMetrics: {
-                              distanceMeters: metrics.totalDistance,
-                              durationSeconds: metrics.totalTime,
-                          },
-                      }
-                    : {}),
-                preferences: {
-                    ...(pace !== "none" ? { pace } : {}),
-                    instructions,
+            const result = await analyzeTripDay(
+                {
+                    day: day.date,
+                    places,
+                    travelMode: day.travelMode,
+                    ...(metrics
+                        ? {
+                              routeMetrics: {
+                                  distanceMeters: metrics.totalDistance,
+                                  durationSeconds: metrics.totalTime,
+                              },
+                          }
+                        : {}),
+                    preferences: {
+                        ...(pace !== "none" ? { pace } : {}),
+                        instructions,
+                    },
                 },
-            });
+                apiKey,
+            );
 
             if (!isCurrent()) {
                 return;
@@ -249,23 +315,94 @@ export default function TripAssistant({
     );
 
     return (
-        <section
-            aria-labelledby="trip-assistant-title"
-            aria-busy={pending}
-            className="grid gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700"
-        >
+        <section className="grid gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
             <h3
                 id="trip-assistant-title"
                 className="flex items-center gap-2 font-semibold"
             >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                <Sparkles className="size-4" />
                 AI Trip Assistant
             </h3>
             <p className="text-xs text-muted-foreground">
-                Sends stops and preferences for this day to Gemini. Review the
-                proposal before applying it; Mapbox provides actual route
-                metrics.
+                Sends stops and preferences for this day to Gemini with your own
+                Gemini API key. Review the proposal before applying it. Mapbox
+                provides actual route metrics.
             </p>
+            <div className="grid gap-2 rounded-md bg-gray-50 p-2 dark:bg-gray-800/60">
+                {apiKey ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="flex items-center gap-2 text-sm">
+                            <KeyRound className="size-4" />
+                            Your Gemini API key is saved in this browser (...
+                            {apiKey.slice(-4)})
+                        </p>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleRemoveKey}
+                            disabled={pending}
+                        >
+                            Remove key
+                        </Button>
+                    </div>
+                ) : (
+                    <>
+                        <Label htmlFor="ai-api-key">Your Gemini API key</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="ai-api-key"
+                                type="password"
+                                value={apiKeyInput}
+                                onChange={(event) =>
+                                    setApiKeyInput(event.target.value)
+                                }
+                                maxLength={200}
+                                autoComplete="off"
+                                spellCheck={false}
+                            />
+                            <Button
+                                size="sm"
+                                onClick={handleSaveKey}
+                                disabled={!apiKeyInput.trim()}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                        {apiKeyError && (
+                            <p className="text-xs text-red-500">
+                                {apiKeyError}
+                            </p>
+                        )}
+                    </>
+                )}
+                <p
+                    id="ai-api-key-info"
+                    className="text-xs text-muted-foreground"
+                >
+                    The key is stored only in this browser and is removed when
+                    you delete your account. With each analysis it is passed
+                    through our server to Google and is not saved or logged
+                    there. Requests made with your key are covered by your own
+                    agreement with Google:{" "}
+                    <a
+                        href="https://ai.google.dev/gemini-api/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                    >
+                        Gemini API Terms
+                    </a>
+                    .{" "}
+                    <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                    >
+                        Get a key
+                    </a>
+                </p>
+            </div>
             <div className="grid gap-2">
                 <Label htmlFor="ai-pace">Travel pace (optional)</Label>
                 <Select
@@ -300,14 +437,14 @@ export default function TripAssistant({
                     onChange={(event) => setInstructions(event.target.value)}
                     maxLength={300}
                     disabled={pending}
-                    aria-describedby="ai-instructions-count"
                     placeholder="For example: prefer a relaxed afternoon"
                 />
                 <p
                     id="ai-instructions-count"
                     className="text-xs text-muted-foreground"
                 >
-                    {instructions.length}/300 characters
+                    {instructions.length}/300 characters. Do not enter personal
+                    data (names, contact details, health information).
                 </p>
             </div>
             {unavailable && (
@@ -317,17 +454,14 @@ export default function TripAssistant({
                 <Button
                     size="sm"
                     onClick={handleAnalyze}
-                    disabled={pending || !!unavailable}
+                    disabled={pending || !!unavailable || !apiKey}
                 >
                     {pending ? (
-                        <LoaderCircle
-                            className="mr-2 h-4 w-4 animate-spin"
-                            aria-hidden="true"
-                        />
+                        <LoaderCircle className="mr-2 size-4 animate-spin" />
                     ) : (
-                        <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
+                        <Sparkles className="mr-2 size-4" />
                     )}
-                    {pending ? "Analyzing…" : "Analyze with AI"}
+                    {pending ? "Analyzing..." : "Analyze with AI"}
                 </Button>
                 {(pending || analysis || message) && (
                     <Button
@@ -346,13 +480,9 @@ export default function TripAssistant({
                     </Button>
                 )}
             </div>
-            {message && (
-                <p role="status" className="text-sm">
-                    {message}
-                </p>
-            )}
+            {message && <p className="text-sm">{message}</p>}
             {analysis && (
-                <div className="grid gap-3 text-sm" aria-live="polite">
+                <div className="grid gap-3 text-sm">
                     <p>{analysis.summary}</p>
                     <div>
                         <h4 className="font-medium">Suggested stop order</h4>

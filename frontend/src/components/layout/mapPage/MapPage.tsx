@@ -17,6 +17,7 @@ import Favorite from "../favorite/Favorite";
 import DarkModeBtn from "@/components/ui/darkModeBtn/DarkModeBtn";
 import TripSkeleton from "../trip/TripSkeleton";
 import NotLoggedInMsg from "@/components/ui/notLoggedInMsg/NotLoggedInMsg";
+import TermsUpdateDialog from "@/components/ui/termsUpdateDialog/TermsUpdateDialog";
 
 const Map = dynamic(() => import("@/components/layout/map/Map"), {
     loading: () => (
@@ -188,6 +189,10 @@ function MapPageContent({ placesData, userData }: Readonly<MapPageProps>) {
 
     return (
         <div className="flex flex-col h-svh">
+            {userData.status === "success" &&
+                userData.data?.requires_terms_acceptance && (
+                    <TermsUpdateDialog />
+                )}
             <div className="grow flex">
                 <div className="hidden md:flex">
                     <Sidebar userData={userData} />

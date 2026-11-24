@@ -164,6 +164,11 @@ export const deleteAccountPasswordSchema = z.object({
         ).optional(),
 });
 
+export const geminiApiKeySchema = z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9_-]{20,200}$/, "Invalid Gemini API key");
+
 export const deleteAccountConfirmSchema = z.object({
     id: z
         .string()

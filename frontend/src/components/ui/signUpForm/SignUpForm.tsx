@@ -32,9 +32,19 @@ const INITIAL_STATE: IBaseAction = {
     formData: null,
 };
 
-export default function SignUpForm() {
+const OAUTH_ERRORS: Record<string, string> = {
+    terms_required:
+        "To create an account with Google, accept the Terms & Conditions and confirm your age below, then continue with Google again.",
+};
+
+export default function SignUpForm({
+    oauthError,
+}: Readonly<{ oauthError?: string }>) {
     const [googleTermsAccepted, setGoogleTermsAccepted] =
         useState<boolean>(false);
+    const [ageConfirmed, setAgeConfirmed] = useState<boolean>(false);
+    const googleSignUpAllowed = googleTermsAccepted && ageConfirmed;
+    const oauthErrorMessage = oauthError ? OAUTH_ERRORS[oauthError] : null;
     const [formState, formAction, isPending] = useActionState(
         registerAction,
         INITIAL_STATE,
@@ -123,15 +133,15 @@ export default function SignUpForm() {
                             htmlFor="terms"
                             className="text-sm font-normal leading-snug text-muted-foreground"
                         >
-                            I agree to the{" "}
+                            I accept the{" "}
                             <Link
                                 href="/terms"
                                 target="_blank"
                                 className="underline text-primary"
                             >
                                 Terms &amp; Conditions
-                            </Link>{" "}
-                            and{" "}
+                            </Link>
+                            . I have read the{" "}
                             <Link
                                 href="/privacy"
                                 target="_blank"
@@ -139,9 +149,34 @@ export default function SignUpForm() {
                             >
                                 Privacy Policy
                             </Link>
+                            .
                         </Label>
                     </div>
                     <ZodErrors error={formState?.zodErrors?.terms} />
+                    <div className="flex items-start gap-2">
+                        <Checkbox
+                            id="confirmAge"
+                            name="confirmAge"
+                            checked={ageConfirmed}
+                            onCheckedChange={(checked) =>
+                                setAgeConfirmed(checked === true)
+                            }
+                            className={`mt-0.5 ${formState?.zodErrors?.confirmAge ? "border-red-500" : ""}`}
+                        />
+                        <Label
+                            htmlFor="confirmAge"
+                            className="text-sm font-normal leading-snug text-muted-foreground"
+                        >
+                            I am at least 18 years old.
+                        </Label>
+                    </div>
+                    <ZodErrors error={formState?.zodErrors?.confirmAge} />
+                    {oauthErrorMessage && !formState?.message && (
+                        <div className="flex items-center gap-2 text-sm rounded-md text-red-500">
+                            <Info className="w-4 h-4 shrink-0" />
+                            <p>{oauthErrorMessage}</p>
+                        </div>
+                    )}
                     {formState?.message && (
                         <div
                             className={`flex items-center gap-2 text-sm rounded-md ${formState?.status === "error" ? "text-red-500" : formState?.status === "success" ? "text-green-500" : "text-yellow-300"}`}
@@ -179,15 +214,15 @@ export default function SignUpForm() {
                     <div className="flex-1 h-px bg-border" />
                 </div>
                 <Button
-                    asChild={googleTermsAccepted}
+                    asChild={googleSignUpAllowed}
                     type="button"
                     variant="outline"
-                    disabled={!googleTermsAccepted}
+                    disabled={!googleSignUpAllowed}
                     className="w-full"
                 >
-                    {googleTermsAccepted ? (
+                    {googleSignUpAllowed ? (
                         <a
-                            href={`${process.env.NEXT_PUBLIC_DB_URL}/auth/google`}
+                            href={`${process.env.NEXT_PUBLIC_DB_URL}/auth/google?acceptTerms=true&confirmAge=true`}
                         >
                             <GoogleIcon className="size-4 mr-2" />
                             Continue with Google

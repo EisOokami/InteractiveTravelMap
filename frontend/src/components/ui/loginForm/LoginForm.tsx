@@ -40,13 +40,38 @@ const INITIAL_STATE: IBaseAction = {
     data: null,
 };
 
-export default function LoginForm() {
+const OAUTH_ERRORS: Record<string, string> = {
+    terms_outdated:
+        "Our Terms & Conditions and Privacy Policy have been updated. Accept them below and continue with Google again.",
+    oauth_failed: "Google sign-in failed. Please try again.",
+    oauth_state_mismatch: "Google sign-in expired. Please try again.",
+    missing_code: "Google sign-in failed. Please try again.",
+    email_not_verified:
+        "The email address of your Google account is not verified.",
+};
+
+export default function LoginForm({
+    oauthError,
+    pendingMfaToken,
+}: Readonly<{
+    oauthError?: string;
+    pendingMfaToken?: string;
+}>) {
+    const [googleTermsAccepted, setGoogleTermsAccepted] =
+        useState<boolean>(false);
+    const oauthErrorMessage = oauthError ? OAUTH_ERRORS[oauthError] : null;
+    const requiresGoogleTerms = oauthError === "terms_outdated";
     const [backupCode, setBackupCode] = useState<string>("");
     const [useBackupCode, setUseBackupCode] = useState<boolean>(false);
     const [dismissedToken, setDismissedToken] = useState<string | null>(null);
     const [formState, formAction, isPending] = useActionState(
         loginAction,
-        INITIAL_STATE,
+        pendingMfaToken
+            ? {
+                  ...INITIAL_STATE,
+                  data: { requiresMfa: true, tempToken: pendingMfaToken },
+              }
+            : INITIAL_STATE,
     );
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -251,15 +276,15 @@ export default function LoginForm() {
                                 htmlFor="acceptTerms"
                                 className="text-sm font-normal leading-snug text-muted-foreground"
                             >
-                                I agree to the updated{" "}
+                                I accept the updated{" "}
                                 <Link
                                     href="/terms"
                                     target="_blank"
                                     className="underline text-primary"
                                 >
                                     Terms &amp; Conditions
-                                </Link>{" "}
-                                and{" "}
+                                </Link>
+                                . I have read the updated{" "}
                                 <Link
                                     href="/privacy"
                                     target="_blank"
@@ -267,6 +292,7 @@ export default function LoginForm() {
                                 >
                                     Privacy Policy
                                 </Link>
+                                .
                             </Label>
                         </div>
                     )}
@@ -314,16 +340,66 @@ export default function LoginForm() {
                     <span className="text-xs text-muted-foreground">OR</span>
                     <div className="flex-1 h-px bg-border" />
                 </div>
+                {oauthErrorMessage && !formState?.message && (
+                    <div className="flex items-center gap-2 mb-3 text-sm rounded-md text-red-500">
+                        <Info className="w-4 h-4 shrink-0" />
+                        <p>{oauthErrorMessage}</p>
+                    </div>
+                )}
+                {requiresGoogleTerms && (
+                    <div className="flex items-start gap-2 mb-3">
+                        <Checkbox
+                            id="acceptTermsGoogle"
+                            checked={googleTermsAccepted}
+                            onCheckedChange={(checked) =>
+                                setGoogleTermsAccepted(checked === true)
+                            }
+                            className="mt-0.5"
+                        />
+                        <Label
+                            htmlFor="acceptTermsGoogle"
+                            className="text-sm font-normal leading-snug text-muted-foreground"
+                        >
+                            I accept the updated{" "}
+                            <Link
+                                href="/terms"
+                                target="_blank"
+                                className="underline text-primary"
+                            >
+                                Terms &amp; Conditions
+                            </Link>
+                            . I have read the updated{" "}
+                            <Link
+                                href="/privacy"
+                                target="_blank"
+                                className="underline text-primary"
+                            >
+                                Privacy Policy
+                            </Link>
+                            .
+                        </Label>
+                    </div>
+                )}
                 <Button
-                    asChild
+                    asChild={!requiresGoogleTerms || googleTermsAccepted}
                     type="button"
                     variant="outline"
+                    disabled={requiresGoogleTerms && !googleTermsAccepted}
                     className="w-full"
                 >
-                    <a href={`${process.env.NEXT_PUBLIC_DB_URL}/auth/google`}>
-                        <GoogleIcon className="size-4 mr-2" />
-                        Continue with Google
-                    </a>
+                    {!requiresGoogleTerms || googleTermsAccepted ? (
+                        <a
+                            href={`${process.env.NEXT_PUBLIC_DB_URL}/auth/google${requiresGoogleTerms ? "?acceptTerms=true" : ""}`}
+                        >
+                            <GoogleIcon className="size-4 mr-2" />
+                            Continue with Google
+                        </a>
+                    ) : (
+                        <>
+                            <GoogleIcon className="size-4 mr-2" />
+                            Continue with Google
+                        </>
+                    )}
                 </Button>
             </CardContent>
             <CardFooter className="flex justify-center">

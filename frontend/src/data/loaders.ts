@@ -92,6 +92,8 @@ export async function getUserData(): Promise<IUser> {
             email: fetchedData.email,
             mfa_enabled: fetchedData.mfa_enabled,
             auth_provider: fetchedData.auth_provider,
+            requires_terms_acceptance:
+                fetchedData.requires_terms_acceptance === true,
         },
     };
 }

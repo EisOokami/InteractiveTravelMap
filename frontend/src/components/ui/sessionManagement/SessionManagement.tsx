@@ -180,7 +180,7 @@ export default function SessionManagement() {
                     ))}
                 </div>
             ) : error ? (
-                <div role="alert" className="p-4 text-sm border rounded-lg">
+                <div className="p-4 text-sm border rounded-lg">
                     <p>{error}</p>
                     <Button
                         type="button"
@@ -321,7 +321,7 @@ export default function SessionManagement() {
                             disabled={isPending}
                         >
                             {isPending
-                                ? "Signing out…"
+                                ? "Signing out..."
                                 : confirmation === "others"
                                   ? "Log out other sessions"
                                   : "Revoke session"}
