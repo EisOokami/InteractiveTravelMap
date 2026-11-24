@@ -29,10 +29,13 @@ export async function analyzeTripDay(
     try {
         res.setHeader("Cache-Control", "no-store");
 
-        if (!process.env.GEMINI_API_KEY) {
-            res.status(503).json({
+        const apiKey = req.get("x-gemini-api-key")?.trim();
+
+        if (!apiKey || !/^[A-Za-z0-9_-]{20,200}$/.test(apiKey)) {
+            res.status(400).json({
                 status: "error",
-                message: "AI analysis is currently unavailable",
+                message:
+                    "Add your own Gemini API key in the AI Trip Assistant to use AI analysis",
             });
 
             return;
@@ -42,7 +45,7 @@ export async function analyzeTripDay(
 
         const generatedAt = new Date().toISOString();
 
-        const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const client = new GoogleGenAI({ apiKey });
 
         const response = await client.models.generateContent({
             model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
@@ -83,6 +86,8 @@ export async function analyzeTripDay(
                 status: "error",
                 message: "Suggestion must preserve all original place IDs",
             });
+
+            return;
         }
 
         res.status(200).json({
@@ -113,13 +118,23 @@ export async function analyzeTripDay(
                 ? error.status
                 : undefined;
 
+        if (status === 400 || status === 401 || status === 403) {
+            res.status(400).json({
+                status: "error",
+                message:
+                    "Google rejected the request made with your Gemini API key. Check the key, then try again.",
+            });
+
+            return;
+        }
+
         if (status === 429) {
             res.setHeader("Retry-After", "60");
 
             res.status(429).json({
                 status: "error",
                 message:
-                    "AI quota is temporarily exhausted. Please try again later.",
+                    "The quota of your Gemini API key is temporarily exhausted. Please try again later.",
             });
 
             return;
