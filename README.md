@@ -91,36 +91,45 @@ npm --prefix frontend install
 
 <h3>Environment variables</h3>
 
-**Backend** (`backend/.env`)
+**Backend** (`backend/.env`, commented template: `backend/.env.example`)
 
-| Variable                                                          | Description                                                                                                                                        |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NODE_ENV`, `PORT`                                                | Runtime mode and API port (`3001`)                                                                                                                 |
-| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`     | Database connection (default database: `interactive_travel_map`)                                                                                   |
-| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`                         | Secrets for signing access and refresh tokens                                                                                                      |
-| `CSRF_SECRET`                                                     | Secret for CSRF tokens                                                                                                                             |
-| `MFA_ENCRYPTION_KEY`                                              | Encrypts stored 2FA secrets, at least 32 characters                                                                                                |
-| `LOGIN_CODE_SECRET`, `DELETION_CODE_SECRET`                       | Sign the email codes for login and account deletion                                                                                                |
-| `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASSWORD`                   | Mailbox used by Nodemailer                                                                                                                         |
-| `WEB_URL`                                                         | Frontend URL used in email links, e.g. `http://localhost:3000`                                                                                     |
-| `HOSTS`, `CORS_URLS`                                              | Comma-separated allowed hosts and origins                                                                                                          |
-| `TRUST_PROXY`                                                     | Reverse proxies in front of the API that may set `X-Forwarded-For` (addresses, subnets or `loopback`, `uniquelocal`). Empty: the header is ignored |
-| `BFF_SHARED_SECRET`                                               | Same value as in the frontend, at least 32 characters. The API takes the visitor address from the Next.js server only with this secret             |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Google sign-in. The redirect URI is `<API URL>/auth/google/callback`                                                                               |
-| `TERMS_VERSION`, `PRIVACY_VERSION`                                | Current versions of `/terms` and `/privacy`. After a bump, users accept them at the next sign-in                                                   |
-| `LOG_LEVEL`, `LOG_FILE`                                           | Log level and optional log file (set `LOG_FILE=./logs/app.log` to feed Grafana)                                                                    |
-| `GEMINI_API_KEY`, `GEMINI_MODEL`                                  | AI Trip Assistant.                                                                                                                                 |
+| Variable                                                          | Description                                                                                                                                               |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`, `PORT`                                                | Runtime mode and API port (`3001`)                                                                                                                        |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`     | Database connection (default database: `interactive_travel_map`)                                                                                          |
+| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`                         | Secrets for signing access and refresh tokens                                                                                                             |
+| `CSRF_SECRET`                                                     | Secret for CSRF tokens                                                                                                                                    |
+| `MFA_ENCRYPTION_KEY`                                              | Encrypts stored 2FA secrets, at least 32 characters                                                                                                       |
+| `LOGIN_CODE_SECRET`, `DELETION_CODE_SECRET`                       | Sign the email codes for login and account deletion                                                                                                       |
+| `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASSWORD`                   | Mailbox used by Nodemailer                                                                                                                                |
+| `WEB_URL`                                                         | Frontend URL used in email links, e.g. `http://localhost:3000`                                                                                            |
+| `HOSTS`, `CORS_URLS`                                              | Comma-separated allowed hosts and origins                                                                                                                 |
+| `TRUST_PROXY`                                                     | Reverse proxies in front of the API that may set `X-Forwarded-For` (addresses, subnets or `loopback`, `uniquelocal`). Empty: the header is ignored        |
+| `BFF_SHARED_SECRET`                                               | Same value as in the frontend, at least 32 characters. The API takes the visitor address from the Next.js server only with this secret                    |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Google sign-in. The redirect URI is `<API URL>/auth/google/callback`                                                                                      |
+| `TERMS_VERSION`, `PRIVACY_VERSION`                                | Current versions of `/terms` and `/privacy`. After a bump, users accept them at the next sign-in                                                          |
+| `LOG_LEVEL`, `LOG_FILE`                                           | Log level and optional log file (set `LOG_FILE=./logs/app.log` to feed Grafana)                                                                           |
+| `GEMINI_MODEL`                                                    | Gemini model of the AI Trip Assistant (default `gemini-3.5-flash-lite`). There is no server key: each user adds their own Gemini API key in the assistant |
 
-**Frontend** (`frontend/.env`)
+**Frontend** (`frontend/.env`, commented template: `frontend/.env.example`)
 
-```dotenv
-NEXT_PUBLIC_DB_URL=http://localhost:3001
-NEXT_PUBLIC_MAPBOX_API_KEY=your_public_mapbox_token
-NEXT_PUBLIC_THUNDERFOREST_API_KEY=your_thunderforest_key
-HOST=localhost
-BFF_SHARED_SECRET=same_value_as_in_backend_env
-CLIENT_IP_HEADER=
-```
+| Variable                                                                                                               | Description                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_DB_URL`                                                                                                   | Public API address used by the browser and most server-side requests, e.g. `http://localhost:3001`                                                                                                                                                                                       |
+| `DB_URL`                                                                                                               | API address used by the server to refresh sessions; usually the same value                                                                                                                                                                                                               |
+| `NEXT_PUBLIC_MAPBOX_API_KEY`                                                                                           | Mapbox token for the satellite layer and route planning                                                                                                                                                                                                                                  |
+| `NEXT_PUBLIC_THUNDERFOREST_API_KEY`                                                                                    | Thunderforest key for the cycling map layer                                                                                                                                                                                                                                              |
+| `HOST`                                                                                                                 | Domain of the session cookies (default `localhost`); set your domain in production                                                                                                                                                                                                       |
+| `BFF_SHARED_SECRET`                                                                                                    | Same value as in `backend/.env`, at least 32 characters. Without it the API counts rate limits per Next.js server instead of per visitor                                                                                                                                                 |
+| `CLIENT_IP_HEADER`                                                                                                     | Header with the visitor address set by the proxy in front of Next.js (e.g. `x-real-ip` behind nginx). Leave empty locally and on Vercel, where `x-real-ip` is used automatically (`VERCEL=1` is set by Vercel). Never use a header the browser can set itself, such as `x-forwarded-for` |
+| `NEXT_PUBLIC_SITE_URL`                                                                                                 | Public address of the service shown in the Privacy Policy and Terms of Service                                                                                                                                                                                                           |
+| `TERMS_VERSION`, `PRIVACY_VERSION`                                                                                     | Versions shown on `/terms` and `/privacy` (default `1.0`). Keep them equal to the API values                                                                                                                                                                                             |
+| `LEGAL_OPERATOR`, `LEGAL_CONTACT_EMAIL`                                                                                | Operator (data controller) and contact e-mail named in `/privacy` and `/terms`                                                                                                                                                                                                           |
+| `LEGAL_SERVER_PROVIDER`, `LEGAL_BACKUP_RETENTION`                                                                      | Server provider and country, and backup retention named in the Privacy Policy. Empty `LEGAL_*` values are shown as highlighted `[DO UZUPEŁNIENIA: …]` placeholders                                                                                                                       |
+| `LEGAL_LAST_TERMS_UPDATED`, `LEGAL_EFFECTIVE_TERMS_DATE`, `LEGAL_LAST_PRIVACY_UPDATED`, `LEGAL_EFFECTIVE_PRIVACY_DATE` | Dates shown in the documents, e.g. `20 listopada 2026 r.`                                                                                                                                                                                                                                |
+| `LEGAL_REPOSITORY_URL`, `LEGAL_LICENSE_URL`                                                                            | Repository and license links in the Terms of Service (default: this repository on GitHub)                                                                                                                                                                                                |
+
+`NEXT_PUBLIC_*` values are built into the bundle by `next build`: rebuild the frontend after changing them.
 
 <h3>Preparing the database</h3>
 
@@ -149,8 +158,11 @@ Open [http://localhost:3000/map](http://localhost:3000/map).
 The API writes JSON logs to stdout. To browse them in Grafana, set `LOG_FILE=./logs/app.log` in `backend/.env` and start Loki, Promtail and Grafana:
 
 ```bash
-GRAFANA_ADMIN_PASSWORD=change-me docker compose -f docker-compose.logging.yml up -d
+cp .env.example .env    # then set GRAFANA_ADMIN_PASSWORD
+docker compose up -d
 ```
+
+The root `.env` holds only the Grafana settings (`GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD`, `GRAFANA_ALLOW_SIGN_UP`, `GRAFANA_INSTALL_PLUGINS`); Grafana and Loki are published on `127.0.0.1` only.
 
 Grafana opens on [http://localhost:3200](http://localhost:3200) with the "Express Backend - Security Audit" dashboard.
 
