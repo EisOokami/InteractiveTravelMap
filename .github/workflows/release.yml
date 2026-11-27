@@ -1,22 +1,65 @@
 name: Release
 
-on: workflow_dispatch
+on:
+    workflow_dispatch:
+        inputs:
+            release_type:
+                description: "Release type"
+                type: choice
+                default: auto
+                options:
+                    - auto
+                    - major
+
+concurrency:
+    group: release-${{ github.ref_name }}
+    cancel-in-progress: false
 
 jobs:
+    check:
+        name: Build backend and frontend
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+            - name: Build backend
+              working-directory: backend
+              run: npm ci && npm run build
+            - name: Build frontend
+              working-directory: frontend
+              env:
+                  NEXT_PUBLIC_DB_URL: http://127.0.0.1:3001
+              run: npm ci && npm run build
+
     release:
+        name: Create release
+        needs: check
+        runs-on: ubuntu-latest
         permissions:
             contents: write
             issues: write
             pull-requests: write
-        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
               with:
                   fetch-depth: 0
+                  persist-credentials: false
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
-            - run: npm ci
-            - run: npx semantic-release
+                  node-version: 22
+                  cache: npm
+            - name: Install release tooling
+              run: npm ci
+            - name: Add commit for manual major release
+              if: github.event_name == 'workflow_dispatch' && inputs.release_type == 'major'
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git commit --allow-empty -m "chore: trigger major release"
+            - name: Release
+              run: npx semantic-release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RELEASE_MAJOR: ${{ github.event_name == 'workflow_dispatch' && inputs.release_type == 'major' }}
