@@ -35,12 +35,12 @@ const legalInfo = {
         "[DO UZUPEŁNIENIA: okres przechowywania kopii zapasowych, np. do 30 dni]",
     repositoryUrl:
         process.env.LEGAL_REPOSITORY_URL ||
-        "https://github.com/EisOokami/InteractiveMapTrip",
+        "https://github.com/EisOokami/InteractiveTravelMap",
     licenseUrl:
         process.env.LEGAL_LICENSE_URL ||
         `${
             process.env.LEGAL_REPOSITORY_URL ||
-            "https://github.com/EisOokami/InteractiveMapTrip"
+            "https://github.com/EisOokami/InteractiveTravelMap"
         }/blob/main/LICENSE`,
 } as const;
 

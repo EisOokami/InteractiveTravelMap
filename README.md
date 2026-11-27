@@ -7,8 +7,8 @@
 <h3 align="center">Find points of interest on an interactive map and plan multi-day trips with daily routes.</h3>
 
 <p align="center">
-    <a href="https://github.com/EisOokami/InteractiveMapTrip/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/EisOokami/InteractiveMapTrip?style=social" /></a>
-    <a href="https://github.com/EisOokami/InteractiveMapTrip/commits"><img alt="Last commit" src="https://img.shields.io/github/last-commit/EisOokami/InteractiveMapTrip" /></a>
+    <a href="https://github.com/EisOokami/InteractiveTravelMap/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/EisOokami/InteractiveTravelMap?style=social" /></a>
+    <a href="https://github.com/EisOokami/InteractiveTravelMap/commits"><img alt="Last commit" src="https://img.shields.io/github/last-commit/EisOokami/InteractiveTravelMap" /></a>
     <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-brightgreen" /></a>
     <a href="https://github.com/EisOokami"><img alt="Made by EisOokami" src="https://img.shields.io/badge/made%20by-EisOokami-ff69b4" /></a>
 </p>
@@ -76,8 +76,8 @@ The repository contains two applications:
 <h3>Cloning</h3>
 
 ```bash
-git clone https://github.com/EisOokami/InteractiveMapTrip.git
-cd InteractiveMapTrip
+git clone https://github.com/EisOokami/InteractiveTravelMap.git
+cd InteractiveTravelMap
 ```
 
 <h3>Installing dependencies</h3>
